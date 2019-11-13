@@ -3,9 +3,7 @@ import pygame
 from mlgame.gamedev.generic import quit_or_esc, KeyCommandMap
 from mlgame.gamedev.recorder import get_record_handler
 
-from . import gamecore
-from .gamecore import GameStatus, PlatformAction
-from ..communication import SceneInfo
+from .gamecore import GameStatus, PlatformAction, Scene
 from ..main import get_log_dir
 
 class Arkanoid:
@@ -13,7 +11,7 @@ class Arkanoid:
         self._init_pygame()
 
         self._fps = fps
-        self._scene = gamecore.Scene(level, True)
+        self._scene = Scene(level, True)
         self._keyboard = KeyCommandMap({
                 pygame.K_LEFT:  PlatformAction.MOVE_LEFT,
                 pygame.K_RIGHT: PlatformAction.MOVE_RIGHT,
@@ -27,19 +25,19 @@ class Arkanoid:
     def _init_pygame(self):
         pygame.display.init()
         pygame.display.set_caption("Arkanoid")
-        self._screen = pygame.display.set_mode(gamecore.scene_area_size)
+        self._screen = pygame.display.set_mode(Scene.area_rect.size)
         self._clock = pygame.time.Clock()
 
     def game_loop(self):
         while not quit_or_esc():
-            self._record_handler(self._scene.fill_scene_info_obj(SceneInfo()))
-            control_action = self._keyboard.get_command()
-            game_status = self._scene.update(control_action)
+            command = self._keyboard.get_command()
+            self._record_scene_info(command)
+            game_status = self._scene.update(command)
 
             if game_status == GameStatus.GAME_OVER or \
                game_status == GameStatus.GAME_PASS:
                 print(game_status.value)
-                self._record_handler(self._scene.fill_scene_info_obj(SceneInfo()))
+                self._record_scene_info(None)
 
                 if self._one_shot_mode:
                     return
@@ -52,4 +50,8 @@ class Arkanoid:
 
             self._clock.tick(self._fps)
 
-        pygame.quit()
+    def _record_scene_info(self, command):
+        scene_info = self._scene.get_scene_info()
+        if command:
+            scene_info.command = command.value
+        self._record_handler(scene_info)

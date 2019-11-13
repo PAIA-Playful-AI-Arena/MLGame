@@ -4,14 +4,54 @@ from mlgame.utils.enum import StringEnum
 
 from .gameobject import Ball, Platform, Brick, PlatformAction
 
-scene_area_size = (200, 500)    # (width, height)
-
 class GameStatus(StringEnum):
     GAME_ALIVE = "GAME_ALIVE"
     GAME_OVER = "GAME_OVER"
     GAME_PASS = "GAME_PASS"
 
+class SceneInfo:
+    """The data structure for the information of the scene
+
+    Containing the frame no, the status, and the position of the gameobjects.
+    Note that the position is the coordinate at the top-left corner of the gameobject.
+
+    @var frame The frame number of the game. Used as the timestamp.
+    @var status The status of the game. It will only be one of `GameStatus`
+    @var ball A (x, y) tuple which is the position of the ball.
+    @var platform A (x, y) tuple which is the position of the platform.
+    @var bricks A list storing (x, y) tuples which are
+         the position of the remaining bricks.
+    @var command The command decided according to this scene information
+    """
+
+    def __init__(self):
+        # These members will be filled in the game process.
+        self.frame = -1
+        self.status = None
+        self.ball = None
+        self.platform = None
+        self.bricks = None
+
+        # The member is filled after received the command
+        self.command = None
+
+    def __str__(self):
+        output_str = \
+            "# Frame {}\n".format(self.frame) + \
+            "# Status {}\n".format(self.status) + \
+            "# Ball {}\n".format(self.ball) + \
+            "# Platform {}\n".format(self.platform) + \
+            "# Brick"
+        for brick in self.bricks:
+            output_str += " {}".format(brick)
+
+        output_str += "\n# Command {}".format(self.command)
+
+        return output_str
+
 class Scene:
+    area_rect = pygame.Rect(0, 0, 200, 500)
+
     def __init__(self, level, to_create_surface = False):
         self._level = level
         self._frame_count = 0
@@ -25,13 +65,9 @@ class Scene:
         self._create_bricks(self._level)
 
     def _create_moves(self):
-        game_area_rect = pygame.Rect((0, 0), scene_area_size)
-
         self._group_move = pygame.sprite.RenderPlain()
-        self._ball = Ball((100, 100), \
-            game_area_rect, self._group_move)
-        self._platform = Platform((75, 400), \
-            game_area_rect, self._group_move)
+        self._ball = Ball((100, 100), Scene.area_rect, self._group_move)
+        self._platform = Platform((75, 400), Scene.area_rect, self._group_move)
 
         if self._to_create_surface:
             self._ball.create_surface()
@@ -90,32 +126,16 @@ class Scene:
         self._group_brick.draw(surface)
         self._group_move.draw(surface)
 
-    def fill_scene_info_obj(self, scene_info_obj):
-        """Fill the information of scene to the `scene_info_obj`
-
-        This is a helper function. `scene_info_obj` has the basic member "frame" and
-        "status", and it must have member "ball", "platform", and "bricks".
-        The position of the objects will be assigned to these members according to
-        the name. Here are the data:
-        - scene_info_obj.ball: a (x, y) tuple, the position of the ball
-        - scene_info_obj.platform: a (x, y) tuple, the position of the platform
-        - scene_info_obj.bricks: a list whose elements are all (x, y) tuple,
-          the position of remaining bricks.
-
-        @param scene The game scene containing the target gameobjects
-        @param scene_info_obj The instance of some class to be filled with the
-               scene info.
-        @return The filled `scene_info_obj`
+    def get_scene_info(self) -> SceneInfo:
+        """Get the scene information
         """
-        def get_pivot_point(rect):
-            return (rect.x, rect.y)
-
-        scene_info_obj.frame = self._frame_count
-        scene_info_obj.status = self._game_status.value
-        scene_info_obj.ball = get_pivot_point(self._ball.rect)
-        scene_info_obj.platform = get_pivot_point(self._platform.rect)
-        scene_info_obj.bricks = []
+        scene_info = SceneInfo()
+        scene_info.frame = self._frame_count
+        scene_info.status = self._game_status.value
+        scene_info.ball = self._ball.pos
+        scene_info.platform = self._platform.pos
+        scene_info.bricks = []
         for brick in self._group_brick:
-            scene_info_obj.bricks.append(get_pivot_point(brick.rect))
+            scene_info.bricks.append(brick.pos)
 
-        return scene_info_obj
+        return scene_info
