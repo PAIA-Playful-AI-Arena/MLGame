@@ -31,9 +31,9 @@ class Arkanoid:
 
         if not self._to_transition:
             self._init_display()
-            self._scene = gamecore.Scene(level, True)
+            self._scene = Scene(level, True)
         else:
-            self._scene = gamecore.Scene(level, False)
+            self._scene = Scene(level, False)
             self._transition_server = TransitionServer()
 
     def _init_display(self):
@@ -146,7 +146,7 @@ class TransitionServer:
             "data": info_dict,
         })
 
-    def _send_scene_info(self, scene_info: SceneInfo, frame_delayed: int):
+    def _send_scene_info(self, scene_info, frame_delayed: int):
         """Send the scene_info to the message server
         """
         status_dict = {
@@ -167,7 +167,7 @@ class TransitionServer:
             }
         })
 
-    def _send_game_result(self, scene_info: SceneInfo, frame_delayed: int):
+    def _send_game_result(self, scene_info, frame_delayed: int):
         """Send the game result to the message server
         """
         game_result_dict = {

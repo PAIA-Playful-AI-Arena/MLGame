@@ -43,9 +43,9 @@ class PingPong:
 
         if not self._to_transition:
             self._init_display()
-            self._scene = gamecore.Scene(True)
+            self._scene = Scene(True)
         else:
-            self._scene = gamecore.Scene(False)
+            self._scene = Scene(False)
             self._transition_server = TransitionServer()
 
     def _init_display(self):
@@ -216,7 +216,7 @@ class TransitionServer:
             "data": info_dict,
         })
 
-    def _send_scene_info(self, scene_info: SceneInfo, frame_delayed):
+    def _send_scene_info(self, scene_info, frame_delayed):
         """
         Send the scene info to the message server
         """
@@ -239,7 +239,7 @@ class TransitionServer:
             }
         })
 
-    def _send_game_result(self, scene_info: SceneInfo, frame_delayed, final_score):
+    def _send_game_result(self, scene_info, frame_delayed, final_score):
         """
         Send the game result to the message server
         """
