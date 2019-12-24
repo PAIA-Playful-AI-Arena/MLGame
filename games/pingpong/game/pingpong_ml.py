@@ -9,6 +9,7 @@ from mlgame.communication.game import CommandReceiver
 
 from . import gamecore
 from .gamecore import GameStatus, PlatformAction, Scene
+from .transition import TransitionServer
 from ..communication import GameCommand
 from ..main import get_log_dir
 
@@ -69,7 +70,7 @@ class PingPong:
         """
         if self._to_transition:
             keep_going = lambda : True
-            self._transition_server._send_game_info()
+            self._transition_server.send_game_info()
         else:
             keep_going = lambda : not quit_or_esc()
 
@@ -91,7 +92,7 @@ class PingPong:
             if not self._to_transition:
                 self._draw_scene()
             else:
-                self._transition_server._send_scene_info(scene_info, self._frame_delayed)
+                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
             # If either of two sides wins, reset the scene and wait for ml processes
             # getting ready for the next round
@@ -102,7 +103,7 @@ class PingPong:
                 comm.send_to_all_ml(scene_info)
 
                 if self._to_transition:
-                    self._transition_server._send_scene_info(scene_info, self._frame_delayed)
+                    self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
                 print("Frame: {}, Status: {}" \
                     .format(scene_info.frame, game_status.value))
@@ -116,7 +117,7 @@ class PingPong:
                 comm.wait_all_ml_ready()
 
         if self._to_transition:
-            self._transition_server._send_game_result(scene_info, self._frame_delayed, \
+            self._transition_server.send_game_result(scene_info, self._frame_delayed, \
                 self._score)
 
         self._print_result()
@@ -183,79 +184,3 @@ class PingPong:
             win_side = "2P"
 
         print("{} wins! Final score: {}-{}".format(win_side, *self._score))
-
-from mlgame.communication.transition import send_to_transition
-
-class TransitionServer:
-    """
-    Pass the scene info received to the message server
-    """
-    def __init__(self):
-        """
-        Constructor
-        """
-        pass
-
-    def _send_game_info(self):
-        """
-        Send the game information to the message server
-        """
-        info_dict = {
-            "scene": {
-                "size": [200, 500],
-            },
-            "game_object": [
-                { "name": "platform_1P", "size": [40, 30], "color": [84, 149, 255] },
-                { "name": "platform_2P", "size": [40, 30], "color": [219, 70, 92] },
-                { "name": "ball", "size": [5, 5], "color": [66, 226, 126] },
-            ]
-        }
-
-        send_to_transition({
-            "type": "game_info",
-            "data": info_dict,
-        })
-
-    def _send_scene_info(self, scene_info, frame_delayed):
-        """
-        Send the scene info to the message server
-        """
-        status_dict = {
-            "frame": scene_info.frame,
-            "frame_delayed": frame_delayed,
-            "ball_speed": scene_info.ball_speed,
-        }
-        gameobject_dict = {
-            "ball": [scene_info.ball],
-            "platform_1P": [scene_info.platform_1P],
-            "platform_2P": [scene_info.platform_2P],
-        }
-
-        send_to_transition({
-            "type": "game_progress",
-            "data": {
-                "status": status_dict,
-                "game_object": gameobject_dict,
-            }
-        })
-
-    def _send_game_result(self, scene_info, frame_delayed, final_score):
-        """
-        Send the game result to the message server
-        """
-        if final_score[0] > final_score[1]:
-            status = ["GAME_PASS", "GAME_OVER"]
-        else:
-            status = ["GAME_OVER", "GAME_PASS"]
-
-        game_result_dict = {
-            "frame_used": scene_info.frame,
-            "frame_delayed": frame_delayed,
-            "result": status,
-            "ball_speed": scene_info.ball_speed,
-        }
-
-        send_to_transition({
-            "type": "game_result",
-            "data": game_result_dict,
-        })

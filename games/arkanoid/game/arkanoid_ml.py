@@ -6,6 +6,7 @@ from mlgame.communication import game as comm
 from mlgame.communication.game import CommandReceiver
 
 from .gamecore import GameStatus, PlatformAction, Scene
+from .transition import TransitionServer
 from ..communication import GameCommand
 from ..main import get_log_dir
 
@@ -57,7 +58,7 @@ class Arkanoid:
         """
 
         if self._to_transition:
-            self._transition_server._send_game_info()
+            self._transition_server.send_game_info()
             keep_going = lambda : True
         else:
             keep_going = lambda : not quit_or_esc()
@@ -76,7 +77,7 @@ class Arkanoid:
             if not self._to_transition:
                 self._draw_scene()
             else:
-                self._transition_server._send_scene_info(scene_info, self._frame_delayed)
+                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
             if game_status == GameStatus.GAME_OVER or \
                game_status == GameStatus.GAME_PASS:
@@ -85,8 +86,8 @@ class Arkanoid:
                 comm.send_to_ml(scene_info, self._ml_name)
 
                 if self._to_transition:
-                    self._transition_server._send_scene_info(scene_info, self._frame_delayed)
-                    self._transition_server._send_game_result(scene_info, self._frame_delayed)
+                    self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+                    self._transition_server.send_game_result(scene_info, self._frame_delayed)
 
                 if self._one_shot_mode:
                     return
@@ -116,68 +117,3 @@ class Arkanoid:
         self._screen.fill((0, 0, 0))
         self._scene.draw_gameobjects(self._screen)
         pygame.display.flip()
-
-from mlgame.communication.transition import send_to_transition
-
-class TransitionServer:
-    """Pass the scene info received to the message server
-    """
-    def __init__(self):
-        """Constructor
-        """
-        pass
-
-    def _send_game_info(self):
-        """Send the information of the game to the message server
-        """
-        info_dict = {
-            "scene": {
-                "size": [200, 500]
-            },
-            "game_object": [
-                { "name": "ball", "size": [5, 5], "color": [44, 185, 214] },
-                { "name": "platform", "size": [40, 5], "color": [66, 226, 126] },
-                { "name": "brick", "size": [25, 10], "color": [244, 158, 66] },
-            ]
-        }
-
-        send_to_transition({
-            "type": "game_info",
-            "data": info_dict,
-        })
-
-    def _send_scene_info(self, scene_info, frame_delayed: int):
-        """Send the scene_info to the message server
-        """
-        status_dict = {
-            "frame": scene_info.frame,
-            "frame_delayed": [frame_delayed],
-        }
-        gameobject_dict = {
-            "ball": [scene_info.ball],
-            "platform": [scene_info.platform],
-            "brick": scene_info.bricks
-        }
-
-        send_to_transition({
-            "type": "game_progress",
-            "data": {
-                "status": status_dict,
-                "game_object": gameobject_dict,
-            }
-        })
-
-    def _send_game_result(self, scene_info, frame_delayed: int):
-        """Send the game result to the message server
-        """
-        game_result_dict = {
-            "frame_used": scene_info.frame,
-            "frame_delayed": [frame_delayed],
-            "result": [scene_info.status],
-            "brick_remain": len(scene_info.bricks),
-        }
-
-        send_to_transition({
-            "type": "game_result",
-            "data": game_result_dict,
-        })
