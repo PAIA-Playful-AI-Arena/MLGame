@@ -12,6 +12,7 @@ from mlgame.communication.game import CommandReceiver
 
 from .gamecore import Scene, GameStatus
 from .gameobject import SnakeAction
+from .transition import TransitionServer
 from ..communication import GameCommand
 from ..main import get_log_dir
 
@@ -37,6 +38,7 @@ class Snake:
         self._record_handler = get_record_handler(record_progress, {
             "status": (GameStatus.GAME_OVER, )
         }, get_log_dir())
+        self._transition_server = TransitionServer()
 
     def _init_pygame(self):
         """
@@ -55,6 +57,8 @@ class Snake:
         """
         The game execution loop
         """
+        self._transition_server.send_game_info()
+
         # Wait for the ml process
         comm.wait_ml_ready(self._ml_name)
 
@@ -82,6 +86,11 @@ class Snake:
                 comm.send_to_ml(scene_info, self._ml_name)
                 self._record_handler(scene_info)
 
+                # Send the last frame and the result to the transition server
+                self._transition_server.send_game_progress(scene_info, self._frame_delayed)
+                self._transition_server.send_game_result(scene_info, self._frame_delayed, \
+                    self._scene.score)
+
                 if self._one_shot_mode:
                     return
 
@@ -93,6 +102,8 @@ class Snake:
 
             # Draw the scene to the display
             self._draw_scene()
+            # Send the game progress to the transition server
+            self._transition_server.send_game_progress(scene_info, self._frame_delayed)
 
     def _make_ml_execute(self, scene_info):
         """

@@ -8,6 +8,7 @@ def ml_mode(config):
         args = (config.fps, config.one_shot_mode, \
         config.record_progress))
     process_manager.add_ml_process(config.input_modules[0], "ml")
+    process_manager.set_transition_process(*config.transition_channel)
 
     process_manager.start()
 
