@@ -30,12 +30,8 @@ class Arkanoid:
         self._to_transition = to_transition
         self._one_shot_mode = one_shot_mode
 
-        if not self._to_transition:
-            self._init_display()
-            self._scene = Scene(level, True)
-        else:
-            self._scene = Scene(level, False)
-            self._transition_server = TransitionServer()
+        self._init_display()
+        self._scene = Scene(level)
 
     def _init_display(self):
         pygame.display.init()

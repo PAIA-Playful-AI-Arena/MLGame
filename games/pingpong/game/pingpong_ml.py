@@ -42,12 +42,8 @@ class PingPong:
             }, get_log_dir())
         self._to_transition = to_transition
 
-        if not self._to_transition:
-            self._init_display()
-            self._scene = Scene(True)
-        else:
-            self._scene = Scene(False)
-            self._transition_server = TransitionServer()
+        self._init_display()
+        self._scene = Scene()
 
     def _init_display(self):
         """
