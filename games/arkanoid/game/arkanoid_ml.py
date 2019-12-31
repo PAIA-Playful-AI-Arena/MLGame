@@ -15,7 +15,7 @@ class Arkanoid:
     """
 
     def __init__(self, fps: int, level: int, \
-        record_progress: bool, one_shot_mode: bool, to_transition: bool):
+        record_progress: bool, one_shot_mode: bool):
         self._ml_name = "ml"
         self._ml_execute_time = 1.0 / fps
         self._frame_delayed = 0
@@ -27,11 +27,11 @@ class Arkanoid:
         self._record_handler = get_record_handler(record_progress, { \
                 "status": (GameStatus.GAME_OVER, GameStatus.GAME_PASS) \
             }, get_log_dir())
-        self._to_transition = to_transition
         self._one_shot_mode = one_shot_mode
 
         self._init_display()
         self._scene = Scene(level)
+        self._transition_server = TransitionServer()
 
     def _init_display(self):
         pygame.display.init()
@@ -53,11 +53,8 @@ class Arkanoid:
         6. Back to 1.
         """
 
-        if self._to_transition:
-            self._transition_server.send_game_info()
-            keep_going = lambda : True
-        else:
-            keep_going = lambda : not quit_or_esc()
+        keep_going = lambda : not quit_or_esc()
+        self._transition_server.send_game_info()
 
         comm.wait_ml_ready(self._ml_name)
 
@@ -70,10 +67,8 @@ class Arkanoid:
 
             game_status = self._scene.update(command)
 
-            if not self._to_transition:
-                self._draw_scene()
-            else:
-                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+            self._draw_scene()
+            self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
             if game_status == GameStatus.GAME_OVER or \
                game_status == GameStatus.GAME_PASS:
@@ -81,9 +76,9 @@ class Arkanoid:
                 self._record_handler(scene_info)
                 comm.send_to_ml(scene_info, self._ml_name)
 
-                if self._to_transition:
-                    self._transition_server.send_scene_info(scene_info, self._frame_delayed)
-                    self._transition_server.send_game_result(scene_info, self._frame_delayed)
+                print(game_status.value)
+                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+                self._transition_server.send_game_result(scene_info, self._frame_delayed)
 
                 if self._one_shot_mode:
                     return

@@ -17,14 +17,13 @@ class PingPong:
     """
     The game core for the machine learning mode
     """
-    def __init__(self, fps: int, game_over_score: int, record_progress, to_transition):
+    def __init__(self, fps: int, game_over_score: int, record_progress):
         """
         Constructor
 
         @param fps The fps of the game
         @param game_over_score The game will stop when either side reaches this score
         @param record_progress Whether to record the game process or not
-        @param to_transition Whether to pass the game progress to the transition process
         """
         self._ml_1P = "ml_1P"
         self._ml_2P = "ml_2P"
@@ -40,10 +39,10 @@ class PingPong:
         self._record_handler = get_record_handler(record_progress, {
                 "status": (GameStatus.GAME_1P_WIN, GameStatus.GAME_2P_WIN)
             }, get_log_dir())
-        self._to_transition = to_transition
 
         self._init_display()
         self._scene = Scene()
+        self._transition_server = TransitionServer()
 
     def _init_display(self):
         """
@@ -64,11 +63,8 @@ class PingPong:
         """
         The main loop of the game execution
         """
-        if self._to_transition:
-            keep_going = lambda : True
-            self._transition_server.send_game_info()
-        else:
-            keep_going = lambda : not quit_or_esc()
+        keep_going = lambda : not quit_or_esc()
+        self._transition_server.send_game_info()
 
         comm.wait_all_ml_ready()
 
@@ -85,10 +81,8 @@ class PingPong:
             # Update the scene
             game_status = self._scene.update(command_1P, command_2P)
 
-            if not self._to_transition:
-                self._draw_scene()
-            else:
-                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+            self._draw_scene()
+            self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
             # If either of two sides wins, reset the scene and wait for ml processes
             # getting ready for the next round
@@ -98,8 +92,7 @@ class PingPong:
                 self._record_handler(scene_info)
                 comm.send_to_all_ml(scene_info)
 
-                if self._to_transition:
-                    self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+                self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
                 print("Frame: {}, Status: {}" \
                     .format(scene_info.frame, game_status.value))
@@ -112,10 +105,8 @@ class PingPong:
                 # Wait for ml processes doing their resetting jobs
                 comm.wait_all_ml_ready()
 
-        if self._to_transition:
-            self._transition_server.send_game_result(scene_info, self._frame_delayed, \
-                self._score)
-
+        self._transition_server.send_game_result(scene_info, self._frame_delayed, \
+            self._score)
         self._print_result()
 
     def _make_ml_execute(self, scene_info):
