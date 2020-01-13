@@ -71,7 +71,6 @@ class GameMode(Enum):
 
     MANUAL = auto()
     ML = auto()
-    ONLINE = auto()
 
 class GameConfig:
     """
@@ -80,7 +79,8 @@ class GameConfig:
     @var game_name The name of the game to be executed
     @var game_params A list of parameters for the game
     @var one_shot_mode Whether to execute the game for only once
-    @var game_mode The mode of the game to be executed
+    @var game_mode The mode of the game to be executed.
+         It will be one of attributes of `GameMode`.
     @var record_progress Whether to record the game progress
     @var transition_channel The information of the transition server
          This member can be None.
