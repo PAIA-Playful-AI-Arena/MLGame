@@ -61,6 +61,14 @@ def wait_all_ml_ready():
         while received_msg != "READY":
             received_msg = recv_from_ml(ml_process, to_wait = True)
 
+def send_to_transition(obj):
+    """
+    Send an object to the transition process
+
+    @param obj The object to be sent
+    """
+    base.send_to_transition(obj)
+
 
 class CommandReceiver:
     """

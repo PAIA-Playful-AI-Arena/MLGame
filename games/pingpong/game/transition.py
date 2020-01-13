@@ -1,4 +1,4 @@
-from mlgame.communication.transition import send_to_transition
+from mlgame.communication.game import send_to_transition
 
 class TransitionServer:
     """
