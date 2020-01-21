@@ -1,7 +1,8 @@
 from mlgame.gameconfig import GameConfig
 
 def ml_mode(config: GameConfig):
-    """Start the game in the machine learning mode
+    """
+    Start the game in the machine learning mode
 
     Create a game and a machine learning processes.
     """
@@ -19,7 +20,8 @@ def ml_mode(config: GameConfig):
     process_manager.start()
 
 def _start_game_process(fps, level, record_progress, one_shot_mode):
-    """Start the game process
+    """
+    Start the game process
 
     @param fps Specify the updating rate of the game
     @param level Specify the level of the game
@@ -32,7 +34,8 @@ def _start_game_process(fps, level, record_progress, one_shot_mode):
     game.game_loop()
 
 def manual_mode(config: GameConfig):
-    """Play the game as a normal game
+    """
+    Play the game as a normal game
     """
     from .game.arkanoid import Arkanoid
 
@@ -42,7 +45,8 @@ def manual_mode(config: GameConfig):
     game.game_loop()
 
 def _get_level(game_params):
-    """Get the level from the parameter
+    """
+    Get the level from the parameter
     """
     try:
         level = int(game_params[0])
