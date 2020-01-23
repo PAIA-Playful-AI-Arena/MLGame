@@ -107,15 +107,13 @@ class ProcessManager:
 
         # Create pipe for Game process <-> Transition process
         if self._transition_proc_helper is not None:
-            # Transition -> Game
-            recv_pipe, send_pipe = Pipe(False)
-            self._game_proc_helper._comm_transition.send_end = send_pipe
-            self._transition_proc_helper._comm_game.recv_end = recv_pipe
+            recv_pipe_for_game, send_pipe_for_transition = Pipe(False)
+            recv_pipe_for_transition, send_pipe_for_game = Pipe(False)
 
-            # Game -> Transition
-            recv_pipe, send_pipe = Pipe(False)
-            self._transition_proc_helper._comm_game.send_end = send_pipe
-            self._game_proc_helper._comm_transition.recv_end = recv_pipe
+            self._game_proc_helper.set_comm_to_transition( \
+                recv_pipe_for_game, send_pipe_for_game)
+            self._transition_proc_helper.set_comm_to_game( \
+                recv_pipe_for_transition, send_pipe_for_transition)
 
     def _start_ml_processes(self):
         """
@@ -191,7 +189,7 @@ class GameProcessHelper:
         self.kwargs = kwargs
         self.to_transition = False
         self._comm_ml_set = CommunicationSet()
-        self._comm_transition = CommunicationHandler()
+        self._comm_to_transition = CommunicationHandler()
 
     def add_send_end(self, to_ml: str, send_end):
         """
@@ -264,12 +262,24 @@ class GameProcessHelper:
 
         return objs
 
+    # ===== Communication with transition process ===== #
+
+    def set_comm_to_transition(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with transition process
+
+        @param recv_end The communication object for receiving objects from transition process
+        @param send_end the communication object for sending objects to transition process
+        """
+        self._comm_to_transition.set_recv_end(recv_end)
+        self._comm_to_transition.set_send_end(send_end)
+
     def send_to_transition(self, obj):
         """Send an object to the transition process
 
         @param obj The object to be sent
         """
-        self._comm_transition.send(obj)
+        self._comm_to_transition.send(obj)
         # FIXME The exception will not be received immediately.
         # The send() will be stuck (the process is dead) before receiving exception.
         # Set the transition process as the main process to fix it.
@@ -278,17 +288,19 @@ class GameProcessHelper:
     def check_transition_exception(self):
         """Check if there has the exception message sent from the transition process
         """
-        if self._comm_transition.poll():
-            exception = self._comm_transition.recv()
+        if self._comm_to_transition.poll():
+            exception = self._comm_to_transition.recv()
             raise exception
 
 class TransitionProcessHelper:
-    """The helper class for building the transition process
+    """
+    The helper class for building the transition process
     """
     name = "_transition"
 
     def __init__(self, server_ip, server_port, channel_name):
-        """Constructor
+        """
+        Constructor
 
         @param server_ip The IP of the remote server
         @param server_port The port of the remote server
@@ -297,15 +309,29 @@ class TransitionProcessHelper:
         self.server_ip = server_ip
         self.server_port = server_port
         self.channel_name = channel_name
-        self._comm_game = CommunicationHandler()
+        self._comm_to_game = CommunicationHandler()
+
+    def set_comm_to_game(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with game process
+
+        @param recv_end The communication object for receiving objects from game process
+        @param send_end the communication object for sending objects to game process
+        """
+        self._comm_to_game.set_recv_end(recv_end)
+        self._comm_to_game.set_send_end(send_end)
 
     def recv_from_game(self):
-        return self._comm_game.recv()
+        """
+        Receive the object sent from the game process
+        """
+        return self._comm_to_game.recv()
 
     def send_exception(self, exception: TransitionProcessError):
-        """Send an exception to the game process
         """
-        self._comm_game.send(exception)
+        Send an exception to the game process
+        """
+        self._comm_to_game.send(exception)
 
 class MLProcessHelper:
     """
