@@ -3,25 +3,26 @@ import time
 import os.path
 
 from mlgame.gamedev.generic import quit_or_esc
-from mlgame.gamedev.recorder import get_record_handler
 from mlgame.communication import game as comm
 from mlgame.communication.game import CommandReceiver
 
 from . import gamecore
+from .pingpong import Screen
 from .gamecore import GameStatus, PlatformAction, Scene
 from .transition import TransitionServer
+from .record import get_record_handler
 from ..communication import GameCommand
-from ..main import get_log_dir
 
 class PingPong:
     """
     The game core for the machine learning mode
     """
-    def __init__(self, fps: int, game_over_score: int, record_progress):
+    def __init__(self, fps: int, difficulty, game_over_score: int, record_progress):
         """
         Constructor
 
         @param fps The fps of the game
+        @param difficulty The difficulty of the game
         @param game_over_score The game will stop when either side reaches this score
         @param record_progress Whether to record the game process or not
         """
@@ -36,28 +37,11 @@ class PingPong:
                 "command": PlatformAction
             }, GameCommand(-1, PlatformAction.NONE))
 
-        self._record_handler = get_record_handler(record_progress, {
-                "status": (GameStatus.GAME_1P_WIN, GameStatus.GAME_2P_WIN)
-            }, get_log_dir())
+        self._record_handler = get_record_handler(record_progress, "ml_" + str(difficulty))
 
-        self._init_display()
-        self._scene = Scene()
         self._transition_server = TransitionServer()
-
-    def _init_display(self):
-        """
-        Initialize the display of pygame
-        """
-        pygame.display.init()
-        pygame.display.set_caption("PingPong")
-        self._screen = pygame.display.set_mode(Scene.area_rect.size)
-
-        pygame.font.init()
-        self._font = pygame.font.Font(None, 22)
-        self._font_pos_1P = (1, self._screen.get_height() - 21)
-        self._font_pos_2P = (1, 4)
-        self._font_pos_speed = (self._screen.get_width() - 75, \
-            self._screen.get_height() - 21)
+        self._scene = Scene(difficulty)
+        self._screen = Screen(Scene.area_rect.size, self._scene.draw_gameobjects)
 
     def game_loop(self):
         """
@@ -73,20 +57,19 @@ class PingPong:
             # Send the scene info to the ml processes and wait for commands
             command_1P, command_2P = self._make_ml_execute(scene_info)
 
-            scene_info.command_1P = command_1P.value
-            scene_info.command_2P = command_2P.value
+            scene_info.command_1P = command_1P
+            scene_info.command_2P = command_2P
             self._record_handler(scene_info)
 
             # Update the scene
             game_status = self._scene.update(command_1P, command_2P)
 
-            self._draw_scene()
             self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+            self._screen.update(self._score, self._scene._ball.speed)
 
             # If either of two sides wins, reset the scene and wait for ml processes
             # getting ready for the next round
-            if game_status == GameStatus.GAME_1P_WIN or \
-               game_status == GameStatus.GAME_2P_WIN:
+            if game_status != GameStatus.GAME_ALIVE:
                 scene_info = self._scene.get_scene_info()
                 self._record_handler(scene_info)
                 comm.send_to_all_ml(scene_info)
@@ -133,29 +116,13 @@ class PingPong:
             print("{} delayed {} frame(s)" \
                 .format(ml_name, self._frame_delayed[ml_index]))
 
-    def _draw_scene(self):
-        """
-        Draw the scene and status to the display
-        """
-        self._screen.fill((0, 0, 0))
-        self._scene.draw_gameobjects(self._screen)
-
-        font_surface_1P = self._font.render( \
-            "1P score: {}".format(self._score[0]), True, gamecore.color_1P)
-        font_surface_2P = self._font.render( \
-            "2P score: {}".format(self._score[1]), True, gamecore.color_2P)
-        font_surface_speed = self._font.render( \
-            "Speed: {}".format(abs(self._scene._ball._speed[0])), True, (255, 255, 255))
-        self._screen.blit(font_surface_1P, self._font_pos_1P)
-        self._screen.blit(font_surface_2P, self._font_pos_2P)
-        self._screen.blit(font_surface_speed, self._font_pos_speed)
-
-        pygame.display.flip()
-
     def _game_over(self, status):
         if status == GameStatus.GAME_1P_WIN:
             self._score[0] += 1
-        else:
+        elif status == GameStatus.GAME_2P_WIN:
+            self._score[1] += 1
+        else:   # Draw game
+            self._score[0] += 1
             self._score[1] += 1
 
         return self._score[0] == self._game_over_score or \

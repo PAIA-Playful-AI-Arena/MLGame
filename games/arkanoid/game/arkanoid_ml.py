@@ -1,21 +1,21 @@
 import pygame, time
 
 from mlgame.gamedev.generic import quit_or_esc
-from mlgame.gamedev.recorder import get_record_handler
 from mlgame.communication import game as comm
 from mlgame.communication.game import CommandReceiver
 
+from .arkanoid import Screen
 from .gamecore import GameStatus, PlatformAction, Scene
 from .transition import TransitionServer
+from .record import get_record_handler
 from ..communication import GameCommand
-from ..main import get_log_dir
 
 class Arkanoid:
     """
     The game for the machine learning mode
     """
 
-    def __init__(self, fps: int, level: int, \
+    def __init__(self, fps: int, difficulty, level: int, \
         record_progress: bool, one_shot_mode: bool):
         self._ml_name = "ml"
         self._ml_execute_time = 1.0 / fps
@@ -25,19 +25,13 @@ class Arkanoid:
                 "command": PlatformAction
             }, GameCommand(-1, PlatformAction.NONE))
 
-        self._record_handler = get_record_handler(record_progress, { \
-                "status": (GameStatus.GAME_OVER, GameStatus.GAME_PASS) \
-            }, get_log_dir())
+        self._record_handler = get_record_handler(record_progress, \
+            "ml_" + str(difficulty) + "_" + str(level))
         self._one_shot_mode = one_shot_mode
 
-        self._init_display()
-        self._scene = Scene(level)
         self._transition_server = TransitionServer()
-
-    def _init_display(self):
-        pygame.display.init()
-        pygame.display.set_caption("Arkanoid")
-        self._screen = pygame.display.set_mode(Scene.area_rect.size)
+        self._scene = Scene(difficulty, level)
+        self._screen = Screen(Scene.area_rect.size, self._scene.draw_gameobjects)
 
     def game_loop(self):
         """
@@ -62,13 +56,13 @@ class Arkanoid:
             scene_info = self._scene.get_scene_info()
             command = self._make_ml_execute(scene_info)
 
-            scene_info.command = command.value
+            scene_info.command = command
             self._record_handler(scene_info)
 
             game_status = self._scene.update(command)
 
-            self._draw_scene()
             self._transition_server.send_scene_info(scene_info, self._frame_delayed)
+            self._screen.update(self._scene.catch_ball_times)
 
             if game_status == GameStatus.GAME_OVER or \
                game_status == GameStatus.GAME_PASS:
@@ -102,11 +96,3 @@ class Arkanoid:
             print("Delayed {} frame(s)".format(self._frame_delayed))
 
         return game_cmd.command
-
-    def _draw_scene(self):
-        """
-        Draw the scene to the display
-        """
-        self._screen.fill((0, 0, 0))
-        self._scene.draw_gameobjects(self._screen)
-        pygame.display.flip()

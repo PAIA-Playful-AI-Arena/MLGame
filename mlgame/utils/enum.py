@@ -1,9 +1,12 @@
-from enum import Enum
+from enum import Enum, auto
 
 class StringEnum(Enum):
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
     def __eq__(self, other):
         if isinstance(other, StringEnum):
-            return super().__eq__(other)
+            return self.value == other.value
         elif isinstance(other, str):
             return self.value == other
 
@@ -11,3 +14,9 @@ class StringEnum(Enum):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __str__(self):
+        return self.value
+
+    def __hash__(self):
+        return hash(self.value)
