@@ -19,6 +19,7 @@ class TransitionServer:
                 { "name": "ball", "size": [5, 5], "color": [44, 185, 214] },
                 { "name": "platform", "size": [40, 5], "color": [66, 226, 126] },
                 { "name": "brick", "size": [25, 10], "color": [244, 158, 66] },
+                { "name": "hard_brick", "size": [25, 10], "color": [209, 31, 31] },
             ]
         }
 
@@ -37,7 +38,8 @@ class TransitionServer:
         gameobject_dict = {
             "ball": [scene_info.ball],
             "platform": [scene_info.platform],
-            "brick": scene_info.bricks
+            "brick": scene_info.bricks,
+            "hard_brick": scene_info.hard_bricks,
         }
 
         send_to_transition({

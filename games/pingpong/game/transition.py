@@ -21,6 +21,7 @@ class TransitionServer:
             "game_object": [
                 { "name": "platform_1P", "size": [40, 30], "color": [84, 149, 255] },
                 { "name": "platform_2P", "size": [40, 30], "color": [219, 70, 92] },
+                { "name": "blocker", "size": [30, 20], "color": [213, 224, 0] },
                 { "name": "ball", "size": [5, 5], "color": [66, 226, 126] },
             ]
         }
@@ -44,6 +45,8 @@ class TransitionServer:
             "platform_1P": [scene_info.platform_1P],
             "platform_2P": [scene_info.platform_2P],
         }
+        if scene_info.blocker:
+            gameobject_dict["blocker"] = [scene_info.blocker]
 
         send_to_transition({
             "type": "game_progress",
