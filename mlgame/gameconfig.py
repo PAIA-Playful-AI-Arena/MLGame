@@ -9,44 +9,49 @@ def get_command_parser():
     """
     Generate an ArgumentParser for parse the arguments in the command line
     """
-    usage_str = "python %(prog)s [options] <game> [game_params]"
-    description_str = "A platform for applying machine learning algorithm " \
-        "to play pixel games. " \
-        "In default, the game runs in the machine learning mode. " \
-        "Use \"--input-script\" or \"--input-module\" flag at the end of the command " \
-        "to specify script(s) or module(s) for playing the game."
+    usage_str = ("python %(prog)s [options] <game> [game_params]\n" +
+        "".ljust(24) + "[-i SCRIPTS/--input-module MODULES]")
+    description_str = ("A platform for applying machine learning algorithm "
+        "to play pixel games. "
+        "In default, the game runs in the machine learning mode. "
+        "Use '--input-script' or '--input-module' flag at the end of the command "
+        "to specify script(s) or module(s) for playing the game.")
 
-    parser = ArgumentParser(usage = usage_str, description = description_str)
+    parser = ArgumentParser(usage = usage_str, description = description_str,
+        add_help = False)
 
-    parser.add_argument("game", type = str, nargs = 1, \
+    parser.add_argument("game", type = str, nargs = "?",
         help = "the name of the game to be started")
-    parser.add_argument("game_params", nargs = '*', default = None, \
+    parser.add_argument("game_params", nargs = "*", default = None,
         help = "the additional settings for the game")
 
     parser.add_argument("--version", action = "version", version = version)
-    parser.add_argument("-f", "--fps", type = int, default = 30, \
+    parser.add_argument("-h", "--help", action = "store_true",
+        help = "show this help message and exit. "
+        "If the <game> is specified, show the help message of the game instead.")
+    parser.add_argument("-f", "--fps", type = int, default = 30,
         help = "the updating frequency of the game process [default: %(default)s]")
-    parser.add_argument("-m", "--manual-mode", action = "store_true", default = False, \
-        help = "start the game in the manual mode instead of " \
+    parser.add_argument("-m", "--manual-mode", action = "store_true", default = False,
+        help = "start the game in the manual mode instead of "
         "the machine learning mode [default: %(default)s]")
-    parser.add_argument("-r", "--record", action = "store_true", \
-        dest = "record_progress", default = False, \
-        help = "pickle the game progress (a list of SceneInfo) to the log file. " \
-        "One file for a round, and stored in \"<game>/log/\" directory. " \
+    parser.add_argument("-r", "--record", action = "store_true",
+        dest = "record_progress", default = False,
+        help = "pickle the game progress (a list of SceneInfo) to the log file. "
+        "One file for a round, and stored in '<game>/log/' directory. "
         "[default: %(default)s]")
-    parser.add_argument("-1", "--one-shot", action = "store_true", \
-        dest = "one_shot_mode", default = False, \
-        help = "quit the game when the game is passed or is over. " \
+    parser.add_argument("-1", "--one-shot", action = "store_true",
+        dest = "one_shot_mode", default = False,
+        help = "quit the game when the game is passed or is over. "
         "Otherwise, the game will restart automatically. [default: %(default)s]")
-    parser.add_argument("-i", "--input-script", type = str, nargs = '+', \
-        default = None, metavar = "SCRIPT", \
-        help = "specify user script(s) for the machine learning mode. " \
-        "The script must have function `ml_loop()` and " \
-        "be put in the \"<game>/ml/\" directory. [default: %(default)s]")
-    parser.add_argument("--input-module", type = str, nargs = '+', \
-        default = None, metavar = "MODULE", \
-        help = "specify the absolute import path of user module(s) " \
-        "for the machine learning mode. The module must have function " \
+    parser.add_argument("-i", "--input-script", type = str, nargs = '+',
+        default = None, metavar = "SCRIPT",
+        help = "specify user script(s) for the machine learning mode. "
+        "The script must have function `ml_loop()` and "
+        "be put in the '<game>/ml/' directory. [default: %(default)s]")
+    parser.add_argument("--input-module", type = str, nargs = '+',
+        default = None, metavar = "MODULE",
+        help = "specify the absolute import path of user module(s) "
+        "for the machine learning mode. The module must have function "
         "`ml_loop()`. [default: %(default)s]")
     parser.add_argument("--transition-channel", type = str, \
         default = None, metavar = "SERVER_IP:SERVER_PORT:CHANNEL_NAME", \
@@ -56,18 +61,6 @@ def get_command_parser():
         "[default : %(default)s]")
 
     return parser
-
-def get_game_config():
-    """
-    Parse the command line and generate the GameConfig from the parsed result
-    """
-    parser = get_command_parser()
-    try:
-        game_config = GameConfig(parser.parse_args())
-    except Exception as e:
-        raise GameConfigError(str(e))
-    else:
-        return game_config
 
 class GameMode(Enum):
     """
@@ -98,10 +91,10 @@ class GameConfig:
         """
         Generate the game configuration from the parsed command line arguments
         """
-        self.game_name = parsed_args.game[0]
+        self.game_name = parsed_args.game
         self.game_params = parsed_args.game_params
 
-        self.game_mode = self.get_game_mode(parsed_args)
+        self.game_mode = GameMode.MANUAL if parsed_args.manual_mode else GameMode.ML
         self.one_shot_mode = parsed_args.one_shot_mode
         self.record_progress = parsed_args.record_progress
         self.transition_channel = self.get_transition_channel(parsed_args.transition_channel)
@@ -112,17 +105,8 @@ class GameConfig:
         self.input_modules.extend(self._parse_ml_scripts(parsed_args.input_script))
         self.input_modules.extend(self._parse_ml_modules(parsed_args.input_module))
         if self.game_mode == GameMode.ML and len(self.input_modules) == 0:
-            raise FileNotFoundError("No script or module is specified. " \
+            raise FileNotFoundError("No script or module is specified. "
                 "Cannot start the game in the machine learning mode.")
-
-    def get_game_mode(self, parsed_args):
-        """
-        Judge the game mode according to the parsed arguments
-        """
-        if parsed_args.manual_mode:
-            return GameMode.MANUAL
-
-        return GameMode.ML
 
     def _parse_ml_scripts(self, input_scripts):
         """
@@ -143,12 +127,12 @@ class GameConfig:
             full_script_path = os.path.join(top_dir_path, local_script_path)
 
             if not os.path.exists(full_script_path):
-                raise FileNotFoundError( \
-                    "The script \"{}\" does not exist. " \
-                    "Cannot start the game in the machine learning mode." \
+                raise FileNotFoundError(
+                    "The script '{}' does not exist. "
+                    "Cannot start the game in the machine learning mode."
                     .format(local_script_path))
 
-            module_list.append("games.{}.ml.{}" \
+            module_list.append("games.{}.ml.{}"
                 .format(self.game_name, script_name.split('.py')[0]))
 
         return module_list
@@ -172,9 +156,9 @@ class GameConfig:
             full_script_path = os.path.join(top_dir_path, local_script_path)
 
             if not os.path.exists(full_script_path):
-                raise FileNotFoundError( \
-                    "The script \"{}\" does not exist. " \
-                    "Cannot start the game in the machine learning mode." \
+                raise FileNotFoundError(
+                    "The script '{}' does not exist. "
+                    "Cannot start the game in the machine learning mode."
                     .format(local_script_path))
 
         return input_modules
@@ -196,12 +180,12 @@ class GameConfig:
         return splited_str
 
     def __str__(self):
-        return "{" + \
-            "'game_name': '{}', ".format(self.game_name) + \
-            "'game_params': {}, ".format(self.game_params) + \
-            "'game_mode': {}, ".format(self.game_mode) + \
-            "'one_shot_mode': {}, ".format(self.one_shot_mode) + \
-            "'record_progress': {}, ".format(self.record_progress) + \
-            "'transition_channel': {}, ".format(self.transition_channel) + \
-            "'fps': {}, ".format(self.fps) + \
-            "'input_modules': {}".format(self.input_modules)
+        return ("{" +
+            "'game_name': '{}', ".format(self.game_name) +
+            "'game_params': {}, ".format(self.game_params) +
+            "'game_mode': {}, ".format(self.game_mode) +
+            "'one_shot_mode': {}, ".format(self.one_shot_mode) +
+            "'record_progress': {}, ".format(self.record_progress) +
+            "'fps': {}, ".format(self.fps) +
+            "'input_modules': {}".format(self.input_modules) +
+            "}")

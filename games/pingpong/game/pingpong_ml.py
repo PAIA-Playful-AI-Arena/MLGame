@@ -32,7 +32,7 @@ class PingPong:
         self._frame_delayed = [0, 0]    # 1P, 2P
         self._score = [0, 0]    # 1P, 2P
         self._game_over_score = game_over_score
-        self._cmd_receiver = CommandReceiver( \
+        self._cmd_receiver = CommandReceiver(
             GameCommand, {
                 "command": PlatformAction
             }, GameCommand(-1, PlatformAction.NONE))
@@ -76,7 +76,7 @@ class PingPong:
 
                 self._transition_server.send_scene_info(scene_info, self._frame_delayed)
 
-                print("Frame: {}, Status: {}" \
+                print("Frame: {}, Status: {}"
                     .format(scene_info.frame, game_status.value))
 
                 if self._game_over(game_status):
@@ -99,9 +99,9 @@ class PingPong:
         time.sleep(self._ml_execute_time)
         instructions = self._cmd_receiver.recv_all()
 
-        self._check_frame_delayed(0, self._ml_1P, \
+        self._check_frame_delayed(0, self._ml_1P,
             scene_info.frame, instructions[self._ml_1P].frame)
-        self._check_frame_delayed(1, self._ml_2P, \
+        self._check_frame_delayed(1, self._ml_2P,
             scene_info.frame, instructions[self._ml_2P].frame)
 
         return instructions[self._ml_1P].command, instructions[self._ml_2P].command
@@ -110,10 +110,10 @@ class PingPong:
         """
         Update the `frame_delayed` if the received instruction frame is delayed
         """
-        if instruct_frame != -1 and \
-           scene_frame - instruct_frame > self._frame_delayed[ml_index]:
+        if (instruct_frame != -1 and
+            scene_frame - instruct_frame > self._frame_delayed[ml_index]):
             self._frame_delayed[ml_index] = scene_frame - instruct_frame
-            print("{} delayed {} frame(s)" \
+            print("{} delayed {} frame(s)"
                 .format(ml_name, self._frame_delayed[ml_index]))
 
     def _game_over(self, status):
@@ -125,8 +125,8 @@ class PingPong:
             self._score[0] += 1
             self._score[1] += 1
 
-        return self._score[0] == self._game_over_score or \
-            self._score[1] == self._game_over_score
+        return (self._score[0] == self._game_over_score or
+            self._score[1] == self._game_over_score)
 
     def _print_result(self):
         if self._score[0] > self._score[1]:
