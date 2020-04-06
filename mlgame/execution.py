@@ -234,5 +234,9 @@ def _run_ml_mode(game_config: GameConfig, process_config):
         process_manager.add_ml_process(game_config.input_modules[module_id],
             process_name, args, kwargs)
 
+    # Set transition process #
+    if game_config.transition_channel:
+        process_manager.set_transition_process(*game_config.transition_channel)
+
     returncode = process_manager.start()
     sys.exit(returncode)
