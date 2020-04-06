@@ -176,7 +176,7 @@ class GameConfig:
         splited_str = channel_str.split(":")
         if len(splited_str) != 3:
             raise ValueError("Invalid transition channel format. Must be "
-                "\"<server_ip>:<server_port>:<channel_nane>\".")
+                "'<server_ip>:<server_port>:<channel_nane>'.")
         return splited_str
 
     def __str__(self):
