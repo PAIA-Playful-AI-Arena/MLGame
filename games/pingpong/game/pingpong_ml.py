@@ -87,7 +87,7 @@ class PingPong:
                 # Wait for ml processes doing their resetting jobs
                 comm.wait_all_ml_ready()
 
-        self._transition_server.send_game_result(scene_info, self._frame_delayed, \
+        self._transition_server.send_game_result(scene_info, self._frame_delayed,
             self._score)
         self._print_result()
 

@@ -63,7 +63,7 @@ class TransitionManager:
         self._message_server.send({
             "type": "game_error",
             "data": {
-                "message": "Error occurred in \"{}\" process:\n{}" \
-                    .format(exception.process_name, exception.message)
+                "message": ("Error occurred in \"{}\" process:\n{}"
+                    .format(exception.process_name, exception.message))
             }
         })

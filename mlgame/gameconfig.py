@@ -53,11 +53,11 @@ def get_command_parser():
         help = "specify the absolute import path of user module(s) "
         "for the machine learning mode. The module must have function "
         "`ml_loop()`. [default: %(default)s]")
-    parser.add_argument("--transition-channel", type = str, \
-        default = None, metavar = "SERVER_IP:SERVER_PORT:CHANNEL_NAME", \
-        help = "specify the transition server and the channel name. " \
-        "The game will pass the game progress to the transition server " \
-        "instead of displaying it. Only supported in the machine learning mode. " \
+    parser.add_argument("--transition-channel", type = str,
+        default = None, metavar = "SERVER_IP:SERVER_PORT:CHANNEL_NAME",
+        help = "specify the transition server and the channel name. "
+        "The game will pass the game progress to the transition server "
+        "instead of displaying it. Only supported in the machine learning mode. "
         "[default : %(default)s]")
 
     return parser
@@ -175,7 +175,7 @@ class GameConfig:
 
         splited_str = channel_str.split(":")
         if len(splited_str) != 3:
-            raise ValueError("Invalid transition channel format. Must be " \
+            raise ValueError("Invalid transition channel format. Must be "
                 "\"<server_ip>:<server_port>:<channel_nane>\".")
         return splited_str
 

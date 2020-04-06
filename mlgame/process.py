@@ -4,7 +4,7 @@ import traceback
 from multiprocessing import Process, Pipe
 from .communication.base import CommunicationSet, CommunicationHandler
 from .exception import (
-    GameProcessError, MLProcessError, TransitionProcessError, \
+    GameProcessError, MLProcessError, TransitionProcessError,
         trim_callstack
 )
 
@@ -111,9 +111,9 @@ class ProcessManager:
             recv_pipe_for_game, send_pipe_for_transition = Pipe(False)
             recv_pipe_for_transition, send_pipe_for_game = Pipe(False)
 
-            self._game_proc_helper.set_comm_to_transition( \
+            self._game_proc_helper.set_comm_to_transition(
                 recv_pipe_for_game, send_pipe_for_game)
-            self._transition_proc_helper.set_comm_to_game( \
+            self._transition_proc_helper.set_comm_to_game(
                 recv_pipe_for_transition, send_pipe_for_transition)
 
     def _start_ml_processes(self):
@@ -133,7 +133,7 @@ class ProcessManager:
         if self._transition_proc_helper is None:
             return
 
-        self._transition_process = Process(target = _transition_process_entry_point, \
+        self._transition_process = Process(target = _transition_process_entry_point,
             name = TransitionProcessHelper.name, args = (self._transition_proc_helper, ))
         self._transition_process.start()
 
@@ -153,8 +153,8 @@ class ProcessManager:
             returncode = 2
 
             # If the transition process is set, pass the exception.
-            if self._game_proc_helper.to_transition and \
-                isinstance(e, (MLProcessError, GameProcessError)):
+            if (self._game_proc_helper.to_transition and
+                isinstance(e, (MLProcessError, GameProcessError))):
                 self._game_proc_helper.send_to_transition(e)
 
         return returncode
@@ -415,8 +415,8 @@ def _transition_process_entry_point(helper: TransitionProcessHelper):
     """
     try:
         from .transition import TransitionManager
-        transition_manager = TransitionManager( \
-            helper.recv_from_game, \
+        transition_manager = TransitionManager(
+            helper.recv_from_game,
             (helper.server_ip, helper.server_port, helper.channel_name))
         transition_manager.transition_loop()
     except Exception as e:

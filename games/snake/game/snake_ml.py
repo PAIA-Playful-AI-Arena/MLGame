@@ -85,7 +85,7 @@ class Snake:
 
                 # Send the last frame and the result to the transition server
                 self._transition_server.send_game_progress(scene_info, self._frame_delayed)
-                self._transition_server.send_game_result(scene_info, self._frame_delayed, \
+                self._transition_server.send_game_result(scene_info, self._frame_delayed,
                     self._scene.score)
 
                 if self._one_shot_mode:
