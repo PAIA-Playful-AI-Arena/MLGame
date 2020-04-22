@@ -36,17 +36,17 @@ class TransitionServer:
         Send the scene info to the message server
         """
         status_dict = {
-            "frame": scene_info.frame,
+            "frame": scene_info["frame"],
             "frame_delayed": frame_delayed,
-            "ball_speed": scene_info.ball_speed,
+            "ball_speed": scene_info["ball_speed"],
         }
         gameobject_dict = {
-            "ball": [scene_info.ball],
-            "platform_1P": [scene_info.platform_1P],
-            "platform_2P": [scene_info.platform_2P],
+            "ball": [scene_info["ball"]],
+            "platform_1P": [scene_info["platform_1P"]],
+            "platform_2P": [scene_info["platform_2P"]],
         }
-        if scene_info.blocker:
-            gameobject_dict["blocker"] = [scene_info.blocker]
+        if scene_info.get("blocker"):
+            gameobject_dict["blocker"] = [scene_info["blocker"]]
 
         send_to_transition({
             "type": "game_progress",
@@ -66,10 +66,10 @@ class TransitionServer:
             status = ["GAME_OVER", "GAME_PASS"]
 
         game_result_dict = {
-            "frame_used": scene_info.frame,
+            "frame_used": scene_info["frame"],
             "frame_delayed": frame_delayed,
             "result": status,
-            "ball_speed": scene_info.ball_speed,
+            "ball_speed": scene_info["ball_speed"],
         }
 
         send_to_transition({

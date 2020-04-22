@@ -32,14 +32,14 @@ class TransitionServer:
         """Send the scene_info to the message server
         """
         status_dict = {
-            "frame": scene_info.frame,
+            "frame": scene_info["frame"],
             "frame_delayed": [frame_delayed],
         }
         gameobject_dict = {
-            "ball": [scene_info.ball],
-            "platform": [scene_info.platform],
-            "brick": scene_info.bricks,
-            "hard_brick": scene_info.hard_bricks,
+            "ball": [scene_info["ball"]],
+            "platform": [scene_info["platform"]],
+            "brick": scene_info["bricks"],
+            "hard_brick": scene_info["hard_bricks"],
         }
 
         send_to_transition({
@@ -54,10 +54,10 @@ class TransitionServer:
         """Send the game result to the message server
         """
         game_result_dict = {
-            "frame_used": scene_info.frame,
+            "frame_used": scene_info["frame"],
             "frame_delayed": [frame_delayed],
-            "result": [scene_info.status],
-            "brick_remain": len(scene_info.bricks),
+            "result": [scene_info["status"]],
+            "brick_remain": len(scene_info["bricks"]),
         }
 
         send_to_transition({

@@ -21,13 +21,13 @@ class TransitionServer:
     def send_game_progress(self, scene_info, frame_delayed):
         progress_dict = {
             "status": {
-                "frame": scene_info.frame,
+                "frame": scene_info["frame"],
                 "frame_delayed": [frame_delayed]
             },
             "game_object": {
-                "snake_head": [scene_info.snake_head],
-                "snake_body": scene_info.snake_body,
-                "food": [scene_info.food]
+                "snake_head": [scene_info["snake_head"]],
+                "snake_body": scene_info["snake_body"],
+                "food": [scene_info["food"]]
             }
         }
 
@@ -38,7 +38,7 @@ class TransitionServer:
 
     def send_game_result(self, scene_info, frame_delayed, score):
         result_dict = {
-            "frame_used": scene_info.frame,
+            "frame_used": scene_info["frame"],
             "frame_delayed": [frame_delayed],
             "result": ["GAME_OVER"],
             "score": score
