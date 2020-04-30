@@ -2,6 +2,8 @@
 Parse the execution command, load the game config, and execute the game
 """
 import importlib
+import os
+import os.path
 import sys
 
 from .gameconfig import get_command_parser, GameMode, GameConfig
@@ -43,9 +45,14 @@ def _get_game_config() -> GameConfig:
     cmd_parser = get_command_parser()
     parsed_args = cmd_parser.parse_args()
 
+    ## Functional print ##
     # If "-h/--help" is specified, print help message and exit.
-    if not parsed_args.game and parsed_args.help:
+    if parsed_args.help:
         cmd_parser.print_help()
+        sys.exit(0)
+    # If "-l/--list" is specified, list available games and exit.
+    elif parsed_args.list_games:
+        _list_games()
         sys.exit(0)
 
     # Load the game defined parameters
@@ -66,12 +73,8 @@ def _get_game_config() -> GameConfig:
         }
 
     # Create game_param parser
-    _preprocess_game_param_dict(game_defined_params)
+    _preprocess_game_param_dict(game_defined_params, game_defined_config)
     param_parser = get_parser_from_dict(game_defined_params)
-    # If "-h/--help" and "<game>" are specified, print help and exit.
-    if parsed_args.help:
-        param_parser.print_help()
-        sys.exit(0)
 
     # Replace the input game_params with the parsed one
     parsed_args.game_params = param_parser.parse_args(parsed_args.game_params)
@@ -84,7 +87,34 @@ def _get_game_config() -> GameConfig:
 
     return config
 
-def _preprocess_game_param_dict(param_dict):
+def _list_games():
+    """
+    List available games which provide "config.py" in the game directory.
+    """
+    game_root_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "games")
+    dirs = [f for f in os.listdir(game_root_dir)
+        if ("__" not in f) and (os.path.isdir(os.path.join(game_root_dir, f)))]
+
+    game_info_list = [("Game", "Version"), ("-----", "-----")]
+    max_name_len = 5
+    # Load the config and version
+    for game_dir in dirs:
+        try:
+            game_defined_config = importlib.import_module(
+                "games.{}.config".format(game_dir))
+            game_version = game_defined_config.GAME_VERSION
+        except ModuleNotFoundError:
+            continue
+        except AttributeError:
+            game_version = ""
+
+        game_info_list.append((game_dir, game_version))
+        max_name_len = max(max_name_len, len(game_dir))
+
+    for name, version in game_info_list:
+        print(name.ljust(max_name_len + 1), version)
+
+def _preprocess_game_param_dict(param_dict, game_defined_config):
     """
     Preprocess the game defined `GAME_PARAMS`
     """
@@ -94,8 +124,20 @@ def _preprocess_game_param_dict(param_dict):
         param_dict["()"].get("game_usage")):
         game_usage = str(param_dict["()"].pop("game_usage"))
         param_dict["()"]["usage"] = (
-            "python MLGame.py [options] " + game_usage + "\n" +
-            "".ljust(24) + "[-i SCRIPT(S)]")
+            "python MLGame.py [options] " + game_usage)
+
+    # If the game not specify "--version" flag,
+    # try to convert `GAME_VERSION` to a flag
+    if not param_dict.get("--version"):
+        try:
+            game_version = str(game_defined_config.GAME_VERSION)
+        except AttributeError:
+            game_version = ""
+
+        param_dict["--version"] = {
+            "action": "version",
+            "version": game_version
+        }
 
 def _game_execution(game_config: GameConfig):
     """

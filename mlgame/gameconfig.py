@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, REMAINDER
 from enum import Enum, auto
 import os.path
 
@@ -9,49 +9,55 @@ def get_command_parser():
     """
     Generate an ArgumentParser for parse the arguments in the command line
     """
-    usage_str = ("python %(prog)s [options] <game> [game_params]\n" +
-        "".ljust(24) + "[-i SCRIPT(S)]")
+    usage_str = ("python %(prog)s [options] <game> [game_params]")
     description_str = ("A platform for applying machine learning algorithm "
         "to play pixel games. "
-        "In default, the game runs in the machine learning mode. "
-        "Use '--input-script' or '--input-module' flag at the end of the command "
-        "to specify script(s) or module(s) for playing the game.")
+        "In default, the game runs in the machine learning mode. ")
 
     parser = ArgumentParser(usage = usage_str, description = description_str,
         add_help = False)
 
     parser.add_argument("game", type = str, nargs = "?",
         help = "the name of the game to be started")
-    parser.add_argument("game_params", nargs = "*", default = None,
-        help = "the additional settings for the game")
+    parser.add_argument("game_params", nargs = REMAINDER, default = None,
+        help = "[optional] the additional settings for the game. "
+        "Note that all arguments after <game> will be collected to 'game_params'.")
 
-    parser.add_argument("--version", action = "version", version = version)
-    parser.add_argument("-h", "--help", action = "store_true",
+    group = parser.add_argument_group(title = "functional options")
+    group.add_argument("--version", action = "version", version = version)
+    group.add_argument("-h", "--help", action = "store_true",
         help = "show this help message and exit. "
-        "If the <game> is specified, show the help message of the game instead.")
-    parser.add_argument("-f", "--fps", type = int, default = 30,
+        "If this flag is specified after the <game>, "
+        "show the help message of the game instead.")
+    group.add_argument("-l", "--list", action = "store_true", dest = "list_games",
+        help = "list available games. If the game in the 'games' directory "
+        "provides 'config.py' which can be loaded, it will be listed.")
+
+    group = parser.add_argument_group(title = "game execution options",
+        description = "Game execution options must be specified before <game> arguments.")
+    group.add_argument("-f", "--fps", type = int, default = 30,
         help = "the updating frequency of the game process [default: %(default)s]")
-    parser.add_argument("-m", "--manual-mode", action = "store_true", default = False,
+    group.add_argument("-m", "--manual-mode", action = "store_true",
         help = "start the game in the manual mode instead of "
         "the machine learning mode [default: %(default)s]")
-    parser.add_argument("-r", "--record", action = "store_true",
-        dest = "record_progress", default = False,
+    group.add_argument("-r", "--record", action = "store_true", dest = "record_progress",
         help = "pickle the game progress (a list of SceneInfo) to the log file. "
         "One file for a round, and stored in '<game>/log/' directory. "
         "[default: %(default)s]")
-    parser.add_argument("-1", "--one-shot", action = "store_true",
-        dest = "one_shot_mode", default = False,
+    group.add_argument("-1", "--one-shot", action = "store_true", dest = "one_shot_mode",
         help = "quit the game when the game is passed or is over. "
         "Otherwise, the game will restart automatically. [default: %(default)s]")
-    parser.add_argument("-i", "--input-script", type = str, nargs = '+',
+    group.add_argument("-i", "--input-script", type = str, action = "append",
         default = None, metavar = "SCRIPT",
         help = "specify user script(s) for the machine learning mode. "
+        "For multiple user scripts, use this flag multiple times. "
         "The script must have function `ml_loop()` and "
         "be put in the '<game>/ml/' directory. [default: %(default)s]")
-    parser.add_argument("--input-module", type = str, nargs = '+',
+    group.add_argument("--input-module", type = str, action = "append",
         default = None, metavar = "MODULE",
         help = "specify the absolute import path of user module(s) "
-        "for the machine learning mode. The module must have function "
+        "for the machine learning mode. For multiple user modules, "
+        "use this flag multiple times. The module must have function "
         "`ml_loop()`. [default: %(default)s]")
     parser.add_argument("--transition-channel", type = str,
         default = None, metavar = "SERVER_IP:SERVER_PORT:CHANNEL_NAME",
