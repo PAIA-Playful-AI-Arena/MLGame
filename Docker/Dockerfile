@@ -13,7 +13,8 @@ ENV PYTHONUNBUFFERED 1
 COPY requirements.txt /tmp/
 COPY requirements-ml.txt /tmp/
 
-RUN pip install -r /tmp/requirements.txt \
+RUN pip install --upgrade pip \
+    && pip install -r /tmp/requirements.txt \
     && pip install -r /tmp/requirements-ml.txt \
     && pip install channels_redis==2.3.3
 
