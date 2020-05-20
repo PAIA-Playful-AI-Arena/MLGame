@@ -2,10 +2,11 @@ import importlib
 import traceback
 
 from multiprocessing import Process, Pipe
-from .communication.base import CommunicationSet, CommunicationHandler
-from .exception import (
-    GameProcessError, MLProcessError, TransitionProcessError,
-        trim_callstack
+from threading import Thread
+from queue import Queue
+from .communication import CommunicationSet, CommunicationHandler
+from .exceptions import (
+    GameProcessError, MLProcessError,
 )
 
 class ProcessManager:
@@ -24,15 +25,14 @@ class ProcessManager:
         self._ml_proc_helpers = []
         self._ml_procs = []
 
-    def set_game_process(self, target, args = (), kwargs = {}):
+    def set_game_process(self, execution_cmd, game_cls):
         """
         Set the game process
 
-        @param target A target function which is the starting point of the game process
-        @param args The positional arguments to be passed to the target function
-        @param kwargs The keyword arguments to be passed to the target function
+        @param execution_cmd A `ExecutionCommand` object that contains execution config
+        @param game_cls The class of the game to be executed
         """
-        self._game_proc_helper = GameProcessHelper(target, args, kwargs)
+        self._game_proc_helper = GameProcessHelper(execution_cmd, game_cls)
 
     def set_transition_process(self, server_ip, server_port, channel_name):
         """Set the transition process
@@ -51,11 +51,11 @@ class ProcessManager:
         Add a ml process
 
         @param target_module The full name of the module
-               to be executed in the ml process. The module must have `ml_loop` function.
+               to be executed in the ml process. The module must have `MLPlay` class.
         @param name The name of the ml process
                If it is not specified, it will be "ml_0", "ml_1", and so on.
-        @param args The positional arguments to be passed to the `ml_loop` function
-        @param kwargs The keyword arguments to be passed to the `ml_loop` function
+        @param args The positional arguments to be passed to the `MLPlay.__init__()`
+        @param kwargs The keyword arguments to be passed to the `MLPlay.__init__()`
         """
         if name == "":
             name = "ml_" + str(len(self._ml_proc_helpers))
@@ -181,17 +181,15 @@ class GameProcessHelper:
     """
     name = "_game"
 
-    def __init__(self, target_function, args = (), kwargs = {}):
+    def __init__(self, execution_cmd, game_cls):
         """
         Constructor
 
-        @param target_function The starting point of the game process
-        @param args The positional arguments to be passed to the target function
-        @param kwargs The keyword arguments to be passed to the target function
+        @param execution_cmd A `ExecutionCommand` object that contains execution config
+        @param game_cls The class of the game to be executed
         """
-        self.target_function = target_function
-        self.args = args
-        self.kwargs = kwargs
+        self.execution_cmd = execution_cmd
+        self.game_cls = game_cls
         self._comm_to_ml_set = CommunicationSet()
         self.to_transition = False
         self._comm_to_transition = CommunicationHandler()
@@ -206,6 +204,12 @@ class GameProcessHelper:
         """
         self._comm_to_ml_set.add_recv_end(to_ml, recv_end)
         self._comm_to_ml_set.add_send_end(to_ml, send_end)
+
+    def get_ml_names(self):
+        """
+        Get the registered ml names for the communication
+        """
+        return self._comm_to_ml_set.get_send_end_names()
 
     def send_to_ml(self, obj, to_ml: str):
         """
@@ -364,13 +368,37 @@ class MLProcessHelper:
         self._comm_to_game.set_recv_end(recv_end)
         self._comm_to_game.set_send_end(send_end)
 
+    def start_recv_obj_thread(self):
+        """
+        Start a thread to keep receiving objects from the game
+        """
+        self._obj_queue = Queue(15)
+
+        thread = Thread(target = self._keep_recv_obj_from_game)
+        thread.start()
+
+    def _keep_recv_obj_from_game(self):
+        """
+        Keep receiving object from the game and put it in the queue
+
+        If the queue is full, the received object will be dropped.
+        """
+        while True:
+            if self._obj_queue.full():
+                self._obj_queue.get()
+                print("Warning: The object queue for the process '{}' is full. "
+                    "Drop the oldest object."
+                    .format(self.name))
+
+            self._obj_queue.put(self._comm_to_game.recv())
+
     def recv_from_game(self):
         """
         Receive an object from the game process
 
         @return The received object
         """
-        return self._comm_to_game.recv()
+        return self._obj_queue.get()
 
     def send_to_game(self, obj):
         """
@@ -391,24 +419,10 @@ def _game_process_entry_point(helper: GameProcessHelper):
     """
     The real entry point of the game process
     """
-    # Bind the helper functions to the handlers
-    from .communication import base
-    base.send_to_ml.set_function(helper.send_to_ml)
-    base.send_to_all_ml.set_function(helper.send_to_all_ml)
-    base.recv_from_ml.set_function(helper.recv_from_ml)
-    base.recv_from_all_ml.set_function(helper.recv_from_all_ml)
+    from .loops import GameMLModeExecutor
 
-    if helper.to_transition:
-        base.send_to_transition.set_function(helper.send_to_transition)
-
-    try:
-        helper.target_function(*helper.args, **helper.kwargs)
-    except (MLProcessError, TransitionProcessError):
-        # This exception wil be raised when invoking `recv_from_ml()` and
-        # receive `MLProcessError` object from it
-        raise
-    except Exception:
-        raise GameProcessError(helper.name, traceback.format_exc())
+    executor = GameMLModeExecutor(helper)
+    executor.start()
 
 def _transition_process_entry_point(helper: TransitionProcessHelper):
     """The entry point of the transition process
@@ -427,16 +441,7 @@ def _ml_process_entry_point(helper: MLProcessHelper):
     """
     The real entry point of the ml process
     """
-    # Bind the helper functions to the handlers
-    from .communication import base
-    base.send_to_game.set_function(helper.send_to_game)
-    base.recv_from_game.set_function(helper.recv_from_game)
+    from .loops import MLExecutor
 
-    try:
-        ml_module = importlib.import_module(helper.target_module, __package__)
-        ml_module.ml_loop(*helper.args, **helper.kwargs)
-    except Exception as e:
-        target_script = helper.target_module.split('.')[-1] + ".py"
-        trimmed_callstack = trim_callstack(traceback.format_exc(), target_script)
-        exception = MLProcessError(helper.name, trimmed_callstack)
-        helper.send_exception(exception)
+    executor = MLExecutor(helper)
+    executor.start()

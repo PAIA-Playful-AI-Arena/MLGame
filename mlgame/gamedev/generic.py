@@ -13,9 +13,10 @@ def quit_or_esc() -> bool:
 
 class KeyCommandMap:
     """
-    Map the keys to the commands and return the mapped command when the key is pressed
+    Map the keys to the commands and return the mapped command when the corresponding
+    key is pressed
     """
-    def __init__(self, command_map: dict, default_command = None):
+    def __init__(self, command_map: dict):
         """
         Constructor
 
@@ -23,28 +24,26 @@ class KeyCommandMap:
                The key of the dict is the key-code defined in pygame, and
                the value is the command that will be returned when the corresponding
                key is pressed.
-        @param default_command The command will be returned when there is no
-               registered key pressed.
         """
         if not isinstance(command_map, dict):
-            raise TypeError("The 'action_dict' should be a 'dict'.")
+            raise TypeError("The 'command_map' should be a 'dict'.")
 
         self._command_map = command_map
-        self._default_command = default_command
 
-    def get_command(self):
+    def get_pressed_commands(self):
         """
-        Check the pressed key and return the corresponding command
+        Check the pressed keys and return the corresponding commands
 
-        If there is no registered key pressed, return the `default_command` instead.
-        Note that only one command is returned at once, and the key checking order is
-        the same as the ordering in `command_map` (Python 3.6+).
+        @return A list of commands of which corresponding keys are pressed
+                If there is no registered key pressed, return an empty list.
         """
         key_pressed_list = pygame.key.get_pressed()
+        pressed_commands = []
         for key, command in self._command_map.items():
             if key_pressed_list[key]:
-                return command
-        return self._default_command
+                pressed_commands.append(command)
+
+        return pressed_commands
 
 class FPSCounter:
     """
