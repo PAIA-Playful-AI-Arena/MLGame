@@ -93,12 +93,15 @@ class GameMLModeExecutor:
         sent from the ml process, and pass command to the game for execution.
         """
         game = self._game_cls(*self._execution_cmd.game_params)
+        self._send_game_info(game.get_game_info())
 
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info = game.get_player_scene_info()
             commands = self._make_ml_execute(scene_info)
             self._recorder.record(scene_info, commands)
+
+            self._send_game_progress(game.get_game_progress())
 
             result = game.update(*commands)
 
@@ -109,6 +112,9 @@ class GameMLModeExecutor:
                 self._recorder.record(scene_info,
                     [[] for _ in range(len(self._ml_names))])
                 self._recorder.flush_to_file()
+
+                self._send_game_progress(game.get_game_progress())
+                self._send_game_result(game.get_game_result())
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
@@ -166,6 +172,39 @@ class GameMLModeExecutor:
         if delayed_frame > self._ml_delayed_frames[ml_name]:
             self._ml_delayed_frames[ml_name] = delayed_frame
             print("The client '{}' delayed {} frame(s)".format(ml_name, delayed_frame))
+
+    def _send_game_info(self, game_info_dict):
+        """
+        Send the game information to the transition server
+        """
+        data_dict = {
+            "type": "game_info",
+            "data": game_info_dict
+        }
+
+        self._helper.send_to_transition(data_dict)
+
+    def _send_game_progress(self, game_progress_dict):
+        """
+        Send the game progress to the transition server
+        """
+        data_dict = {
+            "type": "game_progress",
+            "data": game_progress_dict
+        }
+
+        self._helper.send_to_transition(data_dict)
+
+    def _send_game_result(self, game_result_dict):
+        """
+        Send the game result to the transition server
+        """
+        data_dict = {
+            "type": "game_result",
+            "data": game_result_dict
+        }
+
+        self._helper.send_to_transition(data_dict)
 
 class MLExecutor:
     """
