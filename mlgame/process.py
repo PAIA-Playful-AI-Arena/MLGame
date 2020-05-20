@@ -6,7 +6,7 @@ from threading import Thread
 from queue import Queue
 from .communication import CommunicationSet, CommunicationHandler
 from .exceptions import (
-    GameProcessError, MLProcessError,
+    GameProcessError, MLProcessError, TransitionProcessError
 )
 
 class ProcessManager:
@@ -34,17 +34,16 @@ class ProcessManager:
         """
         self._game_proc_helper = GameProcessHelper(execution_cmd, game_cls)
 
-    def set_transition_process(self, server_ip, server_port, channel_name):
+    def set_transition_process(self, transition_channel):
         """Set the transition process
 
         If the game runs in the online mode, set the transition process
         for sending the game progress to the remote server.
 
-        @param server_ip The IP of the remote server
-        @param server_port The port of the remote server
-        @param channel_name The name of the communication channel in the remote server
+        @param transition_channel A 3-element tuple (server_ip, server_port, channel_name)
+               for communicating with the remote server
         """
-        self._transition_proc_helper = TransitionProcessHelper(server_ip, server_port, channel_name)
+        self._transition_proc_helper = TransitionProcessHelper(transition_channel)
 
     def add_ml_process(self, target_module, name = "", args = (), kwargs = {}):
         """
@@ -128,7 +127,8 @@ class ProcessManager:
             self._ml_procs.append(process)
 
     def _start_transition_process(self):
-        """Start the transition process
+        """
+        Start the transition process
         """
         if self._transition_proc_helper is None:
             return
@@ -300,17 +300,13 @@ class TransitionProcessHelper:
     """
     name = "_transition"
 
-    def __init__(self, server_ip, server_port, channel_name):
+    def __init__(self, transition_channel):
         """
         Constructor
 
-        @param server_ip The IP of the remote server
-        @param server_port The port of the remote server
-        @param channel_name The target communication channel in the remote server
+        @param transition_channel A 3-element tuple (server_ip, server_port, channel_name)
         """
-        self.server_ip = server_ip
-        self.server_port = server_port
-        self.channel_name = channel_name
+        self.transition_channel = transition_channel
         self._comm_to_game = CommunicationHandler()
 
     def set_comm_to_game(self, recv_end, send_end):
@@ -425,13 +421,13 @@ def _game_process_entry_point(helper: GameProcessHelper):
     executor.start()
 
 def _transition_process_entry_point(helper: TransitionProcessHelper):
-    """The entry point of the transition process
+    """
+    The entry point of the transition process
     """
     try:
         from .transition import TransitionManager
         transition_manager = TransitionManager(
-            helper.recv_from_game,
-            (helper.server_ip, helper.server_port, helper.channel_name))
+            helper.recv_from_game, helper.transition_channel)
         transition_manager.transition_loop()
     except Exception as e:
         exception = TransitionProcessError(helper.name, traceback.format_exc())

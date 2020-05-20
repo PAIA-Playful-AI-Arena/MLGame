@@ -29,16 +29,16 @@ class TransitionManager:
     Receive data sent from the game process and pass it to the remote server
     """
 
-    def __init__(self, recv_data_func, server_info):
+    def __init__(self, recv_data_func, channel):
         """
         Constructor
 
         @param recv_data_func The function for receiving data
-        @param server_info The information of the remote server.
+        @param channel The information of the remote server.
                A three-element tuple (server_ip, server_port, channel_name).
         """
         self._recv_data_func = recv_data_func
-        self._message_server = MessageServer(*server_info)
+        self._message_server = MessageServer(*channel)
 
     def transition_loop(self):
         """

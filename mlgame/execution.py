@@ -248,8 +248,8 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
         process_manager.add_ml_process(ml_module, process_name, args, kwargs)
 
     # Set transition process #
-    if game_config.transition_channel:
-        process_manager.set_transition_process(*game_config.transition_channel)
+    if execution_cmd.transition_channel:
+        process_manager.set_transition_process(execution_cmd.transition_channel)
 
     returncode = process_manager.start()
     sys.exit(returncode)
