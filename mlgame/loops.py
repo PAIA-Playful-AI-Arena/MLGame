@@ -6,8 +6,8 @@ import importlib
 import time
 import traceback
 
-from .communication import GameCommManager, MLCommManager
-from .exceptions import GameProcessError, MLProcessError
+from .communication import GameCommManager, MLCommManager, TransitionCommManager
+from .exceptions import GameProcessError, MLProcessError, TransitionProcessError
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 
@@ -80,6 +80,12 @@ class GameMLModeExecutorProperty:
         """
         self.comm_manager.add_comm_to_ml(ml_name, recv_end, send_end)
 
+    def set_comm_to_transition(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with transition process
+        """
+        self.comm_manager.set_comm_to_transition(recv_end, send_end)
+
 class GameMLModeExecutor:
     """
     The loop executor for the game process running in ml mode
@@ -106,12 +112,19 @@ class GameMLModeExecutor:
         """
         try:
             self._loop()
-        except MLProcessError:
+        except MLProcessError as e:
             # This exception wil be raised when invoking `GameCommManager.recv_from_ml()`
             # and receive `MLProcessError` object from it
+            self._comm_manager.send_to_transition(e)
+            raise
+        except TransitionProcessError:
+            # This exception will be raise when invoking `GameCommManager.send_to_transtion()`
+            # and it finds there has `TransitionProcessError` to be received.
             raise
         except Exception:
-            raise GameProcessError(self._proc_name, traceback.format_exc())
+            e = GameProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_to_transition(e)
+            raise e
 
     def _loop(self):
         """
@@ -220,6 +233,41 @@ class GameMLModeExecutor:
         }
 
         self._comm_manager.send_to_transition(data_dict)
+
+class TransitionExecutorPropty:
+    """
+    The data class that helps build `TransitionExecutor`
+    """
+    def __init__(self, proc_name, transition_channel):
+        self.proc_name = proc_name
+        self.transition_channel = transition_channel
+        self.comm_manager = TransitionCommManager()
+
+    def set_comm_to_game(self, recv_end, send_end):
+        """
+        Set the communication object for communicating with game process
+        """
+        self.comm_manager.set_comm_to_game(recv_end, send_end)
+
+class TransitionExecutor:
+    """
+    The loop executor for the transition process
+    """
+    def __init__(self, propty: TransitionExecutorPropty):
+        self._proc_name = propty.proc_name
+        self._transition_channel = propty.transition_channel
+        self._comm_manager = propty.comm_manager
+
+    def start(self):
+        try:
+            from .transition import TransitionManager
+
+            self._transition_manager = TransitionManager(
+                self._comm_manager.recv_from_game, self._transition_channel)
+            self._transition_manager.transition_loop()
+        except Exception as e:
+            exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_exception(exception)
 
 class MLExecutorProperty:
     """

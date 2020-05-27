@@ -1,7 +1,7 @@
 from threading import Thread
 from queue import Queue
 
-from .exceptions import MLProcessError
+from .exceptions import MLProcessError, TransitionProcessError
 
 class CommunicationSet:
     """
@@ -173,6 +173,7 @@ class GameCommManager:
     """
     def __init__(self):
         self._comm_to_ml_set = CommunicationSet()
+        self._comm_to_transition = CommunicationHandler()
 
     def add_comm_to_ml(self, ml_name, recv_end, send_end):
         """
@@ -212,6 +213,67 @@ class GameCommManager:
         for ml_name in self.get_ml_names():
             obj_dict[ml_name] = self.recv_from_ml(ml_name)
         return obj_dict
+
+    # ===== Communication with transition process ===== #
+
+    def set_comm_to_transition(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with transition process
+
+        @param recv_end The communication object for receiving objects from transition process
+        @param send_end the communication object for sending objects to transition process
+        """
+        self._comm_to_transition.set_recv_end(recv_end)
+        self._comm_to_transition.set_send_end(send_end)
+
+    def send_to_transition(self, obj):
+        """
+        Send an object to the transition process
+
+        @param obj The object to be sent
+        """
+        self._comm_to_transition.send(obj)
+        # FIXME The exception will not be received immediately.
+        # The send() will be stuck (the process is dead) before receiving exception.
+        # Set the transition process as the main process to fix it.
+        self.check_transition_exception()
+
+    def check_transition_exception(self):
+        """
+        Check if there has the exception message sent from the transition process
+        """
+        if self._comm_to_transition.poll():
+            exception = self._comm_to_transition.recv()
+            raise exception
+
+class TransitionCommManager:
+    """
+    The communication manager for the transition process
+    """
+    def __init__(self):
+        self._comm_to_game = CommunicationHandler()
+
+    def set_comm_to_game(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with game process
+
+        @param recv_end The communication object for receiving objects from game process
+        @param send_end The communication object for sending objects to game process
+        """
+        self._comm_to_game.set_recv_end(recv_end)
+        self._comm_to_game.set_send_end(send_end)
+
+    def recv_from_game(self):
+        """
+        Receive the object sent from the game process
+        """
+        return self._comm_to_game.recv()
+
+    def send_exception(self, exception: TransitionProcessError):
+        """
+        Send an exception to the game process
+        """
+        self._comm_to_game.send(exception)
 
 class MLCommManager:
     """
