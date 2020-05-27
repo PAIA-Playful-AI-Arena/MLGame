@@ -148,10 +148,6 @@ def _game_execution(execution_cmd: ExecutionCommand):
     from the "config.py" in the game directory. The `GAME_SETUP` is a dictionary which
     has several keys:
     - "game": Specify the class of the game to be execute
-    - "keyboards": A list containing the mapping of key to the game command.
-      Each mapping is a dictionary, the key is the keycode of pygame, the value is the
-      command. One mapping per player (i.e. if the game has two players, then there is
-      two mapping in the list). This field is used for the manual mode.
     - "ml_clients": A list containing the information of the ml client.
       Each element in the list is a dictionary in which members are:
       - "name": A string which is the name of the ml client.
@@ -168,7 +164,6 @@ def _game_execution(execution_cmd: ExecutionCommand):
         game_setup_config = game_defined_config.GAME_SETUP
 
         game_cls = game_setup_config["game"]
-        keyboard_maps = game_setup_config["keyboards"]
         ml_clients = game_setup_config["ml_clients"]
     except AttributeError:
         raise GameConfigError("'GAME_SETUP' is not defined in '{}'"
@@ -177,21 +172,20 @@ def _game_execution(execution_cmd: ExecutionCommand):
         raise GameConfigError("{} is not found in 'GAME_SETUP'".format(e))
 
     if execution_cmd.game_mode == GameMode.MANUAL:
-        _run_manual_mode(execution_cmd, game_cls, keyboard_maps)
+        _run_manual_mode(execution_cmd, game_cls)
     else:
         _run_ml_mode(execution_cmd, game_cls, ml_clients)
 
-def _run_manual_mode(execution_cmd: ExecutionCommand, game_cls, keyboard_maps):
+def _run_manual_mode(execution_cmd: ExecutionCommand, game_cls):
     """
     Execute the game specified in manual mode
 
     @param execution_cmd The `ExecutionCommand` object
     @param game_cls The class of the game to be executed
-    @param keyboard_maps A list of mappings of keycode to command
     """
     from .loops import GameManualModeExecutor
 
-    executor = GameManualModeExecutor(execution_cmd, game_cls, keyboard_maps)
+    executor = GameManualModeExecutor(execution_cmd, game_cls)
     executor.start()
 
 def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
@@ -229,7 +223,7 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
         if isinstance(ml_module, tuple):
             try:
                 print("Compiling '{}'...".format(ml_module[1]), end = " ", flush = True)
-                execution_cmd = compile_script(ml_module[1])
+                script_execution_cmd = compile_script(ml_module[1])
             except CompilationError as e:
                 print("Failed\nError: {}".format(e))
                 sys.exit(1)
@@ -238,14 +232,14 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
             ml_module = ml_module[0]
             # Wrap arguments passed to be passed to the script
             module_kwargs = {
-                "execution_cmd": execution_cmd,
+                "script_execution_cmd": script_execution_cmd,
                 "init_args": args,
                 "init_kwargs": kwargs
             }
             args = ()
             kwargs = module_kwargs
 
-        process_manager.add_ml_process(ml_module, process_name, args, kwargs)
+        process_manager.add_ml_process(process_name, ml_module, args, kwargs)
 
     # Set transition process #
     if execution_cmd.transition_channel:
