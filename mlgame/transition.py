@@ -67,3 +67,14 @@ class TransitionManager:
                     .format(exception.process_name, exception.message))
             }
         })
+
+    def send_start_error(self, reason):
+        """
+        Send the error message when try to start the game
+        """
+        self._message_server.send({
+            "type": "game_error",
+            "data": {
+                "message": reason
+            }
+        })
