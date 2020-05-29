@@ -5,6 +5,7 @@ from asgiref.sync import async_to_sync
 from channels_redis.core import RedisChannelLayer
 
 from .exceptions import ProcessError
+from . import errno
 
 class RedisTransition:
     def __init__(self, server_ip, server_port, channel_name):
@@ -63,6 +64,7 @@ class TransitionManager:
         self._message_server.send({
             "type": "game_error",
             "data": {
+                "errorcode": errno.GAME_EXECUTION_ERROR,
                 "message": ("Error occurred in '{}' process:\n{}"
                     .format(exception.process_name, exception.message))
             }
@@ -75,6 +77,7 @@ class TransitionManager:
         self._message_server.send({
             "type": "game_error",
             "data": {
+                "errorcode": errno.COMMAND_LINE_ERROR,
                 "message": reason
             }
         })
