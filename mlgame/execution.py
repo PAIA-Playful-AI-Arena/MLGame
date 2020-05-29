@@ -11,6 +11,7 @@ from .crosslang.exceptions import CompilationError
 from .execution_command import get_command_parser, GameMode, ExecutionCommand
 from .exceptions import ExecutionCommandError, GameConfigError
 from .utils.argparser_generator import get_parser_from_dict
+from . import errno
 
 def execute():
     """
@@ -20,13 +21,13 @@ def execute():
         execution_cmd = _get_execution_command()
     except (ExecutionCommandError, GameConfigError) as e:
         print("Error:", e)
-        sys.exit(1)
+        sys.exit(errno.COMMAND_LINE_ERROR)
 
     try:
         _game_execution(execution_cmd)
     except GameConfigError as e:
         print("Error:", e)
-        sys.exit(1)
+        sys.exit(errno.COMMAND_LINE_ERROR)
 
 def _get_execution_command() -> ExecutionCommand:
     """
@@ -62,9 +63,15 @@ def _get_execution_command() -> ExecutionCommand:
         game_defined_config = importlib.import_module(
             "games.{}.config".format(parsed_args.game))
         game_defined_params = game_defined_config.GAME_PARAMS
-    except ModuleNotFoundError:
-        raise GameConfigError("Game '{}' dosen\'t provide 'config.py'"
-            .format(parsed_args.game))
+    except ModuleNotFoundError as e:
+        failed_module_name = e.__str__().split("'")[1]
+        if failed_module_name == "games." + parsed_args.game:
+            msg = ("Game '{}' dosen't exist or it doesn't provide '__init__.py'"
+                .format(parsed_args.game))
+        else:
+            msg = ("Game '{}' dosen't provide 'config.py'"
+                .format(parsed_args.game))
+        raise GameConfigError(msg)
     except AttributeError:
         # The game doesn't define any game parameters, create a default one
         game_defined_params = {
@@ -184,9 +191,15 @@ def _run_manual_mode(execution_cmd: ExecutionCommand, game_cls):
     @param game_cls The class of the game to be executed
     """
     from .loops import GameManualModeExecutor
+    from .exceptions import GameProcessError
 
-    executor = GameManualModeExecutor(execution_cmd, game_cls)
-    executor.start()
+    try:
+        executor = GameManualModeExecutor(execution_cmd, game_cls)
+        executor.start()
+    except GameProcessError as e:
+        print("Error: Exception occurred in 'game' process:")
+        print(e.message)
+        sys.exit(errno.GAME_EXECUTION_ERROR)
 
 def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
     """
@@ -226,7 +239,7 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
                 script_execution_cmd = compile_script(ml_module[1])
             except CompilationError as e:
                 print("Failed\nError: {}".format(e))
-                sys.exit(1)
+                sys.exit(errno.COMPILATION_ERROR)
             print("OK")
 
             ml_module = ml_module[0]
@@ -246,4 +259,5 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_cls, ml_clients):
         process_manager.set_transition_process(execution_cmd.transition_channel)
 
     returncode = process_manager.start()
-    sys.exit(returncode)
+    if returncode == -1:
+        sys.exit(errno.GAME_EXECUTION_ERROR)

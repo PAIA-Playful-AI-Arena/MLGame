@@ -27,7 +27,10 @@ class GameManualModeExecutor:
         """
         Start the loop for running the game
         """
-        self._loop()
+        try:
+            self._loop()
+        except Exception:
+            raise GameProcessError("game", traceback.format_exc())
 
     def _loop(self):
         """
@@ -69,22 +72,6 @@ class GameMLModeExecutorProperty:
         self.execution_cmd = execution_cmd
         self.game_cls = game_cls
         self.comm_manager = GameCommManager()
-
-    def add_comm_to_ml(self, ml_name, recv_end, send_end):
-        """
-        Add communication objects for communicating with specified ml process
-
-        @param ml_name The name of the target ml process
-        @param recv_end The communication object for receiving objects from that ml process
-        @param send_end The communication object for sending objects to that ml process
-        """
-        self.comm_manager.add_comm_to_ml(ml_name, recv_end, send_end)
-
-    def set_comm_to_transition(self, recv_end, send_end):
-        """
-        Set communication objects for communicating with transition process
-        """
-        self.comm_manager.set_comm_to_transition(recv_end, send_end)
 
 class GameMLModeExecutor:
     """
@@ -243,12 +230,6 @@ class TransitionExecutorPropty:
         self.transition_channel = transition_channel
         self.comm_manager = TransitionCommManager()
 
-    def set_comm_to_game(self, recv_end, send_end):
-        """
-        Set the communication object for communicating with game process
-        """
-        self.comm_manager.set_comm_to_game(recv_end, send_end)
-
 class TransitionExecutor:
     """
     The loop executor for the transition process
@@ -288,12 +269,6 @@ class MLExecutorProperty:
         self.init_args = init_args
         self.init_kwargs = init_kwargs
         self.comm_manager = MLCommManager(name)
-
-    def set_comm_to_game(self, recv_end, send_end):
-        """
-        Set the receiving end and sending end for communicating with game process
-        """
-        self.comm_manager.set_comm_to_game(recv_end, send_end)
 
 class MLExecutor:
     """

@@ -92,7 +92,7 @@ class ProcessManager:
         except ProcessError as e:
             print("Error: Exception occurred in '{}' process:".format(e.process_name))
             print(e.message)
-            returncode = 2
+            returncode = -1
 
         self._terminate()
 
@@ -107,10 +107,10 @@ class ProcessManager:
             recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
             recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
 
-            self._game_executor_propty.add_comm_to_ml(
+            self._game_executor_propty.comm_manager.add_comm_to_ml(
                 ml_executor_propty.name,
                 recv_pipe_for_game, send_pipe_for_game)
-            ml_executor_propty.set_comm_to_game(
+            ml_executor_propty.comm_manager.set_comm_to_game(
                 recv_pipe_for_ml, send_pipe_for_ml)
 
         # Create pipe for Game process <-> Transition process
@@ -118,9 +118,9 @@ class ProcessManager:
             recv_pipe_for_game, send_pipe_for_transition = Pipe(False)
             recv_pipe_for_transition, send_pipe_for_game = Pipe(False)
 
-            self._game_executor_propty.set_comm_to_transition(
+            self._game_executor_propty.comm_manager.set_comm_to_transition(
                 recv_pipe_for_game, send_pipe_for_game)
-            self._transition_executor_propty.set_comm_to_game(
+            self._transition_executor_propty.comm_manager.set_comm_to_game(
                 recv_pipe_for_transition, send_pipe_for_transition)
 
     def _start_ml_processes(self):
