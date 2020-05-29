@@ -6,7 +6,7 @@ message=$($@)
 
 # If startup error is occurred, send the error
 returncode=$?
-if [[ $returncode == 1 ]]; then
+if [[ $returncode == 2 ]]; then
     # Parse transition channel information
     for arg in "$@"
     do
@@ -18,5 +18,7 @@ if [[ $returncode == 1 ]]; then
 
     # Pass the information to send_error.py
     python send_start_error.py $transition_channel "$message"
-    exit $returncode
 fi
+
+echo "$message"
+exit $returncode
