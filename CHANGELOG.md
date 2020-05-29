@@ -6,6 +6,10 @@ The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0
 
 This update is compatible with Beta 7.0.
 
+**Fixed**
+
+* Hang when the game exits on Linux
+
 **Added**
 
 * Add `errno.py` to define the exit code of errors
