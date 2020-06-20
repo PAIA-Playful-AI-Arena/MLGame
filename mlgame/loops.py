@@ -174,7 +174,7 @@ class GameMLModeExecutor:
         cmd_list = []
         for ml_name in self._ml_names:
             cmd_received = game_cmd_dict[ml_name]
-            if cmd_received:
+            if isinstance(cmd_received, dict):
                 self._check_delay(ml_name, cmd_received["frame"])
                 cmd_list.append(cmd_received["command"])
             else:
@@ -301,6 +301,11 @@ class MLExecutor:
         except Exception as e:
             exception = MLProcessError(self._name, traceback.format_exc())
             self._comm_manager.send_to_game(exception)
+        except SystemExit:  # Catch the exception made by 'sys.exit()'
+            exception = MLProcessError(self._name,
+                "The process '{}' is exited by itself. {}"
+                .format(self._name, traceback.format_exc()))
+            self._comm_manager.send_to_game(exception)
 
     def _loop(self):
         """
@@ -313,7 +318,7 @@ class MLExecutor:
         self._ml_ready()
         while True:
             scene_info = self._comm_manager.recv_from_game()
-            if not scene_info:
+            if scene_info is None:
                 break
             command = ml.update(scene_info)
 
