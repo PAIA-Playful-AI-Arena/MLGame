@@ -11,6 +11,7 @@ from .crosslang.exceptions import CompilationError
 from .execution_command import get_command_parser, GameMode, ExecutionCommand
 from .exceptions import ExecutionCommandError, GameConfigError
 from .gameconfig import GameConfig
+from .loops import GameMLModeExecutorProperty, MLExecutorProperty, TransitionExecutorPropty
 from .utils.argparser_generator import get_parser_from_dict
 from . import errno
 
@@ -107,9 +108,14 @@ def _run_manual_mode(execution_cmd: ExecutionCommand, game_setup):
     from .loops import GameManualModeExecutor
     from .exceptions import GameProcessError
 
+    # Collect ml names
+    ml_names = []
+    for client in game_setup["ml_clients"]:
+        ml_names.append(client["name"])
+
     game_cls = game_setup["game"]
     try:
-        executor = GameManualModeExecutor(execution_cmd, game_cls)
+        executor = GameManualModeExecutor(execution_cmd, game_cls, ml_names)
         executor.start()
     except GameProcessError as e:
         print("Error: Exception occurred in 'game' process:")
@@ -125,20 +131,43 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_setup):
     """
     from .process import ProcessManager
 
-    process_manager = ProcessManager()
+    game_propty = _get_game_executor_propty(execution_cmd, game_setup)
+    ml_propties = _get_ml_executor_propties(execution_cmd, game_setup)
+    transition_propty = _get_transition_executor_propty(execution_cmd)
 
+    process_manager = ProcessManager(game_propty, ml_propties, transition_propty)
+    returncode = process_manager.start()
+    if returncode == -1:
+        sys.exit(errno.GAME_EXECUTION_ERROR)
+
+def _get_game_executor_propty(
+        execution_cmd: ExecutionCommand, game_setup) -> GameMLModeExecutorProperty:
+    """
+    Get the property for the game executor in the ml mode
+    """
     game_cls = game_setup["game"]
+    ml_clients = game_setup["ml_clients"]
+    ml_names = []
+    for client in ml_clients:
+        ml_names.append(client["name"])
+
+    return GameMLModeExecutorProperty(
+        "game", execution_cmd, game_cls, ml_names)
+
+def _get_ml_executor_propties(execution_cmd: ExecutionCommand, game_setup) -> list:
+    """
+    Get the property for the ml executors
+
+    @return A list of generated properties
+    """
+    propties = []
     ml_clients = game_setup["ml_clients"]
     dynamic_ml_clients = game_setup["dynamic_ml_clients"]
 
-    # Set game process
-    process_manager.set_game_process(execution_cmd, game_cls, dynamic_ml_clients)
-
-    # Set ml processes
     for i in range(len(ml_clients)):
         ml_client = ml_clients[i]
 
-        process_name = ml_client["name"]
+        ml_name = ml_client["name"]
         args = ml_client.get("args", ())
         kwargs = ml_client.get("kwargs", {})
 
@@ -157,30 +186,44 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_setup):
         # Compile the non-python script
         # It is stored as a (crosslang ml client module, non-python script) tuple.
         if isinstance(ml_module, tuple):
-            try:
-                print("Compiling '{}'...".format(ml_module[1]), end = " ", flush = True)
-                script_execution_cmd = compile_script(ml_module[1])
-            except CompilationError as e:
-                print("Failed\nError: {}".format(e))
-                sys.exit(errno.COMPILATION_ERROR)
-            print("OK")
-
+            non_py_script = ml_module[1]
             ml_module = ml_module[0]
             # Wrap arguments passed to be passed to the script
             module_kwargs = {
-                "script_execution_cmd": script_execution_cmd,
+                "script_execution_cmd": _compile_non_py_script(non_py_script),
                 "init_args": args,
                 "init_kwargs": kwargs
             }
             args = ()
             kwargs = module_kwargs
 
-        process_manager.add_ml_process(process_name, ml_module, args, kwargs)
+        propties.append(MLExecutorProperty(ml_name, ml_module, args, kwargs))
 
-    # Set transition process #
+    return propties
+
+def _compile_non_py_script(script_path):
+    """
+    Compile the non-python script and return the execution command for the script
+
+    @return A list of command segments for executing the compiled script
+    """
+    try:
+        print("Compiling '{}'...".format(script_path), end = " ", flush = True)
+        script_execution_cmd = compile_script(script_path)
+    except CompilationError as e:
+        print("Failed\nError: {}".format(e))
+        sys.exit(errno.COMPILATION_ERROR)
+    print("OK")
+
+    return script_execution_cmd
+
+def _get_transition_executor_propty(execution_cmd: ExecutionCommand):
+    """
+    Get the property for the transition executor if the transition channel
+    is defined in the execution_cmd. Otherwise, return None
+    """
     if execution_cmd.transition_channel:
-        process_manager.set_transition_process(execution_cmd.transition_channel)
+        return TransitionExecutorPropty(
+            "transition", execution_cmd.transition_channel)
 
-    returncode = process_manager.start()
-    if returncode == -1:
-        sys.exit(errno.GAME_EXECUTION_ERROR)
+    return None

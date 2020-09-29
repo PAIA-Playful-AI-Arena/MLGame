@@ -7,6 +7,8 @@ import inspect
 
 from .exceptions import GameConfigError
 
+CONFIG_FILE_NAME = "config.py"
+
 class GameConfig:
     """
     The data class storing the game defined config
@@ -29,8 +31,8 @@ class GameConfig:
 
         try:
             self.game_setup = getattr(game_config, "GAME_SETUP")
-        except AttributeError as e:
-            raise GameConfigError("Missing '{}' in the game config".format(e))
+        except AttributeError:
+            raise GameConfigError("Missing 'GAME_SETUP' in the game config")
 
         self._process_game_setup_dict()
 
@@ -39,15 +41,15 @@ class GameConfig:
         Load the game config
         """
         try:
-            game_config = importlib.import_module("games.{}.config".format(game_name))
+            game_config = importlib.import_module(f"games.{game_name}.config")
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
             if failed_module_name == "games." + game_name:
-                msg = ("Game '{}' dosen't exist or it doesn't provide '__init__.py'"
-                    .format(game_name))
+                msg = (
+                    f"Game '{game_name}' dosen't exist or "
+                    "it doesn't provide '__init__.py' in the game directory")
             else:
-                msg = ("Game '{}' dosen't provide 'config.py'"
-                    .format(game_name))
+                msg = f"Game '{game_name}' dosen't provide '{CONFIG_FILE_NAME}'"
             raise GameConfigError(msg)
         else:
             return game_config
@@ -92,13 +94,28 @@ class GameConfig:
             game_cls = self.game_setup["game"]
             ml_clients = self.game_setup["ml_clients"]
         except KeyError as e:
-            raise GameConfigError("Missing '{}' in the 'GAME_SETUP' of the game config"
-                .format(e))
+            raise GameConfigError(
+                f"Missing {e} in 'GAME_SETUP' in '{CONFIG_FILE_NAME}'")
+
+        # Check if the specified name is existing or duplicated
+        ml_names = []
+        for client in ml_clients:
+            client_name = client.get("name", "")
+            if not client_name:
+                raise GameConfigError(
+                    "'name' in 'ml_clients' of 'GAME_SETUP' "
+                    f"in '{CONFIG_FILE_NAME}' is empty or not existing")
+            if client_name in ml_names:
+                raise GameConfigError(
+                    f"Duplicated name '{client_name}' in 'ml_clients' of 'GAME_SETUP' "
+                    f"in '{CONFIG_FILE_NAME}'")
+            ml_names.append(client_name)
 
         if not self.game_setup.get("dynamic_ml_clients"):
             self.game_setup["dynamic_ml_clients"] = False
 
         if self.game_setup["dynamic_ml_clients"] and len(ml_clients) == 1:
-            print("Warning: 'dynamic_ml_clients' in the 'GAME_SETUP' of the game config "
+            print(
+                f"Warning: 'dynamic_ml_clients' in 'GAME_SETUP' in '{CONFIG_FILE_NAME}' "
                 "is invalid for just one ml client. Set to False.")
             self.game_setup["dynamic_ml_clients"] = False

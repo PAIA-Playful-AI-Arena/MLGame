@@ -15,13 +15,12 @@ class GameManualModeExecutor:
     """
     The loop executor for the game process running in manual mode
     """
-    def __init__(self, execution_cmd, game_cls):
+    def __init__(self, execution_cmd, game_cls, ml_names):
         self._execution_cmd = execution_cmd
         self._game_cls = game_cls
+        self._ml_names = ml_names
         self._frame_interval = 1 / self._execution_cmd.fps
-        self._recorder = get_recorder(execution_cmd.game_name,
-            execution_cmd.game_params, execution_cmd.game_mode,
-            execution_cmd.record_progress)
+        self._recorder = get_recorder(execution_cmd, ml_names)
 
     def start(self):
         """
@@ -39,16 +38,16 @@ class GameManualModeExecutor:
         game = self._game_cls(*self._execution_cmd.game_params)
 
         while not quit_or_esc():
-            scene_info = game.get_player_scene_info()
+            scene_info_dict = game.get_player_scene_info()
             time.sleep(self._frame_interval)
-            command = game.get_keyboard_command()
-            self._recorder.record(scene_info, command)
+            cmd_dict = game.get_keyboard_command()
+            self._recorder.record(scene_info_dict, cmd_dict)
 
-            result = game.update(command)
+            result = game.update(cmd_dict)
 
             if result == "RESET" or result == "QUIT":
-                scene_info = game.get_player_scene_info()
-                self._recorder.record(scene_info, None)
+                scene_info_dict = game.get_player_scene_info()
+                self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
@@ -60,19 +59,19 @@ class GameMLModeExecutorProperty:
     """
     The data class that helps build `GameMLModeExecutor`
     """
-    def __init__(self, proc_name, execution_cmd, game_cls, dynamic_ml_clients):
+    def __init__(self, proc_name, execution_cmd, game_cls, ml_names):
         """
         Constructor
 
         @param proc_name The name of the process
         @param execution_cmd A `ExecutionCommand` object that contains execution config
         @param game_cls The class of the game to be executed
-        @param dynamic_ml_clients Whether the number of ml clients is dynamic
+        @param ml_names The name of all ml clients
         """
         self.proc_name = proc_name
         self.execution_cmd = execution_cmd
         self.game_cls = game_cls
-        self.dynamic_ml_clients = dynamic_ml_clients
+        self.ml_names = ml_names
         self.comm_manager = GameCommManager()
 
 class GameMLModeExecutor:
@@ -83,17 +82,16 @@ class GameMLModeExecutor:
         self._proc_name = propty.proc_name
         self._execution_cmd = propty.execution_cmd
         self._game_cls = propty.game_cls
-        self._dynamic_ml_clients = propty.dynamic_ml_clients
+        self._ml_names = propty.ml_names
         self._comm_manager = propty.comm_manager
 
-        self._ml_names = self._comm_manager.get_ml_names()
+        # Get the active ml names from the created ml processes
+        self._active_ml_names = self._comm_manager.get_ml_names()
         self._ml_execution_time = 1 / self._execution_cmd.fps
         self._ml_delayed_frames = {}
-        for name in self._ml_names:
+        for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
-        self._recorder = get_recorder(self._execution_cmd.game_name,
-            self._execution_cmd.game_params, self._execution_cmd.game_mode,
-            self._execution_cmd.record_progress)
+        self._recorder = get_recorder(self._execution_cmd, self._ml_names)
         self._frame_count = 0
 
     def start(self):
@@ -126,20 +124,21 @@ class GameMLModeExecutor:
 
         self._wait_all_ml_ready()
         while not quit_or_esc():
-            scene_info = game.get_player_scene_info()
-            command = self._make_ml_execute(scene_info)
-            self._recorder.record(scene_info, command)
+            scene_info_dict = game.get_player_scene_info()
+            cmd_dict = self._make_ml_execute(scene_info_dict)
+            self._recorder.record(scene_info_dict, cmd_dict)
 
             self._send_game_progress(game.get_game_progress())
 
-            result = game.update(command)
+            result = game.update(cmd_dict)
             self._frame_count += 1
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
-                scene_info = game.get_player_scene_info()
-                self._comm_manager.send_to_all_ml(scene_info)
-                self._recorder.record(scene_info, None)
+                scene_info_dict = game.get_player_scene_info()
+                for ml_name in self._active_ml_names:
+                    self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+                self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
                 self._send_game_progress(game.get_game_progress())
@@ -150,7 +149,7 @@ class GameMLModeExecutor:
 
                 game.reset()
                 self._frame_count = 0
-                for name in self._ml_names:
+                for name in self._active_ml_names:
                     self._ml_delayed_frames[name] = 0
                 self._wait_all_ml_ready()
 
@@ -159,32 +158,38 @@ class GameMLModeExecutor:
         Wait until receiving "READY" commands from all ml processes
         """
         # Wait the ready command one by one
-        for ml_name in self._ml_names:
+        for ml_name in self._active_ml_names:
             while self._comm_manager.recv_from_ml(ml_name) != "READY":
                 pass
 
-    def _make_ml_execute(self, scene_info):
+    def _make_ml_execute(self, scene_info_dict) -> dict:
         """
         Send the scene information to all ml processes and wait for commands
-        """
-        self._comm_manager.send_to_all_ml(scene_info)
-        time.sleep(self._ml_execution_time)
-        game_cmd_dict = self._comm_manager.recv_from_all_ml()
 
-        cmd_list = []
-        for ml_name in self._ml_names:
-            cmd_received = game_cmd_dict[ml_name]
+        @return A dict of the recevied command from the ml clients
+                If the client didn't send the command, it will be `None`.
+        """
+        try:
+            for ml_name in self._active_ml_names:
+                self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+        except KeyError as e:
+            raise KeyError(
+                "The game doesn't provide scene information "
+                f"for the client '{ml_name}'")
+
+        time.sleep(self._ml_execution_time)
+        response_dict = self._comm_manager.recv_from_all_ml()
+
+        cmd_dict = {}
+        for ml_name in self._active_ml_names:
+            cmd_received = response_dict[ml_name]
             if isinstance(cmd_received, dict):
                 self._check_delay(ml_name, cmd_received["frame"])
-                cmd_list.append(cmd_received["command"])
+                cmd_dict[ml_name] = cmd_received["command"]
             else:
-                cmd_list.append(None)
+                cmd_dict[ml_name] = None
 
-        # If the game has dynamic ml clients, do not trim the command list
-        if self._dynamic_ml_clients:
-            return cmd_list
-        else:
-            return cmd_list if len(cmd_list) > 1 else cmd_list[0]
+        return cmd_dict
 
     def _check_delay(self, ml_name, cmd_frame):
         """
