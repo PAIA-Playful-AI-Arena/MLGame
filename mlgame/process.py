@@ -99,6 +99,8 @@ class ProcessManager:
             if ml_process.is_alive():
                 self._game_executor_propty.comm_manager.send_to_ml(
                     None, ml_process.name)
+                ml_process.terminate()
+
 
 def _game_process_entry_point(propty: GameMLModeExecutorProperty):
     """
