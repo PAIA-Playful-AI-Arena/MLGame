@@ -1,1 +1,0 @@
-python MLGame.py -i delay/ml_play.py  pingpong NORMAL 3

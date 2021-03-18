@@ -1,1 +1,0 @@
-python MLGame.py -i loop/ml_play.py pingpong NORMAL 3
