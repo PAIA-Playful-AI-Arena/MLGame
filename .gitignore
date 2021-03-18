@@ -9,11 +9,10 @@ __pycache__/
 venv/*
 .vs/*
 .vscode/*
-ml_play*.py
-ml/
+
+
 !ml_play_template.py
 !ml_play_manual.py
-cmd/
 .idea/
 # Byte-compiled / optimized / DLL files
 __pycache__/
