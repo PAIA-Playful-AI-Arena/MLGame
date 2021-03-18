@@ -50,6 +50,7 @@ class ProcessManager:
         try:
             self._start_game_process()
         except ProcessError as e:
+            # here will receive exception from ml_*P process
             print("Error: Exception occurred in '{}' process:".format(e.process_name))
             print(e.message)
             returncode = -1
@@ -79,7 +80,7 @@ class ProcessManager:
         """
         for propty in self._ml_executor_propties:
             process = Process(target = _ml_process_entry_point,
-                name = propty.name, args = (propty,))
+                              name = propty.name, args = (propty,))
             process.start()
 
             self._ml_procs.append(process)
@@ -118,4 +119,11 @@ def _ml_process_entry_point(propty: MLExecutorProperty):
     from .loops import MLExecutor
 
     executor = MLExecutor(propty)
-    executor.start()
+    try:
+        executor.start()
+    # except Exception as e:
+    #     exception = MLProcessError(self._name, traceback.format_exc())
+    #     self._comm_manager.send_to_game(exception)
+    except Exception as e:
+        print(e)
+        print("close this process: {}".format(propty.name))
