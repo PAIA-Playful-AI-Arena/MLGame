@@ -151,9 +151,12 @@ def _transition_process_entry_point(propty: TransitionExecutorPropty):
     The entry point of the transition process
     """
     from .loops import TransitionExecutor
-
     executor = TransitionExecutor(propty)
-    executor.start()
+    try:
+        executor.start()
+    except Exception as e:
+        print(e)
+        print("close this process: {}".format(propty.name))
 
 def _ml_process_entry_point(propty: MLExecutorProperty):
     """
