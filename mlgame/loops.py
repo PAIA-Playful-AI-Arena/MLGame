@@ -303,9 +303,7 @@ class MLExecutor:
 
         try:
             self._loop()
-        except Exception as e:
-            exception = MLProcessError(self._name, traceback.format_exc())
-            self._comm_manager.send_to_game(exception)
+
         except SystemExit:  # Catch the exception made by 'sys.exit()'
             exception = MLProcessError(self._name,
                 "The process '{}' is exited by itself. {}"
@@ -326,7 +324,6 @@ class MLExecutor:
             if scene_info is None:
                 break
             command = ml.update(scene_info)
-
             if command == "RESET":
                 ml.reset()
                 self._frame_count = 0
