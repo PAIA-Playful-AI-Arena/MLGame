@@ -3,11 +3,11 @@ Handle the game defined config
 """
 
 import importlib
-import inspect
 
 from .exceptions import GameConfigError
 
 CONFIG_FILE_NAME = "config.py"
+
 
 class GameConfig:
     """
