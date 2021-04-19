@@ -1,7 +1,8 @@
-from threading import Thread
 from queue import Queue
+from threading import Thread
 
 from .exceptions import MLProcessError, TransitionProcessError
+
 
 class CommunicationSet:
     """
@@ -18,6 +19,7 @@ class CommunicationSet:
     @var _send_end A dictionary storing communication objects which are used to
          send objects
     """
+
     def __init__(self):
         self._recv_end = {}
         self._send_end = {}
@@ -127,11 +129,13 @@ class CommunicationSet:
         for comm_obj in self._send_end.values():
             comm_obj.send(obj)
 
+
 class CommunicationHandler:
     """
     A data class for storing a sending and a receiving communication objects
     and providing interface for accessing them
     """
+
     def __init__(self):
         self._recv_end = None
         self._send_end = None
@@ -167,10 +171,12 @@ class CommunicationHandler:
     def send(self, obj):
         self._send_end.send(obj)
 
+
 class GameCommManager:
     """
     The commnuication manager for the game process
     """
+
     def __init__(self):
         self._comm_to_ml_set = CommunicationSet()
         self._comm_to_transition = CommunicationHandler()
@@ -206,7 +212,7 @@ class GameCommManager:
 
         If the received object is `MLProcessError`, raise the exception.
         """
-        obj = self._comm_to_ml_set.recv(ml_name, to_wait = False)
+        obj = self._comm_to_ml_set.recv(ml_name, to_wait=False)
         if isinstance(obj, MLProcessError):
             raise obj
         return obj
@@ -252,10 +258,12 @@ class GameCommManager:
             exception = self._comm_to_transition.recv()
             raise exception
 
+
 class TransitionCommManager:
     """
     The communication manager for the transition process
     """
+
     def __init__(self):
         self._comm_to_game = CommunicationHandler()
 
@@ -281,10 +289,12 @@ class TransitionCommManager:
         """
         self._comm_to_game.send(exception)
 
+
 class MLCommManager:
     """
     The communication manager for the ml process
     """
+
     def __init__(self, ml_name):
         self._comm_to_game = CommunicationHandler()
         self._ml_name = ml_name
@@ -305,7 +315,7 @@ class MLCommManager:
         """
         self._obj_queue = Queue(15)
 
-        thread = Thread(target = self._keep_recv_obj_from_game)
+        thread = Thread(target=self._keep_recv_obj_from_game)
         thread.start()
 
     def _keep_recv_obj_from_game(self):
@@ -318,12 +328,12 @@ class MLCommManager:
             if self._obj_queue.full():
                 self._obj_queue.get()
                 print("Warning: The object queue for the process '{}' is full. "
-                    "Drop the oldest object."
-                    .format(self._ml_name))
+                      "Drop the oldest object."
+                      .format(self._ml_name))
 
             obj = self._comm_to_game.recv()
             self._obj_queue.put(obj)
-            if obj is None: # Received `None` from the game, quit the loop.
+            if obj is None:  # Received `None` from the game, quit the loop.
                 break
 
     def recv_from_game(self):
@@ -344,4 +354,4 @@ class MLCommManager:
             self._comm_to_game.send(obj)
         except BrokenPipeError:
             print("Process '{}': The connection to the game process is closed."
-                .format(self._ml_name))
+                  .format(self._ml_name))
