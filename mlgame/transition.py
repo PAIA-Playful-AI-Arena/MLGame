@@ -4,8 +4,9 @@ The interface for communicating with the message server
 from asgiref.sync import async_to_sync
 from channels_redis.core import RedisChannelLayer
 
-from .exceptions import ProcessError
 from . import errno
+from .exceptions import ProcessError
+
 
 class RedisTransition:
     def __init__(self, server_ip, server_port, channel_name):
@@ -17,13 +18,15 @@ class RedisTransition:
         @param channel_name Specify the name of the channel in the redis server
                to be communicated.
         """
-        self._redis_server = RedisChannelLayer(hosts = [(server_ip, int(server_port))])
+        self._redis_server = RedisChannelLayer(hosts=[(server_ip, int(server_port))])
         self._channel_name = channel_name
 
     def send(self, message_object):
         async_to_sync(self._redis_server.send)(self._channel_name, message_object)
 
+
 MessageServer = RedisTransition
+
 
 class TransitionManager:
     """
@@ -66,7 +69,7 @@ class TransitionManager:
             "data": {
                 "errorcode": errno.GAME_EXECUTION_ERROR,
                 "message": ("Error occurred in '{}' process:\n{}"
-                    .format(exception.process_name, exception.message))
+                            .format(exception.process_name, exception.message))
             }
         })
 
