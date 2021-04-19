@@ -1,0 +1,1 @@
+python MLGame.py -i rule/ml_play.py -i rule/ml_play.py  Maze_Car 2 5 45 OFF

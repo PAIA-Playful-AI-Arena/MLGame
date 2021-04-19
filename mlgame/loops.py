@@ -11,10 +11,12 @@ from .exceptions import GameProcessError, MLProcessError, TransitionProcessError
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 
+
 class GameManualModeExecutor:
     """
     The loop executor for the game process running in manual mode
     """
+
     def __init__(self, execution_cmd, game_cls, ml_names):
         self._execution_cmd = execution_cmd
         self._game_cls = game_cls
@@ -55,10 +57,12 @@ class GameManualModeExecutor:
 
                 game.reset()
 
+
 class GameMLModeExecutorProperty:
     """
     The data class that helps build `GameMLModeExecutor`
     """
+
     def __init__(self, proc_name, execution_cmd, game_cls, ml_names):
         """
         Constructor
@@ -74,10 +78,12 @@ class GameMLModeExecutorProperty:
         self.ml_names = ml_names
         self.comm_manager = GameCommManager()
 
+
 class GameMLModeExecutor:
     """
     The loop executor for the game process running in ml mode
     """
+
     def __init__(self, propty: GameMLModeExecutorProperty):
         self._proc_name = propty.proc_name
         self._execution_cmd = propty.execution_cmd
@@ -233,19 +239,23 @@ class GameMLModeExecutor:
 
         self._comm_manager.send_to_transition(data_dict)
 
+
 class TransitionExecutorPropty:
     """
     The data class that helps build `TransitionExecutor`
     """
+
     def __init__(self, proc_name, transition_channel):
         self.proc_name = proc_name
         self.transition_channel = transition_channel
         self.comm_manager = TransitionCommManager()
 
+
 class TransitionExecutor:
     """
     The loop executor for the transition process
     """
+
     def __init__(self, propty: TransitionExecutorPropty):
         self._proc_name = propty.proc_name
         self._transition_channel = propty.transition_channel
@@ -262,11 +272,13 @@ class TransitionExecutor:
             exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(exception)
 
+
 class MLExecutorProperty:
     """
     The data class that helps build `MLExecutor`
     """
-    def __init__(self, name, target_module, init_args = (), init_kwargs = {}):
+
+    def __init__(self, name, target_module, init_args=(), init_kwargs={}):
         """
         Constructor
 
@@ -281,6 +293,7 @@ class MLExecutorProperty:
         self.init_args = init_args
         self.init_kwargs = init_kwargs
         self.comm_manager = MLCommManager(name)
+
 
 class MLExecutor:
     """
@@ -306,8 +319,8 @@ class MLExecutor:
 
         except SystemExit:  # Catch the exception made by 'sys.exit()'
             exception = MLProcessError(self._name,
-                "The process '{}' is exited by itself. {}"
-                .format(self._name, traceback.format_exc()))
+                                       "The process '{}' is exited by itself. {}"
+                                       .format(self._name, traceback.format_exc()))
             self._comm_manager.send_to_game(exception)
 
     def _loop(self):
