@@ -1,1 +1,1 @@
-python MLGame.py -i loop/ml_play.py pingpong NORMAL 3
+python MLGame.py --transition-channel=test-redis.japaneast.azurecontainer.io:6379:mlgame_test -i loop/ml_play.py pingpong NORMAL 3

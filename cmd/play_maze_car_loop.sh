@@ -1,1 +1,1 @@
-python MLGame.py --transition-channel=test-redis.japaneast.azurecontainer.io:6379:mlgame_test -i loop/ml_play.py  -i divide_by_zero/ml_play.py -i ml_play.py Maze_Car 3 4 5 OFF
+python MLGame.py --transition-channel=test-redis.japaneast.azurecontainer.io:6379:mlgame_test -i loop/ml_play.py  -i divide_by_zero/ml_play.py -i ml_play.py Maze_Car 3 4 10 OFF
