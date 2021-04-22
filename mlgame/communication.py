@@ -255,6 +255,7 @@ class GameCommManager:
         # FIXME The exception will not be received immediately.
         # The send() will be stuck (the process is dead) before receiving exception.
         # Set the transition process as the main process to fix it.
+
         self.check_transition_exception()
 
     def check_transition_exception(self):
