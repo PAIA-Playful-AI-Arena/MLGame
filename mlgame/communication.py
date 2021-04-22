@@ -180,6 +180,7 @@ class GameCommManager:
     def __init__(self):
         self._comm_to_ml_set = CommunicationSet()
         self._comm_to_transition = CommunicationHandler()
+        self.count=0
 
     def add_comm_to_ml(self, ml_name, recv_end, send_end):
         """
@@ -244,6 +245,12 @@ class GameCommManager:
 
         @param obj The object to be sent
         """
+
+        self.count+=1
+        if obj:
+            print(f'from game to transistion:{self.count}:{dict(obj).keys()}')
+        else:
+            print(obj)
         self._comm_to_transition.send(obj)
         # FIXME The exception will not be received immediately.
         # The send() will be stuck (the process is dead) before receiving exception.

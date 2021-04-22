@@ -130,7 +130,7 @@ class ProcessManager:
                     None, ml_process.name)
                 ml_process.terminate()
 
-
+        print("terminate")
         if self._transition_proc:
             # Send a stop signal
             self._game_executor_propty.comm_manager.send_to_transition(None)

@@ -50,15 +50,18 @@ class TransitionManager:
 
         If it receives `None`, then quit the transition loop.
         """
+        count=0
         while True:
             data = self._recv_data_func()
-
+            count+=1
+            print(f'Send to redis : {count}:{data.keys()}')
             if not data:
                 return
             elif isinstance(data, ProcessError):
                 self._send_exception(data)
             else:
                 self._message_server.send(data)
+                pass
 
     def _send_exception(self, exception: ProcessError):
         """
