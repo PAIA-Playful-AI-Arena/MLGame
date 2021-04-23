@@ -1,3 +1,6 @@
+import _winapi
+import os
+import signal
 from multiprocessing import Process, Pipe
 
 from .exceptions import ProcessError
@@ -128,7 +131,11 @@ class ProcessManager:
             if ml_process.is_alive():
                 self._game_executor_propty.comm_manager.send_to_ml(
                     None, ml_process.name)
-                ml_process.kill()
+                # ml_process.kill()
+                if _winapi:
+                    os.kill(ml_process.pid,signal.SIGINT)
+                else:
+                    os.kill(ml_process.pid,signal.SIGKILL)
 
         print("terminate")
         if self._transition_proc:
