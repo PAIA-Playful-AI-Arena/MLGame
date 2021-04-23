@@ -128,7 +128,7 @@ class ProcessManager:
             if ml_process.is_alive():
                 self._game_executor_propty.comm_manager.send_to_ml(
                     None, ml_process.name)
-                ml_process.terminate()
+                ml_process.kill()
 
         print("terminate")
         if self._transition_proc:
