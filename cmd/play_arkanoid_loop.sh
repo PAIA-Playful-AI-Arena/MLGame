@@ -1,0 +1,1 @@
+python MLGame.py --transition-channel=redis-k2t9v5gafkduando.japaneast.azurecontainer.io:6379:mlgame_test -f 30 -1 -i loop/ml_play.py arkanoid NORMAL 1
