@@ -51,6 +51,7 @@ class TransitionManager:
         If it receives `None`, then quit the transition loop.
         """
         count=0
+        # TODO revise
         while True:
             data = self._recv_data_func()
             count+=1

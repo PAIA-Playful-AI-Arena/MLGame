@@ -11,9 +11,10 @@ from .crosslang.exceptions import CompilationError
 from .execution_command import get_command_parser, GameMode, ExecutionCommand
 from .exceptions import ExecutionCommandError, GameConfigError
 from .gameconfig import GameConfig
-from .loops import GameMLModeExecutorProperty, MLExecutorProperty, TransitionExecutorPropty
+from .loops import GameMLModeExecutorProperty, MLExecutorProperty, TransitionExecutorPropty, WebSocketExecutorPropty
 from .utils.argparser_generator import get_parser_from_dict
 from . import errno
+
 
 def execute():
     """
@@ -29,6 +30,7 @@ def execute():
         _run_manual_mode(execution_cmd, game_config.game_setup)
     else:
         _run_ml_mode(execution_cmd, game_config.game_setup)
+
 
 def _parse_command_line():
     """
@@ -71,13 +73,14 @@ def _parse_command_line():
 
     return exec_cmd, game_config
 
+
 def _list_games():
     """
     List available games which provide "config.py" in the game directory.
     """
     game_root_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "games")
     dirs = [f for f in os.listdir(game_root_dir)
-        if ("__" not in f) and (os.path.isdir(os.path.join(game_root_dir, f)))]
+            if ("__" not in f) and (os.path.isdir(os.path.join(game_root_dir, f)))]
 
     game_info_list = [("Game", "Version"), ("-----", "-----")]
     max_name_len = 5
@@ -97,6 +100,7 @@ def _list_games():
 
     for name, version in game_info_list:
         print(name.ljust(max_name_len + 1), version)
+
 
 def _run_manual_mode(execution_cmd: ExecutionCommand, game_setup):
     """
@@ -122,6 +126,7 @@ def _run_manual_mode(execution_cmd: ExecutionCommand, game_setup):
         print(e.message)
         sys.exit(errno.GAME_EXECUTION_ERROR)
 
+
 def _run_ml_mode(execution_cmd: ExecutionCommand, game_setup):
     """
     Execute the game specified in ml mode
@@ -134,11 +139,13 @@ def _run_ml_mode(execution_cmd: ExecutionCommand, game_setup):
     game_propty = _get_game_executor_propty(execution_cmd, game_setup)
     ml_propties = _get_ml_executor_propties(execution_cmd, game_setup)
     transition_propty = _get_transition_executor_propty(execution_cmd)
+    ws_propty = _get_websocket_executor_propty(execution_cmd)
 
-    process_manager = ProcessManager(game_propty, ml_propties, transition_propty)
+    process_manager = ProcessManager(game_propty, ml_propties, transition_propty,ws_propty)
     returncode = process_manager.start()
     if returncode == -1:
         sys.exit(errno.GAME_EXECUTION_ERROR)
+
 
 def _get_game_executor_propty(
         execution_cmd: ExecutionCommand, game_setup) -> GameMLModeExecutorProperty:
@@ -153,6 +160,7 @@ def _get_game_executor_propty(
 
     return GameMLModeExecutorProperty(
         "game", execution_cmd, game_cls, ml_names)
+
 
 def _get_ml_executor_propties(execution_cmd: ExecutionCommand, game_setup) -> list:
     """
@@ -180,7 +188,7 @@ def _get_ml_executor_propties(execution_cmd: ExecutionCommand, game_setup) -> li
             # If the number of provided modules is less than the number of processes,
             # the last module is assigned to the rest processes.
             module_id = (i if i < len(execution_cmd.input_modules)
-                else len(execution_cmd.input_modules) - 1)
+                         else len(execution_cmd.input_modules) - 1)
             ml_module = execution_cmd.input_modules[module_id]
 
         # Compile the non-python script
@@ -201,6 +209,7 @@ def _get_ml_executor_propties(execution_cmd: ExecutionCommand, game_setup) -> li
 
     return propties
 
+
 def _compile_non_py_script(script_path):
     """
     Compile the non-python script and return the execution command for the script
@@ -208,7 +217,7 @@ def _compile_non_py_script(script_path):
     @return A list of command segments for executing the compiled script
     """
     try:
-        print("Compiling '{}'...".format(script_path), end = " ", flush = True)
+        print("Compiling '{}'...".format(script_path), end=" ", flush=True)
         script_execution_cmd = compile_script(script_path)
     except CompilationError as e:
         print("Failed\nError: {}".format(e))
@@ -216,6 +225,7 @@ def _compile_non_py_script(script_path):
     print("OK")
 
     return script_execution_cmd
+
 
 def _get_transition_executor_propty(execution_cmd: ExecutionCommand):
     """
@@ -225,5 +235,17 @@ def _get_transition_executor_propty(execution_cmd: ExecutionCommand):
     if execution_cmd.transition_channel:
         return TransitionExecutorPropty(
             "transition", execution_cmd.transition_channel)
+
+    return None
+
+
+def _get_websocket_executor_propty(execution_cmd: ExecutionCommand):
+    """
+    Get the property for the transition executor if the transition channel
+    is defined in the execution_cmd. Otherwise, return None
+    """
+    if execution_cmd.ws_uri:
+        return WebSocketExecutorPropty(
+            "websocket", execution_cmd.ws_uri)
 
     return None

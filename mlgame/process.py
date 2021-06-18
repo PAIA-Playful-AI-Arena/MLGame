@@ -2,7 +2,7 @@ from multiprocessing import Process, Pipe
 
 from .exceptions import ProcessError
 from .loops import (
-    GameMLModeExecutorProperty, MLExecutorProperty, TransitionExecutorPropty
+    GameMLModeExecutorProperty, MLExecutorProperty, TransitionExecutorPropty, WebSocketExecutorPropty, WebSocketExecutor
 )
 
 
@@ -18,7 +18,8 @@ class ProcessManager:
     def __init__(
             self, game_executor_propty: GameMLModeExecutorProperty,
             ml_executor_propties: list,
-            transition_executor_propty: TransitionExecutorPropty = None):
+            transition_executor_propty: TransitionExecutorPropty = None,
+            ws_propty:WebSocketExecutorPropty=None):
         """
         Constructor
 
@@ -31,6 +32,9 @@ class ProcessManager:
         self._ml_procs = []
         self._transition_executor_propty = transition_executor_propty
         self._transition_proc = None
+        self._ws_propty = ws_propty
+        self._ws_procs = None
+    #     TODO revise here to accept websocket
 
     def start(self):
         """
@@ -51,6 +55,7 @@ class ProcessManager:
         self._create_pipes()
         self._start_ml_processes()
         self._start_transition_process()
+        self._start_ws_process()
 
         returncode = 0
         try:
@@ -89,7 +94,15 @@ class ProcessManager:
                 recv_pipe_for_game, send_pipe_for_game)
             self._transition_executor_propty.comm_manager.set_comm_to_game(
                 recv_pipe_for_transition, send_pipe_for_transition)
+        if self._ws_propty:
+            recv_pipe_for_game, send_pipe_for_transition = Pipe(False)
+            recv_pipe_for_transition, send_pipe_for_game = Pipe(False)
 
+            self._game_executor_propty.comm_manager.set_comm_to_transition(
+                recv_pipe_for_game, send_pipe_for_game)
+            self._ws_propty.comm_manager.set_comm_to_game(
+                recv_pipe_for_transition, send_pipe_for_transition)
+            print("set pipe between game and ws")
     def _start_ml_processes(self):
         """
         Spawn and start all ml processes
@@ -112,6 +125,17 @@ class ProcessManager:
             name = self._transition_executor_propty.proc_name,
             args = (self._transition_executor_propty, ))
         self._transition_proc.start()
+    def _start_ws_process(self):
+        """
+        Start the transition process
+        """
+        if not self._ws_propty:
+            return
+        print("start ws process")
+        self._ws_procs = Process(target = _ws_process_entry_point,
+            name = self._ws_propty.proc_name,
+            args = (self._ws_propty, ))
+        self._ws_procs.start()
 
     def _start_game_process(self):
         """
@@ -155,8 +179,18 @@ def _transition_process_entry_point(propty: TransitionExecutorPropty):
         executor.start()
     except Exception as e:
         print(e)
-        print("close this process: {}".format(propty.name))
-
+        print("close this process: {}".format(propty.proc_name))
+def _ws_process_entry_point(propty: WebSocketExecutorPropty):
+    """
+    The entry point of the transition process
+    """
+    from .loops import TransitionExecutor
+    executor = WebSocketExecutor(propty)
+    try:
+        executor.start()
+    except Exception as e:
+        print(e)
+        print("close this process: {}".format(propty.proc_name))
 def _ml_process_entry_point(propty: MLExecutorProperty):
     """
     The real entry point of the ml process

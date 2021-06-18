@@ -1,13 +1,17 @@
 """
 The loop executor for running games and ml client
 """
-
+import asyncio
 import importlib
+import json
 import time
 import traceback
 
+import websockets as websockets
+
+from . import errno
 from .communication import GameCommManager, MLCommManager, TransitionCommManager
-from .exceptions import GameProcessError, MLProcessError, TransitionProcessError
+from .exceptions import GameProcessError, MLProcessError, TransitionProcessError, ProcessError
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 
@@ -251,6 +255,17 @@ class TransitionExecutorPropty:
         self.comm_manager = TransitionCommManager()
 
 
+class WebSocketExecutorPropty:
+    """
+    The data class that helps build `TransitionExecutor`
+    """
+
+    def __init__(self, proc_name, ws_uri):
+        self.proc_name = proc_name
+        self.ws_uri = ws_uri
+        self.comm_manager = TransitionCommManager()
+
+
 class TransitionExecutor:
     """
     The loop executor for the transition process
@@ -268,6 +283,55 @@ class TransitionExecutor:
             self._transition_manager = TransitionManager(
                 self._comm_manager.recv_from_game, self._transition_channel)
             self._transition_manager.transition_loop()
+        except Exception as e:
+            exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_exception(exception)
+
+
+class WebSocketExecutor:
+    def __init__(self, propty: WebSocketExecutorPropty):
+        print("websocket init ")
+        self._proc_name = propty.proc_name
+        self._ws_uri = propty.ws_uri
+        self._comm_manager = propty.comm_manager
+        self._recv_data_func = self._comm_manager.recv_from_game
+
+    async def hello(self):
+
+        async with websockets.connect("ws://"+self._ws_uri) as websocket:
+            # name = input("What's your name? ")
+            print("ws_client")
+            count = 0
+            while 1:
+                data = self._recv_data_func()
+                print("ws received :",data)
+                if not data:
+                    return
+                elif isinstance(data, ProcessError):
+                    send_data = {
+                        "type": "game_error",
+                        "data": {
+                            "errorcode": errno.GAME_EXECUTION_ERROR,
+                            "message": ("Error occurred in '{}' process:\n{}"
+                                        .format(data.process_name, data.message))
+                        }
+                    }
+                    await websocket.send(json.dumps(send_data))
+                else:
+
+                    await websocket.send(json.dumps(data))
+                    pass
+                    count += 1
+                    print(f'Send to ws : {count}:{data.keys()}')
+                    #
+                greeting = await websocket.recv()
+                print(f"< {greeting}")
+
+    def start(self):
+        try:
+
+            asyncio.get_event_loop().run_until_complete(self.hello())
+
         except Exception as e:
             exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(exception)

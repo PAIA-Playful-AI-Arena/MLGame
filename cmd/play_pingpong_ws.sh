@@ -1,0 +1,1 @@
+python MLGame.py --ws=127.0.0.1:8000/ws/game_room/room_id_abcd/ -i loop/ml_play.py pingpong NORMAL 3

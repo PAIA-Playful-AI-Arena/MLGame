@@ -1,5 +1,5 @@
 # ===== Step 1: Build the base image =====
-FROM python:3.6.9-buster as base
+FROM python:3.8-buster as base
 
 # Install additional packages
 RUN apt-get update \
