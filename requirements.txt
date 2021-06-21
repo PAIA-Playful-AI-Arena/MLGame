@@ -2,4 +2,4 @@ pygame==2.0.0
 scikit-learn==0.22.2.post1
 channels_redis==3.2
 Box2D==2.3.10
-napkin
+websockets
