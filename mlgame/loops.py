@@ -325,7 +325,7 @@ class WebSocketExecutor:
                     print(f'Send to ws : {count}:{data.keys()}')
                     #
                 greeting = await websocket.recv()
-                print(f"< {greeting}")
+                # print(f"< {greeting}")
 
     def start(self):
         try:
