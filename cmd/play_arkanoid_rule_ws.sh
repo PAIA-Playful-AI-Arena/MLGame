@@ -1,1 +1,1 @@
-python MLGame.py --ws=django.dev.com:8000/ws/game_room/room_id_abcd/ -f 30 -1 -i rule/ml_play.py arkanoid NORMAL 1
+python MLGame.py --ws=localhost:8000/ws/game_room/room_id_abcd/ -f 30 -1 -i rule/ml_play.py arkanoid NORMAL 1
