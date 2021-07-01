@@ -18,7 +18,7 @@ if __name__ == '__main__':
         pygame.time.Clock().tick_busy_loop(30)
         commands = game.get_keyboard_command()
         game.update(commands)
-        game_progress_data = game.get_game_progress()
+        game_progress_data = game.get_scene_progress_data()
         game_view.draw_screen()
         game_view.draw(game_progress_data)
         game_view.flip()

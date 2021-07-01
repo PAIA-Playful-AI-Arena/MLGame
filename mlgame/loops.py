@@ -49,7 +49,7 @@ class GameManualModeExecutor:
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
-            view_data = game.get_game_progress()
+            view_data = game.get_scene_progress_data()
             game_view.draw_screen()
             game_view.draw(view_data)
             game_view.flip()
@@ -134,7 +134,7 @@ class GameMLModeExecutor:
 
             result = game.update(cmd_dict)
             self._frame_count += 1
-            view_data = game.get_game_progress()
+            view_data = game.get_scene_progress_data()
             game_view.draw_screen()
             game_view.draw(view_data)
             game_view.flip()
