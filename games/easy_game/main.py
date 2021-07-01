@@ -15,7 +15,7 @@ if __name__ == '__main__':
     interval= 1/30
     frame_count = 0
     while game.is_running and not quit_or_esc():
-        pygame.time.Clock().tick(30)
+        pygame.time.Clock().tick_busy_loop(30)
         commands = game.get_keyboard_command()
         game.update(commands)
         game_progress_data = game.get_game_progress()

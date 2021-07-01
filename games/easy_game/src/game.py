@@ -1,7 +1,7 @@
 import abc
 
 import pygame
-from .game_object import Scene, Ball
+from .game_object import Scene, Ball, Food
 
 
 class EasyGame():
@@ -15,14 +15,21 @@ class EasyGame():
         self.running = True
 
         self.ball = Ball()
-
+        self.foods = pygame.sprite.Group()
+        self.score = 0
+        self._create_init_foods()
         pass
 
     def update(self, commands):
         # hanndle command
         self.ball.update(commands["ml_1P"])
-        # handle collision
+
         # update sprite
+        self.foods.update()
+
+        # handle collision
+        hits = pygame.sprite.spritecollide(self.ball, self.foods, True, pygame.sprite.collide_rect_ratio(0.8))
+        self.score += len(hits)
 
         # self.draw()
         if not self.is_running:
@@ -65,11 +72,25 @@ class EasyGame():
         """
         Get the position of game objects for drawing on the web
         """
+        foods_data = []
+        for food in self.foods:
+            foods_data.append(food.game_object_data)
+        game_obj_list = []
+        game_obj_list.append(self.ball.game_object_data)
+        game_obj_list.extend(foods_data)
+        score_text = {
+            "type": "text",
+            "content": "Score = " + str(self.score),
+            "color": "#000000",
+            "x": 700,
+            "y": 100,
+            "font-style": "24px Arial"
+        }
         game_progress = {
-            "game_background": [],
-            "game_object_list": [
-                self.ball.game_object_data
+            "game_background": [
+                score_text
             ],
+            "game_object_list": game_obj_list,
             "game_user_info": [],
             "game_sys_info": {}
         }
@@ -106,3 +127,9 @@ class EasyGame():
 
         return {"ml_1P": cmd_1P,
                 "ml_2P": cmd_2P}
+
+    def _create_init_foods(self):
+        for i in range(5):
+            # add food to group
+            food = Food(self.foods)
+        pass

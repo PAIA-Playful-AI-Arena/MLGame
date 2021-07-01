@@ -23,6 +23,7 @@ def trnsfer_hex_to_rgb(hex):
 class PygameView():
     def __init__(self, game_info:dict):
         pygame.display.init()
+        pygame.font.init()
         self.scene_init_data = game_info
         self.width = self.scene_init_data["scene"]["width"]
         self.height = self.scene_init_data["scene"]["height"]
@@ -124,6 +125,7 @@ class PygameView():
             size = int(list[0].replace("px", "", 1))
             font_type = list[1].lower()
             font = pygame.font.Font(pygame.font.match_font(font_type), size)
+            print(font)
             self.font[font_style] = font
         text_surface = font.render(text , True , color)
         text_rect = text_surface.get_rect()
