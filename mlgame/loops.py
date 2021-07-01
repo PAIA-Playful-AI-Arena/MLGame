@@ -37,6 +37,7 @@ class GameManualModeExecutor:
         """
         The main loop for running the game
         """
+        print(self._execution_cmd)
         game = self._game_cls(*self._execution_cmd.game_params)
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
@@ -122,11 +123,11 @@ class GameMLModeExecutor:
         sent from the ml process, and pass command to the game for execution.
         """
         game = self._game_cls(*self._execution_cmd.game_params)
-        scene_init_info_dict = game.get_game_info()
+        scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
         self._wait_all_ml_ready()
         while not quit_or_esc():
-            scene_info_dict = game.get_player_scene_info()
+            scene_info_dict = game.game_to_player_data()
 
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)

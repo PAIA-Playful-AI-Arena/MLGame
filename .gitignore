@@ -2,6 +2,7 @@ games/
 !games/arkanoid
 !games/pingpong
 !games/snake
+!games/easy-game
 *.swp
 *.pyproj
 *.pyproj.user
