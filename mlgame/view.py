@@ -8,12 +8,12 @@ TYPE = "type"
 ANGLE = "angle"
 SIZE = "size"
 COLOR = "color"
-CORDINATE = "coordinate"
 IMAGE = "image"
 RECTANGLE = "rect"
 POLYGON = "polygon"
 
 '''data path'''
+# TODO revise the path
 IMAGE_DIR = path.join(path.dirname(__file__), 'image')
 
 def trnsfer_hex_to_rgb(hex):
@@ -47,15 +47,15 @@ class PygameView():
                     result[file["image_id"]]=image
         return result
 
-    def draw(self, object_imformation):
+    def draw(self, object_information):
         '''
         每個frame呼叫一次，把角色畫在螢幕上
-        :param all_sprite:
+        :param object_information:
         :return:
         '''
         self.draw_screen()
         self.limit_pygame_screen()
-        for game_object in object_imformation["game_object_list"]:
+        for game_object in object_information["game_object_list"]:
             if game_object[TYPE] == IMAGE:
                 self.draw_image(game_object["image_id"], game_object["x"], game_object["y"],
                                 game_object["width"], game_object["height"], game_object["angle"])
@@ -76,7 +76,7 @@ class PygameView():
             else:
                 pass
 
-        for game_object in object_imformation["game_background"]:
+        for game_object in object_information["game_background"]:
             if game_object[TYPE] == IMAGE:
                 self.draw_image(game_object["image_id"], game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1],
                                 game_object["width"], game_object["height"], game_object["angle"])
