@@ -55,7 +55,22 @@ class PygameView():
         '''
         self.draw_screen()
         self.limit_pygame_screen()
-        for game_object in object_information["game_object_list"]:
+        for game_object in object_information["background"]:
+            if game_object[TYPE] == IMAGE:
+                self.draw_image(game_object["image_id"], game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1],
+                                game_object["width"], game_object["height"], game_object["angle"])
+
+            elif game_object[TYPE] == RECTANGLE:
+                self.draw_rect(game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1], game_object["width"], game_object["height"],
+                               trnsfer_hex_to_rgb(game_object[COLOR]))
+
+            elif game_object[TYPE] == "text":
+                self.draw_text(game_object["content"], game_object["font-style"],
+                               game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1], trnsfer_hex_to_rgb(game_object[COLOR]))
+            else:
+                pass
+        # TODO draw toggle
+        for game_object in object_information["object_list"]:
             if game_object[TYPE] == IMAGE:
                 self.draw_image(game_object["image_id"], game_object["x"], game_object["y"],
                                 game_object["width"], game_object["height"], game_object["angle"])
@@ -76,20 +91,7 @@ class PygameView():
             else:
                 pass
 
-        for game_object in object_information["game_background"]:
-            if game_object[TYPE] == IMAGE:
-                self.draw_image(game_object["image_id"], game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1],
-                                game_object["width"], game_object["height"], game_object["angle"])
 
-            elif game_object[TYPE] == RECTANGLE:
-                self.draw_rect(game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1], game_object["width"], game_object["height"],
-                               trnsfer_hex_to_rgb(game_object[COLOR]))
-
-            elif game_object[TYPE] == "text":
-                self.draw_text(game_object["content"], game_object["font-style"],
-                               game_object["x"] - self.pygame_point[0], game_object["y"] - self.pygame_point[1], trnsfer_hex_to_rgb(game_object[COLOR]))
-            else:
-                pass
 
     def draw_screen(self):
         self.screen.fill(self.background_color) # hex # need turn to RGB
@@ -136,13 +138,13 @@ class PygameView():
 
         keystate = pygame.key.get_pressed()
         if keystate[pygame.K_w]:
-            self.pygame_point[1] += 2
+            self.pygame_point[1] += 10
         elif keystate[pygame.K_s]:
-            self.pygame_point[1] -= 2
+            self.pygame_point[1] -= 10
         elif keystate[pygame.K_a]:
-            self.pygame_point[0] += 2
+            self.pygame_point[0] += 10
         elif keystate[pygame.K_d]:
-            self.pygame_point[0] -= 2
+            self.pygame_point[0] -= 10
 
 
         # if self.pygame_point[1] < 480 - self.map_height:
