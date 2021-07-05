@@ -104,7 +104,7 @@ def create_polygon_view_data(name: str, points: list, color: str):
     points欄位至少三個 # [{"x":1,"y":2},{},{}]
     :return:dict
     """
-    # TODO 檢查points 數量
+    assert len(points) >= 3
     vertices = []
     for p in points:
         vertices.append({"x": p[0], "y": p[1]})

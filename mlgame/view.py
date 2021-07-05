@@ -12,10 +12,6 @@ IMAGE = "image"
 RECTANGLE = "rect"
 POLYGON = "polygon"
 
-'''data path'''
-# TODO revise the path
-IMAGE_DIR = path.join(path.dirname(__file__), 'image')
-
 
 def trnsfer_hex_to_rgb(hex):
     h = hex.lstrip('#')
@@ -78,11 +74,14 @@ class PygameView():
             else:
                 pass
         for game_object in object_information["object_list"]:
+            # let object could be shifted
             self.draw_game_obj_according_type(game_object)
         if self._toggle_on:
+            # TODO object should not be shifted
             for game_object in object_information["toggle"]:
                 self.draw_game_obj_according_type(game_object)
         for game_object in object_information["foreground"]:
+            # object should not be shifted
             self.draw_game_obj_according_type(game_object)
 
     def draw_game_obj_according_type(self, game_object):

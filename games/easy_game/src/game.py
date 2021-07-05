@@ -75,7 +75,7 @@ class EasyGame():
         """
         Get the initial scene and object information for drawing on the web
         """
-        # TODO add image
+        # TODO add music or sound
         bg_path = path.join(ASSET, "img/background.jpg")
         background = create_asset_init_data("background", 800, 600, bg_path, "url")
         scene_init_data = {"scene": self.scene.__dict__,
