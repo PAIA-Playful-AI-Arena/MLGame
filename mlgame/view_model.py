@@ -2,7 +2,7 @@ import random
 
 
 class Scene():
-    def __init__(self, width: int, height: int, color: str = "#000000"):
+    def __init__(self, width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
         """
         This is a value object
         :param width:
@@ -13,6 +13,8 @@ class Scene():
         self.width = width
         self.height = height
         self.color = color
+        self.bias_x = 0
+        self.bias_y = 0
 
 
 def create_asset_init_data(image_id: str, width: int, height: int, file_path: str, github_raw_url: str):

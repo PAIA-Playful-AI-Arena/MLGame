@@ -3,20 +3,6 @@ import random
 import pygame.sprite
 
 
-class Scene():
-    def __init__(self, width: int, height: int, color: str = "#000000"):
-        """
-        This is a value object
-        :param width:
-        :param height:
-        :param color:
-        :param image:
-        """
-        self.width = width
-        self.height = height
-        self.color = color
-
-
 class Ball(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)

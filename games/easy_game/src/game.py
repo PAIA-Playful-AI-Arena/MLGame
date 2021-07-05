@@ -2,8 +2,8 @@ import abc
 
 import pygame
 
-from mlgame.view_model import create_text_view_data, create_asset_init_data, create_image_view_data
-from .game_object import Scene, Ball, Food
+from mlgame.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
+from .game_object import Ball, Food
 from os import path
 
 ASSET = path.join(path.dirname(__file__), "../asset")
@@ -17,7 +17,7 @@ class EasyGame():
 
     def __init__(self, difficulty, level):
 
-        self.scene = Scene(width=800, height=600, color="#4FC3F7")
+        self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.running = True
 
         self.ball = Ball()
