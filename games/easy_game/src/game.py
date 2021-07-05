@@ -16,6 +16,7 @@ class EasyGame():
     """
 
     def __init__(self, difficulty, level):
+
         self.scene = Scene(width=800, height=600, color="#4FC3F7")
         self.running = True
 
@@ -23,7 +24,8 @@ class EasyGame():
         self.foods = pygame.sprite.Group()
         self.score = 0
         self._create_foods()
-        pass
+        self._begin_time = pygame.time.get_ticks()
+        self._timer = 0
 
     def update(self, commands):
         # hanndle command
@@ -37,7 +39,7 @@ class EasyGame():
 
         self._create_foods(len(hits))
         self.score += len(hits)
-
+        self._timer = (pygame.time.get_ticks() - self._begin_time) / 1000
         # self.draw()
         if not self.is_running:
             return "QUIT"
@@ -94,18 +96,20 @@ class EasyGame():
         game_obj_list = [self.ball.game_object_data]
         game_obj_list.extend(foods_data)
         background = create_image_view_data("background", 0, 0, 800, 600)
-        score_text = create_text_view_data("Score = " + str(self.score), 700, 100, "#000000")
+        score_text = create_text_view_data("Score = " + str(self.score), 650, 50, "#FF0000")
+        timer_text = create_text_view_data("Timer = " + str(self._timer) + " s", 650, 100, "#FFAA00")
         scene_progress = {
             # background view data will be draw first
             "background": [
                 background,
-                score_text
+
             ],
-            # TODO  let player to turn on/off
-            "toggle": [],
             # game object view data will be draw on screen by order , and it could be shifted by WASD
             "object_list": game_obj_list,
-            "foreground": [],
+            "toggle": [timer_text],
+            "foreground": [
+                score_text
+            ],
             # other information to display on web
             "user_info": [],
             # other information to display on web

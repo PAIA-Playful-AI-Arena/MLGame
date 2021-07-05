@@ -39,6 +39,8 @@ class PygameView():
         self.pygame_point = [0, 0]
         # if "images" in game_info.keys():
         #     self.image_dict = self.loading_image(game_info["images"])
+        self._toggle_on = True
+        self._toggle_last_time = 0
 
     def loading_image(self):
         result = {}
@@ -75,28 +77,35 @@ class PygameView():
                                trnsfer_hex_to_rgb(game_object[COLOR]))
             else:
                 pass
-        # TODO draw toggle
         for game_object in object_information["object_list"]:
-            if game_object[TYPE] == IMAGE:
-                self.draw_image(game_object["image_id"], game_object["x"], game_object["y"],
-                                game_object["width"], game_object["height"], game_object["angle"])
+            self.draw_game_obj_according_type(game_object)
+        if self._toggle_on:
+            for game_object in object_information["toggle"]:
+                self.draw_game_obj_according_type(game_object)
+        for game_object in object_information["foreground"]:
+            self.draw_game_obj_according_type(game_object)
 
-            elif game_object[TYPE] == RECTANGLE:
-                self.draw_rect(game_object["x"], game_object["y"], game_object["width"], game_object["height"],
-                               trnsfer_hex_to_rgb(game_object[COLOR]))
+    def draw_game_obj_according_type(self, game_object):
+        if game_object[TYPE] == IMAGE:
+            self.draw_image(game_object["image_id"], game_object["x"], game_object["y"],
+                            game_object["width"], game_object["height"], game_object["angle"])
 
-            elif game_object[TYPE] == POLYGON:
-                self.draw_polygon(game_object["points"], trnsfer_hex_to_rgb(game_object[COLOR]))
+        elif game_object[TYPE] == RECTANGLE:
+            self.draw_rect(game_object["x"], game_object["y"], game_object["width"], game_object["height"],
+                           trnsfer_hex_to_rgb(game_object[COLOR]))
 
-            elif game_object[TYPE] == "text":
-                self.draw_text(game_object["content"], game_object["font-style"],
-                               game_object["x"], game_object["y"], trnsfer_hex_to_rgb(game_object[COLOR]))
-            elif game_object[TYPE] == "line":
-                self.draw_line(game_object["x1"], game_object["y1"], game_object["x2"], game_object["y2"],
-                               game_object["width"], game_object[COLOR])
+        elif game_object[TYPE] == POLYGON:
+            self.draw_polygon(game_object["points"], trnsfer_hex_to_rgb(game_object[COLOR]))
 
-            else:
-                pass
+        elif game_object[TYPE] == "text":
+            self.draw_text(game_object["content"], game_object["font-style"],
+                           game_object["x"], game_object["y"], trnsfer_hex_to_rgb(game_object[COLOR]))
+        elif game_object[TYPE] == "line":
+            self.draw_line(game_object["x1"], game_object["y1"], game_object["x2"], game_object["y2"],
+                           game_object["width"], game_object[COLOR])
+
+        else:
+            pass
 
     def draw_screen(self):
         self.screen.fill(self.background_color)  # hex # need turn to RGB
@@ -151,6 +160,11 @@ class PygameView():
             self.pygame_point[0] += 10
         elif keystate[pygame.K_d]:
             self.pygame_point[0] -= 10
+
+        mods = pygame.key.get_mods()
+        if keystate[pygame.K_h] and (pygame.time.get_ticks() - self._toggle_last_time) > 300:
+            self._toggle_on = not self._toggle_on
+            self._toggle_last_time = pygame.time.get_ticks()
 
         # if self.pygame_point[1] < 480 - self.map_height:
         #     self.pygame_point[1] = 480 - self.map_height
