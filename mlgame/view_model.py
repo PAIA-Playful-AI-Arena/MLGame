@@ -15,12 +15,14 @@ class Scene():
         self.color = color
 
 
-def create_asset_init_data(asset_file_name: str, width: int, height: int, github_raw_url: str):
+def create_asset_init_data(image_id: str, width: int, height: int, file_path: str, github_raw_url: str):
+    # assert file_path is valid
     return {
         "type": "image",
-        "image_id": asset_file_name,
+        "image_id": image_id,
         "width": width,
         "height": height,
+        "file_path": file_path,
         "url": github_raw_url
     }
 
@@ -74,7 +76,7 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
             }
 
 
-def create_line_view_model(name: str, x1: int, y1: int, x2: int, y2: int, color: str, width: int = 2):
+def create_line_view_data(name: str, x1: int, y1: int, x2: int, y2: int, color: str, width: int = 2):
     """
     這是一個用來繪製矩形的資料格式，
     "type"表示不同的類型
@@ -96,7 +98,7 @@ def create_line_view_model(name: str, x1: int, y1: int, x2: int, y2: int, color:
             }
 
 
-def create_polygon_view_model(name: str, points: list, color: str):
+def create_polygon_view_data(name: str, points: list, color: str):
     """
     這是一個用來繪製多邊形的資料格式，
     points欄位至少三個 # [{"x":1,"y":2},{},{}]
@@ -113,7 +115,7 @@ def create_polygon_view_model(name: str, points: list, color: str):
             }
 
 
-def create_text_view_model(content: str, x: int, y: int, color: str, font_style="24px Arial"):
+def create_text_view_data(content: str, x: int, y: int, color: str, font_style="24px Arial"):
     return {
         "type": "text",
         "content": content,

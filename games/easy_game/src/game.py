@@ -2,8 +2,11 @@ import abc
 
 import pygame
 
-from mlgame.view_model import create_text_view_model
+from mlgame.view_model import create_text_view_data, create_asset_init_data, create_image_view_data
 from .game_object import Scene, Ball, Food
+from os import path
+
+ASSET = path.join(path.dirname(__file__), "../asset")
 
 
 class EasyGame():
@@ -71,8 +74,12 @@ class EasyGame():
         Get the initial scene and object information for drawing on the web
         """
         # TODO add image
+        bg_path = path.join(ASSET, "img/background.jpg")
+        background = create_asset_init_data("background", 800, 600, bg_path, "url")
         scene_init_data = {"scene": self.scene.__dict__,
-                           "assets": None,
+                           "assets": [
+                               background
+                           ],
                            # "audios": {}
                            }
         return scene_init_data
@@ -86,17 +93,19 @@ class EasyGame():
             foods_data.append(food.game_object_data)
         game_obj_list = [self.ball.game_object_data]
         game_obj_list.extend(foods_data)
-
-        score_text = create_text_view_model("Score = " + str(self.score), 700, 100, "#000000")
+        background = create_image_view_data("background", 0, 0, 800, 600)
+        score_text = create_text_view_data("Score = " + str(self.score), 700, 100, "#000000")
         scene_progress = {
             # background view data will be draw first
             "background": [
+                background,
                 score_text
             ],
             # TODO  let player to turn on/off
             "toggle": [],
             # game object view data will be draw on screen by order , and it could be shifted by WASD
             "object_list": game_obj_list,
+            "foreground": [],
             # other information to display on web
             "user_info": [],
             # other information to display on web
