@@ -37,6 +37,30 @@ def create_scene_view_data(width: int, height: int, color: str = "#000000"):
     }
 
 
+def create_scene_progress_data(background: list, object_list: list, toggle=None, foreground=None,
+                               user_info=None, game_sys_info=None):
+    if game_sys_info is None:
+        game_sys_info = {}
+    if user_info is None:
+        user_info = []
+    if foreground is None:
+        foreground = []
+    if toggle is None:
+        toggle = []
+    return {
+        # background view data will be draw first
+        "background": background,
+        # game object view data will be draw on screen by order , and it could be shifted by WASD
+        "object_list": object_list,
+        "toggle": toggle,
+        "foreground": foreground,
+        # other information to display on web
+        "user_info": user_info,
+        # other information to display on web
+        "game_sys_info": game_sys_info
+    }
+
+
 def create_image_view_data(image_id, x, y, width, height, angle=0):
     """
     這是一個用來繪製圖片的資料格式，
@@ -109,7 +133,7 @@ def create_polygon_view_data(name: str, points: list, color: str):
     assert len(points) >= 3
     vertices = []
     for p in points:
-        vertices.append({"x": p[0], "y": p[1]})
+        vertices.append({"x": p['x'], "y": p['y']})
     return {"type": "polygon",
             "name": name,
             "color": color,
@@ -126,3 +150,72 @@ def create_text_view_data(content: str, x: int, y: int, color: str, font_style="
         "y": y,
         "font-style": font_style
     }
+
+
+def get_scene_init_sample_data() -> dict:
+    """
+    :rtype: dict
+    :return:  遊戲場景初始化的資料
+    """
+
+    scene = Scene(800, 600)
+    assets = [
+        {
+            "type": "image",
+            "image_id": 'car_01',
+            "width": 50,
+            "height": 50,
+            "url": 'https://raw.githubusercontent.com/yen900611/Maze_Car/master/game_core/image/car_01.png'
+        }, {
+            "type": "image",
+            "image_id": 'car_02',
+            "width": 50,
+            "height": 50,
+            "url": 'https://raw.githubusercontent.com/yen900611/Maze_Car/master/game_core/image/car_02.png'
+        }
+    ]
+
+    return {"scene": scene.__dict__,
+            "assets": assets,
+            # "audios": {}
+            }
+
+
+def get_dummy_progress_data():
+    background = create_image_view_data("background", 0, 0, 800, 600)
+    score_text = create_text_view_data("Score = 1", 650, 50, "#FF0000")
+    rect = create_rect_view_data("dummy_rect", 200, 300, 100, 200, "#FFFAAA", 30)
+    line = create_line_view_data("dummy_line", 10, 30, 100, 300, "#AAAFFF", 5)
+    points = gen_points(5)
+    polygon = create_polygon_view_data("dummy_polygon", points, "#FFAAFF")
+
+    scene_progress = {
+        # background view data will be draw first
+        "background": [
+            background,
+
+        ],
+        # game object view data will be draw on screen by order , and it could be shifted by WASD
+        "object_list": [
+            rect,
+            line
+        ],
+        "toggle": [
+            polygon
+        ],
+        "foreground": [
+            score_text
+        ],
+        # other information to display on web
+        "user_info": [],
+        # other information to display on web
+        "game_sys_info": {}
+    }
+    return scene_progress
+
+
+def gen_points(point_num: int = 4) -> list:
+    result = []
+    for i in range(point_num):
+        result.append({"x": random.randint(0, 100), "y": random.randint(0, 100)})
+    return result

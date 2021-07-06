@@ -3,6 +3,7 @@ import time
 import pygame
 
 from mlgame.gamedev.game_interface import PaiaGame
+from mlgame.view.test_decorator import check_game_progress
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
 from os import path
@@ -91,6 +92,7 @@ class EasyGame(PaiaGame):
                            }
         return scene_init_data
 
+    @check_game_progress
     def get_scene_progress_data(self):
         """
         Get the position of game objects for drawing on the web
