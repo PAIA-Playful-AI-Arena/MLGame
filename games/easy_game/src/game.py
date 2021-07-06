@@ -2,19 +2,21 @@ import time
 
 import pygame
 
-from mlgame.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
+from mlgame.gamedev.game_interface import PaiaGame
+from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
 from os import path
 
 ASSET_PATH = path.join(path.dirname(__file__), "../asset")
 
 
-class EasyGame():
+class EasyGame(PaiaGame):
     """
     This is a Interface of a game
     """
 
     def __init__(self, param1, param2, param3):
+        super().__init__()
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.ball = Ball()
         self.foods = pygame.sprite.Group()
@@ -22,7 +24,7 @@ class EasyGame():
         self._create_foods()
         self._begin_time = time.time()
         self._timer = 0
-        self._frame_count = 0
+        self.frame_count = 0
 
     def update(self, commands):
         # handle command
@@ -39,7 +41,7 @@ class EasyGame():
             self._create_foods(len(hits))
         self._timer = round(time.time() - self._begin_time, 3)
 
-        self._frame_count += 1
+        self.frame_count += 1
         # self.draw()
 
         if not self.is_running:
@@ -72,7 +74,7 @@ class EasyGame():
 
     @property
     def is_running(self):
-        return self._frame_count < 300
+        return self.frame_count < 300
 
     def get_scene_init_data(self):
         """
@@ -124,7 +126,7 @@ class EasyGame():
         """
         send game result
         """
-        return {"frame_used": self._frame_count,
+        return {"frame_used": self.frame_count,
                 "result": {
                     "score": self.score
                 },

@@ -2,7 +2,7 @@ import time
 
 import pygame
 
-from mlgame.view import PygameView
+from mlgame.view.view import PygameView
 from mlgame.gamedev.generic import quit_or_esc
 from src.game import EasyGame
 
