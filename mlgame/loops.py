@@ -6,20 +6,25 @@ import importlib
 import time
 import traceback
 
+from .gamedev.game_interface import PaiaGame
+from .view.view import PygameView
 from .communication import GameCommManager, MLCommManager
 from .exceptions import GameProcessError, MLProcessError
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 
+
 class GameManualModeExecutor:
     """
     The loop executor for the game process running in manual mode
     """
+
     def __init__(self, execution_cmd, game_cls, ml_names):
         self._execution_cmd = execution_cmd
         self._game_cls = game_cls
         self._ml_names = ml_names
         self._frame_interval = 1 / self._execution_cmd.fps
+        self._fps = self._execution_cmd.fps
         self._recorder = get_recorder(execution_cmd, ml_names)
 
     def start(self):
@@ -35,18 +40,27 @@ class GameManualModeExecutor:
         """
         The main loop for running the game
         """
+        print(self._execution_cmd)
         game = self._game_cls(*self._execution_cmd.game_params)
+        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
 
+        scene_init_info_dict = game.get_scene_init_data()
+        game_view = PygameView(scene_init_info_dict)
         while not quit_or_esc():
-            scene_info_dict = game.get_player_scene_info()
+            scene_info_dict = game.game_to_player_data()
             time.sleep(self._frame_interval)
+            # pygame.time.Clock().tick_busy_loop(self._fps)
             cmd_dict = game.get_keyboard_command()
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
+            view_data = game.get_scene_progress_data()
+            game_view.draw_screen()
+            game_view.draw(view_data)
+            game_view.flip()
 
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
@@ -55,10 +69,12 @@ class GameManualModeExecutor:
 
                 game.reset()
 
+
 class GameMLModeExecutorProperty:
     """
     The data class that helps build `GameMLModeExecutor`
     """
+
     def __init__(self, proc_name, execution_cmd, game_cls, ml_names):
         """
         Constructor
@@ -74,10 +90,12 @@ class GameMLModeExecutorProperty:
         self.ml_names = ml_names
         self.comm_manager = GameCommManager()
 
+
 class GameMLModeExecutor:
     """
     The loop executor for the game process running in ml mode
     """
+
     def __init__(self, propty: GameMLModeExecutorProperty):
         self._proc_name = propty.proc_name
         self._execution_cmd = propty.execution_cmd
@@ -88,6 +106,7 @@ class GameMLModeExecutor:
         # Get the active ml names from the created ml processes
         self._active_ml_names = self._comm_manager.get_ml_names()
         self._ml_execution_time = 1 / self._execution_cmd.fps
+        self._fps = self._execution_cmd.fps
         self._ml_delayed_frames = {}
         for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
@@ -113,19 +132,27 @@ class GameMLModeExecutor:
         sent from the ml process, and pass command to the game for execution.
         """
         game = self._game_cls(*self._execution_cmd.game_params)
-
+        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
+        scene_init_info_dict = game.get_scene_init_data()
+        game_view = PygameView(scene_init_info_dict)
         self._wait_all_ml_ready()
         while not quit_or_esc():
-            scene_info_dict = game.get_player_scene_info()
+            scene_info_dict = game.game_to_player_data()
+
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
             self._frame_count += 1
+            view_data = game.get_scene_progress_data()
+            # TODO add a flag to determine if draw the screen
+            game_view.draw_screen()
+            game_view.draw(view_data)
+            game_view.flip()
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 for ml_name in self._active_ml_names:
                     self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
                 self._recorder.record(scene_info_dict, {})
@@ -187,11 +214,13 @@ class GameMLModeExecutor:
             self._ml_delayed_frames[ml_name] = delayed_frame
             print("The client '{}' delayed {} frame(s)".format(ml_name, delayed_frame))
 
+
 class MLExecutorProperty:
     """
     The data class that helps build `MLExecutor`
     """
-    def __init__(self, name, target_module, init_args = (), init_kwargs = {}):
+
+    def __init__(self, name, target_module, init_args=(), init_kwargs={}):
         """
         Constructor
 
@@ -206,6 +235,7 @@ class MLExecutorProperty:
         self.init_args = init_args
         self.init_kwargs = init_kwargs
         self.comm_manager = MLCommManager(name)
+
 
 class MLExecutor:
     """
@@ -231,8 +261,8 @@ class MLExecutor:
 
         except SystemExit:  # Catch the exception made by 'sys.exit()'
             exception = MLProcessError(self._name,
-                "The process '{}' is exited by itself. {}"
-                .format(self._name, traceback.format_exc()))
+                                       "The process '{}' is exited by itself. {}"
+                                       .format(self._name, traceback.format_exc()))
             self._comm_manager.send_to_game(exception)
 
     def _loop(self):

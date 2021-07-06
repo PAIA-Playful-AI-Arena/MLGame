@@ -1,7 +1,8 @@
-games/
+games/*
 !games/arkanoid
 !games/pingpong
 !games/snake
+!games/easy_game
 *.swp
 *.pyproj
 *.pyproj.user
@@ -9,12 +10,11 @@ games/
 *.zip
 *.pickle
 *.sav
-__pycache__/
 venv/*
 .vs/*
 .vscode/*
 ml_play*.py
-ml/
+ml/*
 !ml_play_template.py
 !ml_play_manual.py
 cmd/
