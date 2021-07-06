@@ -28,8 +28,7 @@ GAME_PARAMS = {
     }
 }
 
-# TODO revise argument
-# should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
+# will be equal to config. GAME_SETUP["ml_clients"][0]["name"]
 
 GAME_SETUP = {
     "game": EasyGame,
