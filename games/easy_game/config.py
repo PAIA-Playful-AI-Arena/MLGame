@@ -1,29 +1,37 @@
+from .src.game import EasyGame
+
 GAME_VERSION = "1.1"
 GAME_PARAMS = {
     "()": {
         "prog": "easy-game",
-        "game_usage": "%(prog)s <difficulty> <level>"
+        "game_usage": "%(prog)s <param1> [param2] [param3]"
     },
-    "difficulty": {
+    "param1": {
         "choices": ("EASY", "NORMAL"),
-        "metavar": "difficulty",
+        "metavar": "param1",
         "help": "Specify the game style. Choices: %(choices)s"
     },
-    "level": {
+    "param2": {
         "type": int,
-        "help": "Specify the level map"
+        "nargs": "?",
+        "metavar": "param2",
+        "default": 1,
+        "help": ("[Optional] The score that the game will be exited "
+                 "when either side reaches it.[default: %(default)s]")
+    },
+    "param3": {
+        "nargs": "?",
+        "metavar": "param3",
+        "default": "blabla",
+        "help": ("[Optional] The score that the game will be exited "
+                 "when either side reaches it.[default: %(default)s]")
     }
 }
 
-from .src.game import EasyGame
-
-
-# TODO
+# TODO revise argument
 # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
 
 GAME_SETUP = {
     "game": EasyGame,
-    "ml_clients": [
-        { "name": "ml_1P" }
-    ]
+    "ml_clients": EasyGame.ai_clients()
 }

@@ -55,7 +55,7 @@ class GameManualModeExecutor:
             game_view.flip()
 
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
@@ -141,7 +141,7 @@ class GameMLModeExecutor:
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 for ml_name in self._active_ml_names:
                     self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
                 self._recorder.record(scene_info_dict, {})

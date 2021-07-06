@@ -1,4 +1,4 @@
-import abc
+import time
 
 import pygame
 
@@ -6,41 +6,42 @@ from mlgame.view_model import create_text_view_data, create_asset_init_data, cre
 from .game_object import Ball, Food
 from os import path
 
-ASSET = path.join(path.dirname(__file__), "../asset")
+ASSET_PATH = path.join(path.dirname(__file__), "../asset")
 
 
 class EasyGame():
     """
     This is a Interface of a game
-    TODO constructor param should be equal to config
     """
 
-    def __init__(self, difficulty, level):
-
+    def __init__(self, param1, param2, param3):
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
-        self.running = True
-
         self.ball = Ball()
         self.foods = pygame.sprite.Group()
         self.score = 0
         self._create_foods()
-        self._begin_time = pygame.time.get_ticks()
+        self._begin_time = time.time()
         self._timer = 0
+        self._frame_count = 0
 
     def update(self, commands):
-        # hanndle command
-        self.ball.update(commands["ml_1P"])
+        # handle command
+        ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
+        self.ball.update(ai_1p_cmd)
 
         # update sprite
         self.foods.update()
 
         # handle collision
         hits = pygame.sprite.spritecollide(self.ball, self.foods, True, pygame.sprite.collide_rect_ratio(0.8))
+        if hits:
+            self.score += len(hits)
+            self._create_foods(len(hits))
+        self._timer = round(time.time() - self._begin_time, 3)
 
-        self._create_foods(len(hits))
-        self.score += len(hits)
-        self._timer = (pygame.time.get_ticks() - self._begin_time) / 1000
+        self._frame_count += 1
         # self.draw()
+
         if not self.is_running:
             return "QUIT"
 
@@ -49,34 +50,36 @@ class EasyGame():
         send something to game AI
         we could send different data to different ai
         """
+        to_players_data = {}
         foods_data = []
         for food in self.foods:
             foods_data.append({"x": food.rect.x, "y": food.rect.y})
-        ml_1P = {
+        data_to_1p = {
             "ball_x": self.ball.rect.centerx,
             "ball_y": self.ball.rect.centery,
             "foods": foods_data,
             "score": self.score
         }
-        data = {"ml_1P": ml_1P}
-        # TODO refactor
+
+        for ai_client in self.ai_clients():
+            to_players_data[ai_client['name']] = data_to_1p
         # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
 
-        return data
+        return to_players_data
 
     def reset(self):
         pass
 
     @property
     def is_running(self):
-        return self.running
+        return self._frame_count < 300
 
     def get_scene_init_data(self):
         """
         Get the initial scene and object information for drawing on the web
         """
         # TODO add music or sound
-        bg_path = path.join(ASSET, "img/background.jpg")
+        bg_path = path.join(ASSET_PATH, "img/background.jpg")
         background = create_asset_init_data("background", 800, 600, bg_path, "url")
         scene_init_data = {"scene": self.scene.__dict__,
                            "assets": [
@@ -121,9 +124,11 @@ class EasyGame():
         """
         send game result
         """
-        return {"frame_used": 1,
-                # "result": result, # ["1P:7s", "2P:5s"]
-                "ranks": []  # by score
+        return {"frame_used": self._frame_count,
+                "result": {
+                    "score": self.score
+                },
+
                 }
 
         pass
@@ -132,25 +137,33 @@ class EasyGame():
         """
         Define how your game will run by your keyboard
         """
-        cmd_1P = []
-        cmd_2P = []
+        cmd_1p = []
         key_pressed_list = pygame.key.get_pressed()
         if key_pressed_list[pygame.K_UP]:
-            cmd_1P.append("UP")
+            cmd_1p.append("UP")
         if key_pressed_list[pygame.K_DOWN]:
-            cmd_1P.append("DOWN")
+            cmd_1p.append("DOWN")
 
         if key_pressed_list[pygame.K_LEFT]:
-            cmd_1P.append("LEFT")
+            cmd_1p.append("LEFT")
 
         if key_pressed_list[pygame.K_RIGHT]:
-            cmd_1P.append("RIGHT")
-
-        return {"ml_1P": cmd_1P,
-                "ml_2P": cmd_2P}
+            cmd_1p.append("RIGHT")
+        ai_1p = self.ai_clients()[0]["name"]
+        return {ai_1p: cmd_1p}
 
     def _create_foods(self, count: int = 5):
         for i in range(count):
             # add food to group
             food = Food(self.foods)
         pass
+
+    @staticmethod
+    def ai_clients():
+        """
+        let MLGame know how to parse your ai,
+        you can also use this names to get different cmd and send different data to each ai client
+        """
+        return [
+            {"name": "1P"}
+        ]
