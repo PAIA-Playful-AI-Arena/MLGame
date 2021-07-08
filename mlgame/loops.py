@@ -6,12 +6,13 @@ import importlib
 import json
 import time
 import traceback
-
 import websockets as websockets
 
 from . import errno
 from .communication import GameCommManager, MLCommManager, TransitionCommManager
 from .exceptions import GameProcessError, MLProcessError, TransitionProcessError, ProcessError
+from .gamedev.game_interface import PaiaGame
+from .view.view import PygameView
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 
@@ -26,6 +27,7 @@ class GameManualModeExecutor:
         self._game_cls = game_cls
         self._ml_names = ml_names
         self._frame_interval = 1 / self._execution_cmd.fps
+        self._fps = self._execution_cmd.fps
         self._recorder = get_recorder(execution_cmd, ml_names)
 
     def start(self):
@@ -41,18 +43,28 @@ class GameManualModeExecutor:
         """
         The main loop for running the game
         """
+        print(self._execution_cmd)
         game = self._game_cls(*self._execution_cmd.game_params)
+        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
 
+        scene_init_info_dict = game.get_scene_init_data()
+        game_view = PygameView(scene_init_info_dict)
         while not quit_or_esc():
-            scene_info_dict = game.get_player_scene_info()
+            # TODO check
+            scene_info_dict = game.game_to_player_data()
             time.sleep(self._frame_interval)
+            # pygame.time.Clock().tick_busy_loop(self._fps)
             cmd_dict = game.get_keyboard_command()
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
+            view_data = game.get_scene_progress_data()
+            game_view.draw_screen()
+            game_view.draw(view_data)
+            game_view.flip()
 
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
@@ -98,6 +110,7 @@ class GameMLModeExecutor:
         # Get the active ml names from the created ml processes
         self._active_ml_names = self._comm_manager.get_ml_names()
         self._ml_execution_time = 1 / self._execution_cmd.fps
+        self._fps = self._execution_cmd.fps
         self._ml_delayed_frames = {}
         for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
@@ -130,11 +143,18 @@ class GameMLModeExecutor:
         sent from the ml process, and pass command to the game for execution.
         """
         game = self._game_cls(*self._execution_cmd.game_params)
-        self._send_game_info(game.get_game_info())
-
+        # <<<<<<< HEAD
+        #         self._send_game_info(game.get_game_info())
+        #
+        # =======
+        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
+        scene_init_info_dict = game.get_scene_init_data()
+        game_view = PygameView(scene_init_info_dict)
+        # >>>>>>> develop
         self._wait_all_ml_ready()
         while not quit_or_esc():
-            scene_info_dict = game.get_player_scene_info()
+            scene_info_dict = game.game_to_player_data()
+
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)
 
@@ -142,10 +162,15 @@ class GameMLModeExecutor:
 
             result = game.update(cmd_dict)
             self._frame_count += 1
+            view_data = game.get_scene_progress_data()
+            # TODO add a flag to determine if draw the screen
+            game_view.draw_screen()
+            game_view.draw(view_data)
+            game_view.flip()
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
-                scene_info_dict = game.get_player_scene_info()
+                scene_info_dict = game.game_to_player_data()
                 for ml_name in self._active_ml_names:
                     self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
                 self._recorder.record(scene_info_dict, {})
@@ -298,13 +323,13 @@ class WebSocketExecutor:
 
     async def hello(self):
 
-        async with websockets.connect("ws://"+self._ws_uri) as websocket:
+        async with websockets.connect("ws://" + self._ws_uri) as websocket:
             # name = input("What's your name? ")
             print("ws_client")
             count = 0
             while 1:
                 data = self._recv_data_func()
-                print("ws received :",data)
+                print("ws received :", data)
                 if not data:
                     return
                 elif isinstance(data, ProcessError):
