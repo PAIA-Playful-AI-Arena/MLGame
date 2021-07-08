@@ -127,13 +127,13 @@ def create_line_view_data(name: str, x1: int, y1: int, x2: int, y2: int, color: 
 def create_polygon_view_data(name: str, points: list, color: str):
     """
     這是一個用來繪製多邊形的資料格式，
-    points欄位至少三個 # [{"x":1,"y":2},{},{}]
+    points欄位至少三個 # [[100,101],[52.1,31.3],[53.1,12.3]]
     :return:dict
     """
     assert len(points) >= 3
     vertices = []
     for p in points:
-        vertices.append({"x": p['x'], "y": p['y']})
+        vertices.append({"x": p[0], "y": p[1]})
     return {"type": "polygon",
             "name": name,
             "color": color,
@@ -221,4 +221,4 @@ def gen_points(point_num: int = 4) -> list:
     result = []
     for i in range(point_num):
         result.append([random.randint(0, 100), random.randint(0, 100)])
-        return result
+    return result
