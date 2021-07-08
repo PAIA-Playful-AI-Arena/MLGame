@@ -32,5 +32,6 @@ GAME_PARAMS = {
 
 GAME_SETUP = {
     "game": EasyGame,
-    "ml_clients": EasyGame.ai_clients()
+    "ml_clients": EasyGame.ai_clients(),
+    # "dynamic_ml_clients":True
 }

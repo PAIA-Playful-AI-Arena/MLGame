@@ -45,30 +45,31 @@ def assert_polygon_obj(polygon):
 
 
 def assert_rect_obj(rect):
-    assert type(rect[K_X]) == int
-    assert type(rect[K_Y]) == int
-    assert type(rect[K_WID]) == int
-    assert type(rect[K_HEIGHT]) == int
+    assert isinstance(rect[K_X], (int, float))
+    assert isinstance(rect[K_Y], (int, float))
+    assert isinstance(rect[K_WID], (int, float))
+    assert isinstance(rect[K_HEIGHT], (int, float))
+
     # validate the color string
     assert_color_rgba_hex_string(rect[K_COLOR])
 
 
 def assert_image_obj(img):
     assert_contains_keys(img, keys=[K_TYPE, K_X, K_Y, K_WID, K_HEIGHT, K_ANGLE, K_IMG_ID])
-    assert type(img[K_X]) == int
-    assert type(img[K_Y]) == int
-    assert type(img[K_WID]) == int
-    assert type(img[K_HEIGHT]) == int
-    assert type(img[K_ANGLE]) == int
+    assert isinstance(img[K_X], (int, float))
+    assert isinstance(img[K_Y], (int, float))
+    assert isinstance(img[K_WID], (int, float))
+    assert isinstance(img[K_HEIGHT], (int, float))
+    assert isinstance(img[K_ANGLE], (int, float))
 
 
 def assert_line_obj(line):
     assert_contains_keys(line, keys=[K_TYPE, "x1", "y1", "x2", "y2", K_WID, K_COLOR])
-    assert type(line["x1"]) == int
-    assert type(line["y1"]) == int
-    assert type(line["x2"]) == int
-    assert type(line["y2"]) == int
-    assert type(line[K_WID]) == int
+    assert isinstance(line["x1"], (int, float))
+    assert isinstance(line["y1"], (int, float))
+    assert isinstance(line["x2"], (int, float))
+    assert isinstance(line["y2"], (int, float))
+    assert isinstance(line[K_WID], (int, float))
     assert_color_rgba_hex_string(line[K_COLOR])
 
 
@@ -100,8 +101,8 @@ def assert_color_rgba_hex_string(color_str: str = ""):
 
 def assert_text_obj(text_obj: dict):
     assert_contains_keys(text_obj, keys=["content", K_COLOR, K_X, K_Y, "font-style"])
-    assert type(text_obj[K_X]) == int
-    assert type(text_obj[K_Y]) == int
+    assert isinstance(text_obj[K_X],(int,float))
+    assert isinstance(text_obj[K_Y],(int,float))
     assert type(text_obj["font-style"]) == str
     assert_color_rgba_hex_string(text_obj[K_COLOR])
 
