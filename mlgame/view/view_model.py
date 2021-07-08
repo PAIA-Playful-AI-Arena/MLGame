@@ -13,8 +13,8 @@ class Scene():
         self.width = width
         self.height = height
         self.color = color
-        self.bias_x = 0
-        self.bias_y = 0
+        self.bias_x = bias_x
+        self.bias_y = bias_y
 
 
 def create_asset_init_data(image_id: str, width: int, height: int, file_path: str, github_raw_url: str):
@@ -215,7 +215,10 @@ def get_dummy_progress_data():
 
 
 def gen_points(point_num: int = 4) -> list:
+    """
+    points should be [x,y] ex [100.3,300.231]
+    """
     result = []
     for i in range(point_num):
-        result.append({"x": random.randint(0, 100), "y": random.randint(0, 100)})
-    return result
+        result.append([random.randint(0, 100), random.randint(0, 100)])
+        return result
