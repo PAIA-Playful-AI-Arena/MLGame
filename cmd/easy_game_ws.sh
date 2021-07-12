@@ -1,0 +1,1 @@
+python MLGame.py --ws=127.0.0.1:8000/ws/game_server/room_id_abcd/ -i ml_play_template.py  easy_game NORMAL 1
