@@ -247,10 +247,11 @@ class GameCommManager:
         """
 
         self.count+=1
-        if obj:
-            print(f'from game to transistion:{self.count}:{dict(obj).keys()}')
-        else:
-            print(obj)
+        print(obj)
+        # if obj:
+        #     print(f'from game to transistion:{self.count}:{dict(obj).keys()}')
+        # else:
+        #     print(obj)
         self._comm_to_transition.send(obj)
         # FIXME The exception will not be received immediately.
         # The send() will be stuck (the process is dead) before receiving exception.

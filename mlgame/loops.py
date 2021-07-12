@@ -158,7 +158,7 @@ class GameMLModeExecutor:
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)
 
-            self._send_game_progress(game.get_game_progress())
+            self._send_game_progress(game.get_scene_progress_data())
 
             result = game.update(cmd_dict)
             self._frame_count += 1
@@ -176,7 +176,7 @@ class GameMLModeExecutor:
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
 
-                self._send_game_progress(game.get_game_progress())
+                self._send_game_progress(game.get_scene_progress_data())
                 self._send_game_result(game.get_game_result())
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
@@ -300,6 +300,7 @@ class TransitionExecutor:
         self._proc_name = propty.proc_name
         self._transition_channel = propty.transition_channel
         self._comm_manager = propty.comm_manager
+        self._transition_manager = None
 
     def start(self):
         try:
@@ -367,7 +368,7 @@ class MLExecutorProperty:
     The data class that helps build `MLExecutor`
     """
 
-    def __init__(self, name, target_module, init_args=(), init_kwargs={}):
+    def __init__(self, name, target_module, init_args=(), init_kwargs=None):
         """
         Constructor
 
@@ -377,6 +378,8 @@ class MLExecutorProperty:
         @param init_args The positional arguments to be passed to the `MLPlay.__init__()`
         @param init_kwargs The keyword arguments to be passed to the `MLPlay.__init__()`
         """
+        if init_kwargs is None:
+            init_kwargs = {}
         self.name = name
         self.target_module = target_module
         self.init_args = init_args

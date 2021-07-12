@@ -133,7 +133,7 @@ def create_polygon_view_data(name: str, points: list, color: str):
     assert len(points) >= 3
     vertices = []
     for p in points:
-        vertices.append({"x": p['x'], "y": p['y']})
+        vertices.append({"x": p[0], "y": p[1]})
     return {"type": "polygon",
             "name": name,
             "color": color,

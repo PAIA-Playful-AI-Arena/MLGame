@@ -1,1 +1,1 @@
-python MLGame.py --ws=127.0.0.1:8000/game/game_server/dev -i ml_play_template.py  Maze_Car 1 5 45 OFF
+python MLGame.py --ws=127.0.0.1:8000/game/game_server/dev -i ml_play_template.py  Maze_Car 1 5 45 5 off
