@@ -3,10 +3,22 @@ import abc
 from mlgame.view.view_model import Scene
 
 
+class GameResultState():
+    """
+    表示遊戲結束的狀態
+    finish 表示遊戲有成功執行到最後，表示玩家通關，或是多個玩家至少一人通關
+    fail 表示玩家闖關失敗，或是沒有任何一個玩家通關
+    """
+    FINISH = "FINISH"
+    FAIL = "FAIL"
+
+
 class PaiaGame(abc.ABC):
+
     def __init__(self):
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.frame_count = 0
+        self.game_result_state = GameResultState.FAIL
 
     @abc.abstractmethod
     def update(self, commands):

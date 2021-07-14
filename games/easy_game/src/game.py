@@ -2,8 +2,8 @@ import time
 
 import pygame
 
-from mlgame.gamedev.game_interface import PaiaGame
-from mlgame.view.test_decorator import check_game_progress
+from mlgame.gamedev.game_interface import PaiaGame, GameResultState
+from mlgame.view.test_decorator import check_game_progress, check_game_result
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
 from os import path
@@ -18,6 +18,7 @@ class EasyGame(PaiaGame):
 
     def __init__(self, param1, param2, param3):
         super().__init__()
+        self.game_result_state = GameResultState.FAIL
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.ball = Ball()
         self.foods = pygame.sprite.Group()
@@ -124,11 +125,16 @@ class EasyGame(PaiaGame):
         }
         return scene_progress
 
+    @check_game_result
     def get_game_result(self):
         """
         send game result
         """
+        if self.score > 5:
+            self.game_result_state = GameResultState.FINISH
         return {"frame_used": self.frame_count,
+                "state": self.game_result_state,
+                "ranks": [],
                 "result": {
                     "score": self.score
                 },
