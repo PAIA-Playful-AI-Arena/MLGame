@@ -2,7 +2,7 @@ import time
 
 import pygame
 
-from mlgame.gamedev.game_interface import PaiaGame, GameResultState
+from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
 from mlgame.view.test_decorator import check_game_progress, check_game_result
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
@@ -56,13 +56,20 @@ class EasyGame(PaiaGame):
         """
         to_players_data = {}
         foods_data = []
+        if self.is_running:
+            status = GameStatus.GAME_ALIVE
+        elif self.score > 5:
+            status = GameStatus.GAME_PASS
+        else:
+            status = GameStatus.GAME_OVER
         for food in self.foods:
             foods_data.append({"x": food.rect.x, "y": food.rect.y})
         data_to_1p = {
             "ball_x": self.ball.rect.centerx,
             "ball_y": self.ball.rect.centery,
             "foods": foods_data,
-            "score": self.score
+            "score": self.score,
+            "status": status
         }
 
         for ai_client in self.ai_clients():

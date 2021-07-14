@@ -13,6 +13,18 @@ class GameResultState():
     FAIL = "FAIL"
 
 
+class GameStatus():
+    """
+        表示遊戲進行中的狀態
+        GAME_ALIVE 表示遊戲進行中
+        GAME_OVER 表示玩家闖關失敗，多人遊戲中，收到此狀態，表示輸掉此遊戲
+        GAME_PASS 表示玩家闖關成功，多人遊戲中，收到此狀態，表示贏得此遊戲
+    """
+    GAME_ALIVE = "GAME_ALIVE"
+    GAME_OVER = "GAME_OVER"
+    GAME_PASS = "GAME_PASS"
+
+
 class PaiaGame(abc.ABC):
 
     def __init__(self):
