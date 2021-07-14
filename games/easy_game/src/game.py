@@ -56,12 +56,6 @@ class EasyGame(PaiaGame):
         """
         to_players_data = {}
         foods_data = []
-        if self.is_running:
-            status = GameStatus.GAME_ALIVE
-        elif self.score > 5:
-            status = GameStatus.GAME_PASS
-        else:
-            status = GameStatus.GAME_OVER
         for food in self.foods:
             foods_data.append({"x": food.rect.x, "y": food.rect.y})
         data_to_1p = {
@@ -69,7 +63,7 @@ class EasyGame(PaiaGame):
             "ball_y": self.ball.rect.centery,
             "foods": foods_data,
             "score": self.score,
-            "status": status
+            "status": self.get_game_status()
         }
 
         for ai_client in self.ai_clients():
@@ -77,6 +71,15 @@ class EasyGame(PaiaGame):
         # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
 
         return to_players_data
+
+    def get_game_status(self):
+        if self.is_running:
+            status = GameStatus.GAME_ALIVE
+        elif self.score > 5:
+            status = GameStatus.GAME_PASS
+        else:
+            status = GameStatus.GAME_OVER
+        return status
 
     def reset(self):
         pass
