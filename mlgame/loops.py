@@ -40,7 +40,6 @@ class GameManualModeExecutor:
         """
         The main loop for running the game
         """
-        print(self._execution_cmd)
         game = self._game_cls(*self._execution_cmd.game_params)
         assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
 
@@ -63,7 +62,7 @@ class GameManualModeExecutor:
                 scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-
+                print(game.get_game_result())
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
 
@@ -157,6 +156,7 @@ class GameMLModeExecutor:
                     self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
+                print(game.get_game_result())
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break

@@ -2,8 +2,8 @@ import time
 
 import pygame
 
-from mlgame.gamedev.game_interface import PaiaGame
-from mlgame.view.test_decorator import check_game_progress
+from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
+from mlgame.view.test_decorator import check_game_progress, check_game_result
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
 from os import path
@@ -18,6 +18,7 @@ class EasyGame(PaiaGame):
 
     def __init__(self, param1, param2, param3):
         super().__init__()
+        self.game_result_state = GameResultState.FAIL
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.ball = Ball()
         self.foods = pygame.sprite.Group()
@@ -61,7 +62,8 @@ class EasyGame(PaiaGame):
             "ball_x": self.ball.rect.centerx,
             "ball_y": self.ball.rect.centery,
             "foods": foods_data,
-            "score": self.score
+            "score": self.score,
+            "status": self.get_game_status()
         }
 
         for ai_client in self.ai_clients():
@@ -69,6 +71,15 @@ class EasyGame(PaiaGame):
         # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
 
         return to_players_data
+
+    def get_game_status(self):
+        if self.is_running:
+            status = GameStatus.GAME_ALIVE
+        elif self.score > 5:
+            status = GameStatus.GAME_PASS
+        else:
+            status = GameStatus.GAME_OVER
+        return status
 
     def reset(self):
         pass
@@ -124,11 +135,16 @@ class EasyGame(PaiaGame):
         }
         return scene_progress
 
+    @check_game_result
     def get_game_result(self):
         """
         send game result
         """
+        if self.score > 5:
+            self.game_result_state = GameResultState.FINISH
         return {"frame_used": self.frame_count,
+                "state": self.game_result_state,
+                "ranks": [],
                 "result": {
                     "score": self.score
                 },

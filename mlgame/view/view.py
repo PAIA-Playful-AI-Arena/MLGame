@@ -46,7 +46,7 @@ class PygameView():
         result = {}
         if "assets" in self.scene_init_data:
             for file in self.scene_init_data["assets"]:
-                print(file)
+                # print(file)
                 if file[TYPE] == IMAGE:
                     image = pygame.image.load(file["file_path"])
                     result[file["image_id"]] = image
@@ -60,6 +60,10 @@ class PygameView():
         '''
         self.draw_screen()
         self.limit_pygame_screen()
+        if "view_center_coordinate" in object_information["game_sys_info"]:
+            print( object_information["game_sys_info"]["view_center_coordinate"])
+            # print(self.bias_point)
+            self.bias_point = object_information["game_sys_info"]["view_center_coordinate"]
         for game_object in object_information["background"]:
             self.draw_game_obj_according_type(game_object)
         for game_object in object_information["object_list"]:
@@ -153,7 +157,6 @@ class PygameView():
             size = int(list[0].replace("px", "", 1))
             font_type = list[1].lower()
             font = pygame.font.Font(pygame.font.match_font(font_type), size)
-            print(font)
             self.font[font_style] = font
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
@@ -183,7 +186,7 @@ class PygameView():
         #     self.pygame_point[1] = 0
         # else:
         #     pass
-        # if self.pygame_point[0] < 500 - self.map_width:
+        # if self.pygame_point[0] < 500 - self.map_width:K
         #     self.pygame_point[0] = 500 - self.map_width
         # elif self.pygame_point[0] > 0:
         #     self.pygame_point[0] = 0

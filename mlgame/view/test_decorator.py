@@ -1,7 +1,12 @@
 import re
 from functools import wraps
 
+from mlgame.gamedev.game_interface import GameResultState
 from mlgame.view.view_model import get_scene_init_sample_data, get_dummy_progress_data
+
+K_RANKS = "ranks"
+
+K_STATE = "state"
 
 K_ASSET = "assets"
 
@@ -101,8 +106,8 @@ def assert_color_rgba_hex_string(color_str: str = ""):
 
 def assert_text_obj(text_obj: dict):
     assert_contains_keys(text_obj, keys=["content", K_COLOR, K_X, K_Y, "font-style"])
-    assert isinstance(text_obj[K_X],(int,float))
-    assert isinstance(text_obj[K_Y],(int,float))
+    assert isinstance(text_obj[K_X], (int, float))
+    assert isinstance(text_obj[K_Y], (int, float))
     assert type(text_obj["font-style"]) == str
     assert_color_rgba_hex_string(text_obj[K_COLOR])
 
@@ -146,7 +151,9 @@ def assert_game_result_data(data: dict = None):
     # TODO assert game result
 
     assert type(data) == dict
-    assert_contains_keys(data, [K_FRAME_USED])
+    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_RANKS])
+    assert data[K_STATE] in GameResultState.__dict__.values()
+    assert isinstance(data[K_RANKS], list)
     assert type(data[K_RANK]) == list
 
     # check every player in every rank
@@ -154,6 +161,22 @@ def assert_game_result_data(data: dict = None):
     #     assert type(r) == list
     #     for game_result in r:
     #         assert_contains_keys(game_result, ["player", "game_result"])
+
+
+def check_game_result(func):
+    """
+    這是用來檢驗 遊戲結果 的裝飾子，可以在開發期間使用，在正式執行環境再拿掉
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        assert_game_result_data(result)
+        return result
+
+    return wrapper
 
 
 def check_scene_init_data(func):
