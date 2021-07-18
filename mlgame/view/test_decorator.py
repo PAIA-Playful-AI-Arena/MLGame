@@ -94,7 +94,7 @@ def assert_scene_init_data(data: dict = None):
     assert_contains_keys(images[0], [K_IMG_ID, K_URL, K_WID, K_HEIGHT])
 
 
-def assert_contains_keys(obj: dict, keys: []):
+def assert_contains_keys(obj: dict, keys: list):
     for k in keys:
         assert k in obj, str(obj.__class__) + " should contains " + str(keys)
     pass

@@ -2,6 +2,7 @@ import math
 
 from os import path
 import pygame
+from pygame import draw
 
 LINE = "line"
 
@@ -126,6 +127,7 @@ class PygameView():
         self.screen.fill(self.background_color)  # hex # need turn to RGB
 
     def draw_image(self, image_id, x, y, width, height, angle):
+        print(self.image_dict)
         image = pygame.transform.rotate(pygame.transform.scale(self.image_dict[image_id], (width, height)),
                                         (angle * 180 / math.pi) % 360)
         rect = image.get_rect()
@@ -166,13 +168,13 @@ class PygameView():
     def limit_pygame_screen(self):
 
         keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_w]:
+        if keystate[pygame.K_1]:
             self.bias_point[1] += 10
-        elif keystate[pygame.K_s]:
+        elif keystate[pygame.K_2]:
             self.bias_point[1] -= 10
-        elif keystate[pygame.K_a]:
+        elif keystate[pygame.K_3]:
             self.bias_point[0] += 10
-        elif keystate[pygame.K_d]:
+        elif keystate[pygame.K_4]:
             self.bias_point[0] -= 10
 
         mods = pygame.key.get_mods()

@@ -117,7 +117,6 @@ class Arkanoid(PaiaGame):
         catch_ball_text = create_text_view_data("catching ball: " + str(self._ball.hit_platform_times), 1, self.scene.height - 21, "#FFFFFF", "18px Arial")
         foreground=[catch_ball_text]
         foreground.extend(lines)
-        # print(foreground)
 
         scene_progress = {
             "background": [],
@@ -145,8 +144,8 @@ class Arkanoid(PaiaGame):
     def get_keyboard_command(self):
         cmd_1p = []
         key_pressed_list = pygame.key.get_pressed()
-        if   key_pressed_list[pygame.K_1]:     cmd_1p.append("SERVE_TO_LEFT")
-        elif key_pressed_list[pygame.K_2]:     cmd_1p.append("SERVE_TO_RIGHT")
+        if   key_pressed_list[pygame.K_a]:     cmd_1p.append("SERVE_TO_LEFT")
+        elif key_pressed_list[pygame.K_d]:     cmd_1p.append("SERVE_TO_RIGHT")
         elif key_pressed_list[pygame.K_LEFT]:  cmd_1p.append("MOVE_LEFT")
         elif key_pressed_list[pygame.K_RIGHT]: cmd_1p.append("MOVE_RIGHT")
         else: cmd_1p.append("NONE")
