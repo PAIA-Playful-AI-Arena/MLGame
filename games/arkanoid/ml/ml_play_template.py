@@ -2,6 +2,7 @@
 The template of the main script of the machine learning process
 """
 
+
 class MLPlay:
     def __init__(self):
         """
@@ -15,7 +16,7 @@ class MLPlay:
         """
         # Make the caller to invoke `reset()` for the next round.
         if (scene_info["status"] == "GAME_OVER" or
-            scene_info["status"] == "GAME_PASS"):
+                scene_info["status"] == "GAME_PASS"):
             return "RESET"
 
         if not self.ball_served:
