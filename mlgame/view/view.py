@@ -173,13 +173,13 @@ class PygameView():
     def limit_pygame_screen(self):
 
         keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_1]:
+        if keystate[pygame.K_k]:
             self.bias_point[1] += 10
-        elif keystate[pygame.K_2]:
+        elif keystate[pygame.K_i]:
             self.bias_point[1] -= 10
-        elif keystate[pygame.K_3]:
+        elif keystate[pygame.K_l]:
             self.bias_point[0] += 10
-        elif keystate[pygame.K_4]:
+        elif keystate[pygame.K_j]:
             self.bias_point[0] -= 10
 
         mods = pygame.key.get_mods()
