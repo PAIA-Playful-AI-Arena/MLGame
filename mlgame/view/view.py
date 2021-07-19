@@ -35,9 +35,9 @@ class PygameView():
         self.font = {}
         # self.map_width = game_info["map_width"]
         # self.map_height = game_info["map_height"]
-        self.bias_point = []
-        self.bias_point.append(self.scene_init_data["scene"]["bias_x"])
-        self.bias_point.append(self.scene_init_data["scene"]["bias_y"])
+        self.origin_bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
+        self.bias_point_var = [0, 0]
+        self.bias_point = self.origin_bias_point.copy()
         # if "images" in game_info.keys():
         #     self.image_dict = self.loading_image(game_info["images"])
         self._toggle_on = True
@@ -62,12 +62,10 @@ class PygameView():
         self.draw_screen()
         self.limit_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
-            # print(object_information["game_sys_info"]["view_center_coordinate"])
-            # print(self.bias_point)
-            # TODO 跟劭庭確認這部分要怎麼處理
-            pass
-            # self.bias_point[0] = object_information["game_sys_info"]["view_center_coordinate"][0]
-            # self.bias_point[1] = object_information["game_sys_info"]["view_center_coordinate"][1]
+            self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
+                                      object_information["game_sys_info"]["view_center_coordinate"][1]]
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
         for game_object in object_information["background"]:
             self.draw_game_obj_according_type(game_object)
         for game_object in object_information["object_list"]:
@@ -170,14 +168,18 @@ class PygameView():
     def limit_pygame_screen(self):
 
         key_state = pygame.key.get_pressed()
-        if key_state[pygame.K_k]:
-            self.bias_point[1] += 10
-        elif key_state[pygame.K_i]:
-            self.bias_point[1] -= 10
-        elif key_state[pygame.K_l]:
-            self.bias_point[0] += 10
+        if key_state[pygame.K_i]:
+            self.bias_point_var[1] += 10
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
+        elif key_state[pygame.K_k]:
+            self.bias_point_var[1] -= 10
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
         elif key_state[pygame.K_j]:
-            self.bias_point[0] -= 10
+            self.bias_point_var[0] += 10
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
+        elif key_state[pygame.K_l]:
+            self.bias_point_var[0] -= 10
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
 
         mods = pygame.key.get_mods()
         if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
