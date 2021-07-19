@@ -1,6 +1,5 @@
 import math
-
-from os import path
+import time
 import pygame
 
 LINE = "line"
@@ -36,7 +35,9 @@ class PygameView():
         self.font = {}
         # self.map_width = game_info["map_width"]
         # self.map_height = game_info["map_height"]
-        self.bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
+        self.origin_bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
+        self.bias_point_var = [0, 0]
+        self.bias_point = self.origin_bias_point.copy()
         # if "images" in game_info.keys():
         #     self.image_dict = self.loading_image(game_info["images"])
         self._toggle_on = True
@@ -61,14 +62,15 @@ class PygameView():
         self.draw_screen()
         self.limit_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
-            print( object_information["game_sys_info"]["view_center_coordinate"])
-            # print(self.bias_point)
-            self.bias_point = object_information["game_sys_info"]["view_center_coordinate"]
+            self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
+                                      object_information["game_sys_info"]["view_center_coordinate"][1]]
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
         for game_object in object_information["background"]:
             self.draw_game_obj_according_type(game_object)
         for game_object in object_information["object_list"]:
             # let object could be shifted
-            self.draw_game_obj_according_type_with_bias(game_object,self.bias_point[0],self.bias_point[1])
+            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1])
         if self._toggle_on:
             for game_object in object_information["toggle"]:
                 self.draw_game_obj_according_type(game_object)
@@ -165,30 +167,21 @@ class PygameView():
 
     def limit_pygame_screen(self):
 
-        keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_w]:
-            self.bias_point[1] += 10
-        elif keystate[pygame.K_s]:
-            self.bias_point[1] -= 10
-        elif keystate[pygame.K_a]:
-            self.bias_point[0] += 10
-        elif keystate[pygame.K_d]:
-            self.bias_point[0] -= 10
+        key_state = pygame.key.get_pressed()
+        if key_state[pygame.K_i]:
+            self.bias_point_var[1] += 10
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
+        elif key_state[pygame.K_k]:
+            self.bias_point_var[1] -= 10
+            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
+        elif key_state[pygame.K_j]:
+            self.bias_point_var[0] += 10
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
+        elif key_state[pygame.K_l]:
+            self.bias_point_var[0] -= 10
+            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
 
         mods = pygame.key.get_mods()
-        if keystate[pygame.K_h] and (pygame.time.get_ticks() - self._toggle_last_time) > 300:
+        if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
-            self._toggle_last_time = pygame.time.get_ticks()
-
-        # if self.pygame_point[1] < 480 - self.map_height:
-        #     self.pygame_point[1] = 480 - self.map_height
-        # elif self.pygame_point[1] > 0:
-        #     self.pygame_point[1] = 0
-        # else:
-        #     pass
-        # if self.pygame_point[0] < 500 - self.map_width:K
-        #     self.pygame_point[0] = 500 - self.map_width
-        # elif self.pygame_point[0] > 0:
-        #     self.pygame_point[0] = 0
-        # else:
-        #     pass
+            self._toggle_last_time = time.time()

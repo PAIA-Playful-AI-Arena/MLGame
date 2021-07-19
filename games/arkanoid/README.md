@@ -115,7 +115,7 @@ Here are the available commands:
 
 ### Log File
 
-The name of the ml client in the log flie is `"ml"`.
+The name of the ml client in the log flie is `"1P"`.
 
 ## Custom Level Map Files
 

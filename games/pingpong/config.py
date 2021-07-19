@@ -1,3 +1,5 @@
+from games.pingpong.src.game import PingPong
+
 GAME_VERSION = "1.2"
 
 from argparse import ArgumentTypeError
@@ -27,13 +29,8 @@ GAME_PARAMS = {
     }
 }
 
-from .game.pingpong import PingPong
-import pygame
 
 GAME_SETUP = {
     "game": PingPong,
-    "ml_clients": [
-        { "name": "ml_1P", "args": ("1P",) },
-        { "name": "ml_2P", "args": ("2P",) }
-    ]
+    "ml_clients": PingPong.ai_clients()
 }

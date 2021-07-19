@@ -23,7 +23,9 @@ class GameStatus():
     GAME_ALIVE = "GAME_ALIVE"
     GAME_OVER = "GAME_OVER"
     GAME_PASS = "GAME_PASS"
-
+    GAME_1P_WIN = "GAME_1P_WIN"
+    GAME_2P_WIN = "GAME_2P_WIN"
+    GAME_DRAW = "GAME_DRAW"
 
 class PaiaGame(abc.ABC):
 

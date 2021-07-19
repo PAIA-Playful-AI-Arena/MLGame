@@ -31,6 +31,7 @@ class EasyGame(PaiaGame):
     def update(self, commands):
         # handle command
         ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
+        # print(ai_1p_cmd)
         self.ball.update(ai_1p_cmd)
 
         # update sprite
@@ -140,12 +141,12 @@ class EasyGame(PaiaGame):
         """
         send game result
         """
-        if self.score > 5:
+        if self.get_game_status() == GameStatus.GAME_PASS:
             self.game_result_state = GameResultState.FINISH
         return {"frame_used": self.frame_count,
                 "state": self.game_result_state,
                 "ranks": [],
-                "result": {
+                "attachment": {
                     "score": self.score
                 },
 
