@@ -1,4 +1,5 @@
 import math
+import time
 
 from os import path
 import pygame
@@ -132,7 +133,6 @@ class PygameView():
         self.screen.fill(self.background_color)  # hex # need turn to RGB
 
     def draw_image(self, image_id, x, y, width, height, angle):
-        print(self.image_dict)
         image = pygame.transform.rotate(pygame.transform.scale(self.image_dict[image_id], (width, height)),
                                         (angle * 180 / math.pi) % 360)
         rect = image.get_rect()
@@ -172,30 +172,17 @@ class PygameView():
 
     def limit_pygame_screen(self):
 
-        keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_k]:
+        key_state = pygame.key.get_pressed()
+        if key_state[pygame.K_k]:
             self.bias_point[1] += 10
-        elif keystate[pygame.K_i]:
+        elif key_state[pygame.K_i]:
             self.bias_point[1] -= 10
-        elif keystate[pygame.K_l]:
+        elif key_state[pygame.K_l]:
             self.bias_point[0] += 10
-        elif keystate[pygame.K_j]:
+        elif key_state[pygame.K_j]:
             self.bias_point[0] -= 10
 
         mods = pygame.key.get_mods()
-        if keystate[pygame.K_h] and (pygame.time.get_ticks() - self._toggle_last_time) > 300:
+        if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
-            self._toggle_last_time = pygame.time.get_ticks()
-
-        # if self.pygame_point[1] < 480 - self.map_height:
-        #     self.pygame_point[1] = 480 - self.map_height
-        # elif self.pygame_point[1] > 0:
-        #     self.pygame_point[1] = 0
-        # else:
-        #     pass
-        # if self.pygame_point[0] < 500 - self.map_width:K
-        #     self.pygame_point[0] = 500 - self.map_width
-        # elif self.pygame_point[0] > 0:
-        #     self.pygame_point[0] = 0
-        # else:
-        #     pass
+            self._toggle_last_time = time.time()

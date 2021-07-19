@@ -141,12 +141,12 @@ class EasyGame(PaiaGame):
         """
         send game result
         """
-        if self.score > 5:
+        if self.get_game_status() == GameStatus.GAME_PASS:
             self.game_result_state = GameResultState.FINISH
         return {"frame_used": self.frame_count,
                 "state": self.game_result_state,
                 "ranks": [],
-                "result": {
+                "attachment": {
                     "score": self.score
                 },
 
