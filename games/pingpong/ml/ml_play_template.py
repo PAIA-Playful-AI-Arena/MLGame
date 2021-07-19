@@ -19,7 +19,7 @@ class MLPlay:
         """
         # print(scene_info)
         if scene_info["status"] != "GAME_ALIVE":
-            return "RESET."
+            return "RESET"
 
         if not self.ball_served:
             self.ball_served = True

@@ -131,7 +131,7 @@ class PingPong(PaiaGame):
         to_players_data = {}
         scene_info = {
             "frame": self._frame_count,
-            "status": self._game_status,
+            "status": self.get_game_status(),
             "ball": self._ball.pos,
             "ball_speed": self._ball.speed,
             "platform_1P": self._platform_1P.pos,
