@@ -47,8 +47,8 @@ class PingPong(PaiaGame):
         self._ball.stick_on_platform(self._platform_1P.rect, self._platform_2P.rect)
 
     def update(self, commands):
-        ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
-        ai_2p_cmd = commands[self.ai_clients()[1]["name"]][0]
+        ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
+        ai_2p_cmd = commands[self.ai_clients()[1]["name"]]
         command_1P = (PlatformAction(ai_1p_cmd)
                       if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
         command_2P = (PlatformAction(ai_2p_cmd)
@@ -159,6 +159,7 @@ class PingPong(PaiaGame):
         return self._game_status
 
     def reset(self):
+        print("reset pingpong")
         self._frame_count = 0
         self._game_status = GameStatus.GAME_ALIVE
         self._ball_served = False

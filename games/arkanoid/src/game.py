@@ -1,17 +1,12 @@
-import time
-import pygame
-from pygame.draw import line, lines
-from pygame.key import name
 import random
+import pygame
 from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
 from mlgame.view.test_decorator import check_game_progress, check_game_result
-from mlgame.view.view_model import create_text_view_data, create_rect_view_data, create_scene_view_data, Scene
+from mlgame.view.view_model import create_text_view_data, Scene
 from .game_object import Ball, Platform, Brick, HardBrick, PlatformAction, SERVE_BALL_ACTIONS
-from os import path
 
 
 class Arkanoid(PaiaGame):
-
     def __init__(self, difficulty, level):
         super().__init__()
         self.frame_count = 0
@@ -23,7 +18,7 @@ class Arkanoid(PaiaGame):
         self._create_init_scene()
 
     def update(self, commands):
-        ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
+        ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
         command = (PlatformAction(ai_1p_cmd)
                    if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
 
@@ -90,6 +85,7 @@ class Arkanoid(PaiaGame):
     def reset(self):
         self.game_result_state = GameResultState.FAIL
         self.ball_served = False
+        self.frame_count = 0
         self._create_init_scene()
         pass
 
@@ -140,7 +136,9 @@ class Arkanoid(PaiaGame):
         return {
             "frame_used": self.frame_count,
             "state": self.game_result_state,
-            "ranks": [],
+            "ranks": [
+                self.ai_clients()[0]['name']
+            ],
             "attachment":
                 {"brick_remain": len(self._brick_container),
                  "count_of_catching_ball": self._ball.hit_platform_times
@@ -148,18 +146,18 @@ class Arkanoid(PaiaGame):
         }
 
     def get_keyboard_command(self):
-        cmd_1p = []
+        cmd_1p = "NONE"
         key_pressed_list = pygame.key.get_pressed()
         if key_pressed_list[pygame.K_a]:
-            cmd_1p.append("SERVE_TO_LEFT")
+            cmd_1p = "SERVE_TO_LEFT"
         elif key_pressed_list[pygame.K_d]:
-            cmd_1p.append("SERVE_TO_RIGHT")
+            cmd_1p = "SERVE_TO_RIGHT"
         elif key_pressed_list[pygame.K_LEFT]:
-            cmd_1p.append("MOVE_LEFT")
+            cmd_1p = "MOVE_LEFT"
         elif key_pressed_list[pygame.K_RIGHT]:
-            cmd_1p.append("MOVE_RIGHT")
+            cmd_1p = "MOVE_RIGHT"
         else:
-            cmd_1p.append("NONE")
+            cmd_1p = "NONE"
 
         ai_1p = self.ai_clients()[0]["name"]
 

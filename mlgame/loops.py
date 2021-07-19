@@ -137,7 +137,6 @@ class GameMLModeExecutor:
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
-
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)
 
@@ -152,8 +151,7 @@ class GameMLModeExecutor:
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
                 scene_info_dict = game.game_to_player_data()
-                for ml_name in self._active_ml_names:
-                    self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+                # cmd_dict = self._make_ml_execute(scene_info_dict)
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
                 print(game.get_game_result())
