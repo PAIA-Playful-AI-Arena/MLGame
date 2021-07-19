@@ -23,9 +23,9 @@ class MLPlay:
 
         if not self.ball_served:
             self.ball_served = True
-            return "SERVE_TO_LEFT"
+            return "SERVE_TO_RIGHT"
         else:
-            return "MOVE_LEFT"
+            return "MOVE_RIGHT"
 
     def reset(self):
         """

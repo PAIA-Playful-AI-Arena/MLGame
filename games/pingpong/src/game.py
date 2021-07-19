@@ -230,6 +230,7 @@ class PingPong(PaiaGame):
             ranks.append([self.ai_clients()[1]["name"]])
             ranks.append([self.ai_clients()[0]["name"]])
         else:
+            # TODO if ball_speed is to high should be draw
             status = ["GAME_DRAW", "GAME_DRAW"]
             ranks.append([self.ai_clients()[0]["name"], self.ai_clients()[1]["name"]])
         return {
@@ -238,38 +239,39 @@ class PingPong(PaiaGame):
             "ranks": ranks,
             "attachment": {
                 "ball_speed": self._ball.speed,
-
+                "1P_score": self._score[0],
+                "2P_score": self._score[1]
             }
 
         }
 
     def get_keyboard_command(self) -> dict:
-        cmd_1P = []
-        cmd_2P = []
+        cmd_1P = ""
+        cmd_2P = ""
 
         key_pressed_list = pygame.key.get_pressed()
 
         if key_pressed_list[pygame.K_PERIOD]:
-            cmd_1P.append("SERVE_TO_LEFT")
+            cmd_1P = "SERVE_TO_LEFT"
         elif key_pressed_list[pygame.K_SLASH]:
-            cmd_1P.append("SERVE_TO_RIGHT")
+            cmd_1P = "SERVE_TO_RIGHT"
         elif key_pressed_list[pygame.K_LEFT]:
-            cmd_1P.append("MOVE_LEFT")
+            cmd_1P = "MOVE_LEFT"
         elif key_pressed_list[pygame.K_RIGHT]:
-            cmd_1P.append("MOVE_RIGHT")
+            cmd_1P = "MOVE_RIGHT"
         else:
-            cmd_1P.append("NONE")
+            cmd_1P = "NONE"
 
         if key_pressed_list[pygame.K_q]:
-            cmd_2P.append("SERVE_TO_LEFT")
+            cmd_2P = "SERVE_TO_LEFT"
         elif key_pressed_list[pygame.K_e]:
-            cmd_2P.append("SERVE_TO_RIGHT")
+            cmd_2P = "SERVE_TO_RIGHT"
         elif key_pressed_list[pygame.K_a]:
-            cmd_2P.append("MOVE_LEFT")
+            cmd_2P = "MOVE_LEFT"
         elif key_pressed_list[pygame.K_d]:
-            cmd_2P.append("MOVE_RIGHT")
+            cmd_2P = "MOVE_RIGHT"
         else:
-            cmd_2P.append("NONE")
+            cmd_2P = "NONE"
 
         ai_1p = self.ai_clients()[0]["name"]
         ai_2p = self.ai_clients()[1]["name"]

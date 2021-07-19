@@ -1,9 +1,6 @@
 import math
 import time
-
-from os import path
 import pygame
-from pygame import draw
 
 LINE = "line"
 
