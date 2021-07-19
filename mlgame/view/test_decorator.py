@@ -4,6 +4,8 @@ from functools import wraps
 from mlgame.gamedev.game_interface import GameResultState
 from mlgame.view.view_model import get_scene_init_sample_data, get_dummy_progress_data
 
+K_ATTACHMENT = "attachment"
+
 K_RANKS = "ranks"
 
 K_STATE = "state"
@@ -151,9 +153,10 @@ def assert_game_result_data(data: dict = None):
     # TODO assert game result
 
     assert type(data) == dict
-    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_RANKS])
+    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_RANKS, K_ATTACHMENT])
     assert data[K_STATE] in GameResultState.__dict__.values()
     assert isinstance(data[K_RANKS], list)
+    assert isinstance(data[K_ATTACHMENT], dict)
     assert type(data[K_RANK]) == list
 
     # check every player in every rank

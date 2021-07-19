@@ -1,25 +1,24 @@
-import time
-import pygame
-from pygame.draw import line, lines
-from pygame.key import name
 import random
-from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
+
+import pygame
+
+from mlgame.gamedev.game_interface import PaiaGame, GameStatus, GameResultState
 from mlgame.view.test_decorator import check_game_progress, check_game_result
-from mlgame.view.view_model import create_text_view_data, create_rect_view_data, create_scene_view_data, Scene
+from mlgame.view.view_model import create_text_view_data, Scene
 from .game_object import (
     Ball, Blocker, Platform, PlatformAction, SERVE_BALL_ACTIONS
 )
-from os import path
 
-color_1P = (219, 70, 92)    # Red
-color_2P = (84, 149, 255)    # Blue
+color_1P = (219, 70, 92)  # Red
+color_2P = (84, 149, 255)  # Blue
+
 
 class PingPong(PaiaGame):
 
-    def __init__(self,difficulty, game_over_score):
+    def __init__(self, difficulty, game_over_score):
         super().__init__()
         self._difficulty = difficulty
-        self._score = [0,0]
+        self._score = [0, 0]
         self._game_over_score = game_over_score
         self._frame_count = 0
         self._game_status = GameStatus.GAME_ALIVE
@@ -34,10 +33,10 @@ class PingPong(PaiaGame):
         enable_slice_ball = False if self._difficulty == "EASY" else True
         self._ball = Ball(pygame.Rect(0, 0, 200, 500), enable_slice_ball, self._draw_group)
         self._platform_1P = Platform((80, pygame.Rect(0, 0, 200, 500).height - 80),
-            pygame.Rect(0, 0, 200, 500), "1P", color_1P, self._draw_group)
+                                     pygame.Rect(0, 0, 200, 500), "1P", color_1P, self._draw_group)
         self._platform_2P = Platform((80, 50),
-            pygame.Rect(0, 0, 200, 500), "2P", color_2P, self._draw_group)
-        
+                                     pygame.Rect(0, 0, 200, 500), "2P", color_2P, self._draw_group)
+
         if self._difficulty != "HARD":
             # Put the blocker at the end of the world
             self._blocker = Blocker(1000, pygame.Rect(0, 0, 200, 500), self._draw_group)
@@ -51,9 +50,9 @@ class PingPong(PaiaGame):
         ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
         ai_2p_cmd = commands[self.ai_clients()[1]["name"]][0]
         command_1P = (PlatformAction(ai_1p_cmd)
-            if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
+                      if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
         command_2P = (PlatformAction(ai_2p_cmd)
-            if ai_2p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
+                      if ai_2p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
 
         self._frame_count += 1
         self._platform_1P.move(command_1P)
@@ -74,7 +73,7 @@ class PingPong(PaiaGame):
 
         if not self.is_running:
             return "QUIT"
-    
+
     def _game_over(self, status):
         """
         Check if the game is over
@@ -83,15 +82,15 @@ class PingPong(PaiaGame):
             self._score[0] += 1
         elif status == GameStatus.GAME_2P_WIN:
             self._score[1] += 1
-        else:   # Draw game
+        else:  # Draw game
             self._score[0] += 1
             self._score[1] += 1
 
         is_game_over = (self._score[0] == self._game_over_score or
-            self._score[1] == self._game_over_score)
+                        self._score[1] == self._game_over_score)
 
         return is_game_over
-    
+
     def _print_result(self):
         """
         Print the result
@@ -112,7 +111,7 @@ class PingPong(PaiaGame):
 
         # Force to serve the ball after 150 frames
         if (self._frame_count >= 150 and
-            target_action not in SERVE_BALL_ACTIONS):
+                target_action not in SERVE_BALL_ACTIONS):
             target_action = random.choice(SERVE_BALL_ACTIONS)
 
         if target_action in SERVE_BALL_ACTIONS:
@@ -128,9 +127,8 @@ class PingPong(PaiaGame):
         self._ball.move()
         self._ball.check_bouncing(self._platform_1P, self._platform_2P, self._blocker)
 
-
     def game_to_player_data(self) -> dict:
-        to_players_data={}
+        to_players_data = {}
         scene_info = {
             "frame": self._frame_count,
             "status": self._game_status,
@@ -153,7 +151,7 @@ class PingPong(PaiaGame):
             self._game_status = GameStatus.GAME_2P_WIN
         elif self._ball.rect.bottom < self._platform_2P.rect.top:
             self._game_status = GameStatus.GAME_1P_WIN
-        elif abs(min(self._ball.speed, key = abs)) > 40:
+        elif abs(min(self._ball.speed, key=abs)) > 40:
             self._game_status = GameStatus.GAME_DRAW
         else:
             self._game_status = GameStatus.GAME_ALIVE
@@ -184,30 +182,30 @@ class PingPong(PaiaGame):
 
     @check_game_progress
     def get_scene_progress_data(self) -> dict:
-        game_obj_list=[]
+        game_obj_list = []
         for obj in self._draw_group:
             game_obj_list.append(obj.get_object_data)
 
         create_1p_score = create_text_view_data("1P: " + str(self._score[0]),
-                                               1,
-                                               self.scene.height - 21,
-                                               "#D6465C",
-                                               "18px Arial"
-                                               )
+                                                1,
+                                                self.scene.height - 21,
+                                                "#D6465C",
+                                                "18px Arial"
+                                                )
         create_2p_score = create_text_view_data("2P: " + str(self._score[1]),
-                                               1,
-                                               4,
-                                               "#5495FF",
-                                               "18px Arial"
-                                               )
+                                                1,
+                                                4,
+                                                "#5495FF",
+                                                "18px Arial"
+                                                )
         create_speed_text = create_text_view_data("Speed: " + str(self._ball.speed),
-                                               self.scene.width - 120,
-                                               self.scene.height - 21,
-                                               "#FFFFFF",
-                                               "18px Arial"
-                                               )
+                                                  self.scene.width - 120,
+                                                  self.scene.height - 21,
+                                                  "#FFFFFF",
+                                                  "18px Arial"
+                                                  )
         foreground = [create_1p_score, create_2p_score, create_speed_text]
-        
+
         scene_progress = {
             "background": [],
             "object_list": game_obj_list,
@@ -219,41 +217,58 @@ class PingPong(PaiaGame):
 
         return scene_progress
 
-
     @check_game_result
     def get_game_result(self) -> dict:
-        scene_info = self._scene.get_scene_info()
-
+        ranks = []
         if self._score[0] > self._score[1]:
             status = ["GAME_PASS", "GAME_OVER"]
+            ranks.append([self.ai_clients()[0]["name"]])
+            ranks.append([self.ai_clients()[1]["name"]])
         elif self._score[0] < self._score[1]:
             status = ["GAME_OVER", "GAME_PASS"]
+            ranks.append([self.ai_clients()[1]["name"]])
+            ranks.append([self.ai_clients()[0]["name"]])
         else:
             status = ["GAME_DRAW", "GAME_DRAW"]
-
+            ranks.append([self.ai_clients()[0]["name"], self.ai_clients()[1]["name"]])
         return {
             "frame_used": self._frame_count,
-            "result": status,
-            "ball_speed": self._ball.speed,
+            "state": GameResultState.FINISH,
+            "ranks": ranks,
+            "attachment": {
+                "ball_speed": self._ball.speed,
+
+            }
+
         }
 
     def get_keyboard_command(self) -> dict:
         cmd_1P = []
         cmd_2P = []
 
-        key_pressed_list = pygame.key.get_pressed() 
+        key_pressed_list = pygame.key.get_pressed()
 
-        if   key_pressed_list[pygame.K_PERIOD]: cmd_1P.append("SERVE_TO_LEFT")
-        elif key_pressed_list[pygame.K_SLASH]:  cmd_1P.append("SERVE_TO_RIGHT")
-        elif key_pressed_list[pygame.K_LEFT]:   cmd_1P.append("MOVE_LEFT")
-        elif key_pressed_list[pygame.K_RIGHT]:  cmd_1P.append("MOVE_RIGHT")
-        else: cmd_1P.append("NONE")
+        if key_pressed_list[pygame.K_PERIOD]:
+            cmd_1P.append("SERVE_TO_LEFT")
+        elif key_pressed_list[pygame.K_SLASH]:
+            cmd_1P.append("SERVE_TO_RIGHT")
+        elif key_pressed_list[pygame.K_LEFT]:
+            cmd_1P.append("MOVE_LEFT")
+        elif key_pressed_list[pygame.K_RIGHT]:
+            cmd_1P.append("MOVE_RIGHT")
+        else:
+            cmd_1P.append("NONE")
 
-        if   key_pressed_list[pygame.K_q]:  cmd_2P.append("SERVE_TO_LEFT")
-        elif key_pressed_list[pygame.K_e]:  cmd_2P.append("SERVE_TO_RIGHT")
-        elif key_pressed_list[pygame.K_a]:  cmd_2P.append("MOVE_LEFT")
-        elif key_pressed_list[pygame.K_d]:  cmd_2P.append("MOVE_RIGHT")
-        else: cmd_2P.append("NONE")
+        if key_pressed_list[pygame.K_q]:
+            cmd_2P.append("SERVE_TO_LEFT")
+        elif key_pressed_list[pygame.K_e]:
+            cmd_2P.append("SERVE_TO_RIGHT")
+        elif key_pressed_list[pygame.K_a]:
+            cmd_2P.append("MOVE_LEFT")
+        elif key_pressed_list[pygame.K_d]:
+            cmd_2P.append("MOVE_RIGHT")
+        else:
+            cmd_2P.append("NONE")
 
         ai_1p = self.ai_clients()[0]["name"]
         ai_2p = self.ai_clients()[1]["name"]
@@ -267,6 +282,6 @@ class PingPong(PaiaGame):
         you can also use this names to get different cmd and send different data to each ai client
         """
         return [
-            {"name": "1P"},
-            {"name": "2P"}
+            {"name": "ml_1P", "args": ("1P",)},
+            {"name": "ml_2P", "args": ("2P",)}
         ]

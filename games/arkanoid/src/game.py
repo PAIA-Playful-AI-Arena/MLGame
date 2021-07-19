@@ -41,7 +41,7 @@ class Arkanoid(PaiaGame):
             self._ball_moving()
 
         if not self.is_running:
-            return "QUIT"
+            return "RESET"
 
     def _wait_for_serving_ball(self, platform_action: PlatformAction):
         self._ball.stick_on_platform(self._platform.rect.centerx)
@@ -88,6 +88,9 @@ class Arkanoid(PaiaGame):
         return self._game_status
 
     def reset(self):
+        self.game_result_state = GameResultState.FAIL
+        self.ball_served = False
+        self._create_init_scene()
         pass
 
     @property
@@ -138,7 +141,10 @@ class Arkanoid(PaiaGame):
             "frame_used": self.frame_count,
             "state": self.game_result_state,
             "ranks": [],
-            "brick_remain": len(self._brick_container)
+            "attachment":
+                {"brick_remain": len(self._brick_container),
+                 "count_of_catching_ball": self._ball.hit_platform_times
+                 }
         }
 
     def get_keyboard_command(self):
