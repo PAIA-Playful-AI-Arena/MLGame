@@ -17,6 +17,7 @@ class MLPlay:
         """
         Generate the command according to the received scene information
         """
+        # print(scene_info)
         if scene_info["status"] != "GAME_ALIVE":
             return "RESET"
 
@@ -30,4 +31,5 @@ class MLPlay:
         """
         Reset the status
         """
+        print("reset "+self.side)
         self.ball_served = False

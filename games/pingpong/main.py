@@ -6,14 +6,12 @@ sys.path.append(r"../..")
 
 from mlgame.view.view import PygameView
 from mlgame.gamedev.generic import quit_or_esc
-from src.game import EasyGame
+from src.game import PingPong
 
 FPS = 30
 if __name__ == '__main__':
     pygame.init()
-    game = EasyGame(param1="NORMAL", param2=1, param3="blabla")
-    # game = MazeCar.MazeCar(1, "MOVE_MAZE", 4, 120, 3, "OFF")
-    # game = MazeCar.MazeCar(1, "PRACTICE", 6, 120, 5, "OFF")
+    game = PingPong(difficulty="EASY", game_over_score=5)
     scene_init_info_dict = game.get_scene_init_data()
     game_view = PygameView(scene_init_info_dict)
     frame_count = 0
@@ -26,6 +24,5 @@ if __name__ == '__main__':
         game_view.draw(game_progress_data)
         game_view.flip()
         frame_count += 1
-        # print(frame_count)
 
     pygame.quit()
