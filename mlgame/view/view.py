@@ -36,7 +36,9 @@ class PygameView():
         self.font = {}
         # self.map_width = game_info["map_width"]
         # self.map_height = game_info["map_height"]
-        self.bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
+        self.bias_point = []
+        self.bias_point.append(self.scene_init_data["scene"]["bias_x"])
+        self.bias_point.append(self.scene_init_data["scene"]["bias_y"])
         # if "images" in game_info.keys():
         #     self.image_dict = self.loading_image(game_info["images"])
         self._toggle_on = True
@@ -61,14 +63,17 @@ class PygameView():
         self.draw_screen()
         self.limit_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
-            print( object_information["game_sys_info"]["view_center_coordinate"])
+            # print(object_information["game_sys_info"]["view_center_coordinate"])
             # print(self.bias_point)
-            self.bias_point = object_information["game_sys_info"]["view_center_coordinate"]
+            # TODO 跟劭庭確認這部分要怎麼處理
+            pass
+            # self.bias_point[0] = object_information["game_sys_info"]["view_center_coordinate"][0]
+            # self.bias_point[1] = object_information["game_sys_info"]["view_center_coordinate"][1]
         for game_object in object_information["background"]:
             self.draw_game_obj_according_type(game_object)
         for game_object in object_information["object_list"]:
             # let object could be shifted
-            self.draw_game_obj_according_type_with_bias(game_object,self.bias_point[0],self.bias_point[1])
+            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1])
         if self._toggle_on:
             for game_object in object_information["toggle"]:
                 self.draw_game_obj_according_type(game_object)
