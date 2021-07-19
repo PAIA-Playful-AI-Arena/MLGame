@@ -1,4 +1,5 @@
-GAME_VERSION = "1.1"
+from .src.game import Arkanoid
+GAME_VERSION = "2.0.1"
 GAME_PARAMS = {
     "()": {
         "prog": "arkanoid",
@@ -15,12 +16,9 @@ GAME_PARAMS = {
     }
 }
 
-from .game.arkanoid import Arkanoid
-import pygame
+
 
 GAME_SETUP = {
     "game": Arkanoid,
-    "ml_clients": [
-        { "name": "ml" }
-    ]
+    "ml_clients": Arkanoid.ai_clients()
 }

@@ -9,6 +9,7 @@ from mlgame.view.view_model import create_text_view_data, create_rect_view_data,
 from .game_object import Ball, Platform, Brick, HardBrick, PlatformAction, SERVE_BALL_ACTIONS
 from os import path
 
+
 class Arkanoid(PaiaGame):
 
     def __init__(self, difficulty, level):
@@ -24,7 +25,7 @@ class Arkanoid(PaiaGame):
     def update(self, commands):
         ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
         command = (PlatformAction(ai_1p_cmd)
-            if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
+                   if ai_1p_cmd in PlatformAction.__members__ else PlatformAction.NONE)
 
         self.frame_count += 1
         self._platform.move(command)
@@ -41,20 +42,19 @@ class Arkanoid(PaiaGame):
 
         if not self.is_running:
             return "QUIT"
-    
+
     def _wait_for_serving_ball(self, platform_action: PlatformAction):
         self._ball.stick_on_platform(self._platform.rect.centerx)
 
         if platform_action in SERVE_BALL_ACTIONS:
             self._ball.serve(platform_action)
             self.ball_served = True
-    
+
     def _ball_moving(self):
         self._ball.move()
 
         self._ball.check_hit_brick(self._group_brick)
         self._ball.check_bouncing(self._platform)
-
 
     def game_to_player_data(self):
         to_players_data = {}
@@ -72,7 +72,7 @@ class Arkanoid(PaiaGame):
                 data_to_1p["hard_bricks"].append(brick.pos)
             else:
                 data_to_1p["bricks"].append(brick.pos)
-        
+
         for ai_client in self.ai_clients():
             to_players_data[ai_client['name']] = data_to_1p
 
@@ -100,22 +100,23 @@ class Arkanoid(PaiaGame):
 
     @check_game_progress
     def get_scene_progress_data(self):
-        bricks_data=[]
-        lines=[]
+        bricks_data = []
+        lines = []
         for brick in self._group_brick:
             bricks_data.append(brick.get_object_data)
             lines.append(brick.get_line_data1)
             lines.append(brick.get_line_data2)
 
-        game_obj_list=[]
+        game_obj_list = []
         for move in self._group_move:
             game_obj_list.append(move.get_object_data)
 
         game_obj_list.extend(bricks_data)
         game_obj_list.extend(lines)
 
-        catch_ball_text = create_text_view_data("catching ball: " + str(self._ball.hit_platform_times), 1, self.scene.height - 21, "#FFFFFF", "18px Arial")
-        foreground=[catch_ball_text]
+        catch_ball_text = create_text_view_data("catching ball: " + str(self._ball.hit_platform_times), 1,
+                                                self.scene.height - 21, "#FFFFFF", "18px Arial")
+        foreground = [catch_ball_text]
         foreground.extend(lines)
 
         scene_progress = {
@@ -128,7 +129,7 @@ class Arkanoid(PaiaGame):
         }
 
         return scene_progress
-    
+
     @check_game_result
     def get_game_result(self):
         if len(self._group_brick) == 0:
@@ -136,19 +137,23 @@ class Arkanoid(PaiaGame):
         return {
             "frame_used": self.frame_count,
             "state": self.game_result_state,
-            "rank": [],
+            "ranks": [],
             "brick_remain": len(self._brick_container)
         }
-
 
     def get_keyboard_command(self):
         cmd_1p = []
         key_pressed_list = pygame.key.get_pressed()
-        if   key_pressed_list[pygame.K_a]:     cmd_1p.append("SERVE_TO_LEFT")
-        elif key_pressed_list[pygame.K_d]:     cmd_1p.append("SERVE_TO_RIGHT")
-        elif key_pressed_list[pygame.K_LEFT]:  cmd_1p.append("MOVE_LEFT")
-        elif key_pressed_list[pygame.K_RIGHT]: cmd_1p.append("MOVE_RIGHT")
-        else: cmd_1p.append("NONE")
+        if key_pressed_list[pygame.K_a]:
+            cmd_1p.append("SERVE_TO_LEFT")
+        elif key_pressed_list[pygame.K_d]:
+            cmd_1p.append("SERVE_TO_RIGHT")
+        elif key_pressed_list[pygame.K_LEFT]:
+            cmd_1p.append("MOVE_LEFT")
+        elif key_pressed_list[pygame.K_RIGHT]:
+            cmd_1p.append("MOVE_RIGHT")
+        else:
+            cmd_1p.append("NONE")
 
         ai_1p = self.ai_clients()[0]["name"]
 
@@ -204,5 +209,3 @@ class Arkanoid(PaiaGame):
         return [
             {"name": "1P"}
         ]
-
-    
