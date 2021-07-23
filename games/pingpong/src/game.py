@@ -178,7 +178,9 @@ class PingPong(PaiaGame):
         return self._game_status != GameStatus.GAME_OVER
 
     def get_scene_init_data(self) -> dict:
-        scene_init_data = {"scene": self.scene.__dict__}
+        scene_init_data = {"scene": self.scene.__dict__,"assets": [
+
+                           ]}
         return scene_init_data
 
     @check_game_progress

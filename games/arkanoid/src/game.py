@@ -94,7 +94,11 @@ class Arkanoid(PaiaGame):
         return self.get_game_status() == GameStatus.GAME_ALIVE
 
     def get_scene_init_data(self):
-        scene_init_data = {"scene": self.scene.__dict__}
+        scene_init_data = {"scene": self.scene.__dict__,
+                           "assets": [
+
+                           ]
+                           }
         return scene_init_data
 
     @check_game_progress
