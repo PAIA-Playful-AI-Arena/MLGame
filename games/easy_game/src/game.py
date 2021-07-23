@@ -145,10 +145,13 @@ class EasyGame(PaiaGame):
             self.game_result_state = GameResultState.FINISH
         return {"frame_used": self.frame_count,
                 "state": self.game_result_state,
-                "ranks": [],
-                "attachment": {
-                    "score": self.score
-                },
+                "attachment": [
+
+                    {"player":self.ai_clients()[0]["name"],
+                     "score": self.score,
+                     "rank":1
+                     }
+                ]
 
                 }
 
