@@ -284,7 +284,7 @@ class MLExecutor:
             command = ml.update(scene_info)
             # print(command)
             if command == "RESET":
-                # TODO
+                # TODO refactor reset method
                 ml.reset()
                 self._frame_count = 0
                 self._ml_ready()

@@ -150,14 +150,11 @@ def assert_game_result_data(data: dict = None):
         :return:
         """
     # data = get_dummy_progress_data()
-    # TODO assert game result
-
     assert type(data) == dict
-    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_RANKS, K_ATTACHMENT])
+    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_ATTACHMENT])
     assert data[K_STATE] in GameResultState.__dict__.values()
-    assert isinstance(data[K_RANKS], list)
-    assert isinstance(data[K_ATTACHMENT], dict)
-    assert type(data[K_RANK]) == list
+
+    assert isinstance(data[K_ATTACHMENT], list)
 
     # check every player in every rank
     # for r in data[K_RANK]:
