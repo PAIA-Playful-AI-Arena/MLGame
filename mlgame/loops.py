@@ -147,7 +147,8 @@ class GameMLModeExecutor:
 
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
-        # >>>>>>> develop
+        self._send_game_info(scene_init_info_dict)
+
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
