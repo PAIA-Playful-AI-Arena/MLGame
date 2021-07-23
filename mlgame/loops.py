@@ -43,9 +43,8 @@ class GameManualModeExecutor:
         """
         The main loop for running the game
         """
-        print(self._execution_cmd)
         game = self._game_cls(*self._execution_cmd.game_params)
-        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
+        assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
 
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
@@ -67,7 +66,7 @@ class GameManualModeExecutor:
                 scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-
+                print(game.get_game_result())
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
 
@@ -139,22 +138,19 @@ class GameMLModeExecutor:
 
     def _loop(self):
         """
-        The loop for sending scene information to the ml process, recevied the command
+        The loop for sending scene information to the ml process, received the command
         sent from the ml process, and pass command to the game for execution.
         """
         game = self._game_cls(*self._execution_cmd.game_params)
-        # <<<<<<< HEAD
-        #         self._send_game_info(game.get_game_info())
-        #
-        # =======
-        assert isinstance(game, PaiaGame), "Game should implement a abstract class : PaiaGame"
+
+        assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
         # >>>>>>> develop
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
-
             cmd_dict = self._make_ml_execute(scene_info_dict)
             self._recorder.record(scene_info_dict, cmd_dict)
 
@@ -171,10 +167,14 @@ class GameMLModeExecutor:
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
                 scene_info_dict = game.game_to_player_data()
+                # send to ml_clients and don't parse any command , while client reset ,
+                # self._wait_all_ml_ready() will works and not blocks the process
                 for ml_name in self._active_ml_names:
                     self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
+                print(game.get_game_result())
 
                 self._send_game_progress(game.get_scene_progress_data())
                 self._send_game_result(game.get_game_result())
@@ -184,6 +184,7 @@ class GameMLModeExecutor:
 
                 game.reset()
                 self._frame_count = 0
+                # TODO think more
                 for name in self._active_ml_names:
                     self._ml_delayed_frames[name] = 0
                 self._wait_all_ml_ready()
@@ -429,7 +430,9 @@ class MLExecutor:
             if scene_info is None:
                 break
             command = ml.update(scene_info)
+            # print(command)
             if command == "RESET":
+                # TODO refactor reset method
                 ml.reset()
                 self._frame_count = 0
                 self._ml_ready()

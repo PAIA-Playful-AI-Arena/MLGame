@@ -1,7 +1,14 @@
 import re
 from functools import wraps
 
+from mlgame.gamedev.game_interface import GameResultState
 from mlgame.view.view_model import get_scene_init_sample_data, get_dummy_progress_data
+
+K_ATTACHMENT = "attachment"
+
+K_RANKS = "ranks"
+
+K_STATE = "state"
 
 K_ASSET = "assets"
 
@@ -89,7 +96,7 @@ def assert_scene_init_data(data: dict = None):
     assert_contains_keys(images[0], [K_IMG_ID, K_URL, K_WID, K_HEIGHT])
 
 
-def assert_contains_keys(obj: dict, keys: []):
+def assert_contains_keys(obj: dict, keys: list):
     for k in keys:
         assert k in obj, str(obj.__class__) + " should contains " + str(keys)
     pass
@@ -101,8 +108,8 @@ def assert_color_rgba_hex_string(color_str: str = ""):
 
 def assert_text_obj(text_obj: dict):
     assert_contains_keys(text_obj, keys=["content", K_COLOR, K_X, K_Y, "font-style"])
-    assert isinstance(text_obj[K_X],(int,float))
-    assert isinstance(text_obj[K_Y],(int,float))
+    assert isinstance(text_obj[K_X], (int, float))
+    assert isinstance(text_obj[K_Y], (int, float))
     assert type(text_obj["font-style"]) == str
     assert_color_rgba_hex_string(text_obj[K_COLOR])
 
@@ -143,17 +150,33 @@ def assert_game_result_data(data: dict = None):
         :return:
         """
     # data = get_dummy_progress_data()
-    # TODO assert game result
-
     assert type(data) == dict
-    assert_contains_keys(data, [K_FRAME_USED])
-    assert type(data[K_RANK]) == list
+    assert_contains_keys(data, [K_FRAME_USED, K_STATE, K_ATTACHMENT])
+    assert data[K_STATE] in GameResultState.__dict__.values()
+
+    assert isinstance(data[K_ATTACHMENT], list)
 
     # check every player in every rank
     # for r in data[K_RANK]:
     #     assert type(r) == list
     #     for game_result in r:
     #         assert_contains_keys(game_result, ["player", "game_result"])
+
+
+def check_game_result(func):
+    """
+    這是用來檢驗 遊戲結果 的裝飾子，可以在開發期間使用，在正式執行環境再拿掉
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        assert_game_result_data(result)
+        return result
+
+    return wrapper
 
 
 def check_scene_init_data(func):

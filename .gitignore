@@ -3,6 +3,7 @@ games/*
 !games/pingpong
 !games/snake
 !games/easy_game
+kylin_dev/
 *.swp
 *.pyproj
 *.pyproj.user
