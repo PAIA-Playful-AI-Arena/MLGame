@@ -2,6 +2,11 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.0.7-beta] - 2021.07.23
+**Changed**
+
+* Change the function name and data format in each game.
+
 ### [Beta 8.0.1] - 2020.10.05
 
 **Changed**
