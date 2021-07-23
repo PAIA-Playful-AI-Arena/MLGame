@@ -2,6 +2,19 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.0.7-beta] - 2021.07.23
+**Changed**
+
+* Change the function name and data format in each game.
+
+**Added**
+* Add Interface `PaiaGame` every game should implement this interface to run on PAIA. 
+* Add decorator to validate data format.
+* Add view.py in MLGame to draw scene of game.
+* Add two game in submodule.
+
+
+
 ### [Beta 8.0.1] - 2020.10.05
 
 **Changed**
