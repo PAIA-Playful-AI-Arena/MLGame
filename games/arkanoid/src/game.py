@@ -94,7 +94,11 @@ class Arkanoid(PaiaGame):
         return self.get_game_status() == GameStatus.GAME_ALIVE
 
     def get_scene_init_data(self):
-        scene_init_data = {"scene": self.scene.__dict__}
+        scene_init_data = {"scene": self.scene.__dict__,
+                           "assets": [
+
+                           ]
+                           }
         return scene_init_data
 
     @check_game_progress
@@ -136,13 +140,15 @@ class Arkanoid(PaiaGame):
         return {
             "frame_used": self.frame_count,
             "state": self.game_result_state,
-            "ranks": [
-                self.ai_clients()[0]['name']
-            ],
-            "attachment":
-                {"brick_remain": len(self._brick_container),
-                 "count_of_catching_ball": self._ball.hit_platform_times
-                 }
+            "attachment": [
+                {
+                    "player": self.ai_clients()[0]['name'],
+                    "brick_remain": len(self._brick_container),
+                    "count_of_catching_ball": self._ball.hit_platform_times
+
+                }
+            ]
+
         }
 
     def get_keyboard_command(self):

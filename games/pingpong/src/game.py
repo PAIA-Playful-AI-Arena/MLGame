@@ -178,7 +178,9 @@ class PingPong(PaiaGame):
         return self._game_status != GameStatus.GAME_OVER
 
     def get_scene_init_data(self) -> dict:
-        scene_init_data = {"scene": self.scene.__dict__}
+        scene_init_data = {"scene": self.scene.__dict__, "assets": [
+
+        ]}
         return scene_init_data
 
     @check_game_progress
@@ -220,28 +222,68 @@ class PingPong(PaiaGame):
 
     @check_game_result
     def get_game_result(self) -> dict:
-        ranks = []
+        attachment = []
         if self._score[0] > self._score[1]:
-            status = ["GAME_PASS", "GAME_OVER"]
-            ranks.append([self.ai_clients()[0]["name"]])
-            ranks.append([self.ai_clients()[1]["name"]])
+            attachment = [{
+                "player": self.ai_clients()[0]["name"],
+                "rank": 1,
+                "score": self._score[0],
+                "status": "GAME_PASS",
+
+                "ball_speed": self._ball.speed,
+            },
+                {
+                    "player": self.ai_clients()[1]["name"],
+                    "rank": 2,
+                    "score": self._score[1],
+                    "status": "GAME_OVER",
+                    "ball_speed": self._ball.speed,
+
+                },
+
+            ]
         elif self._score[0] < self._score[1]:
-            status = ["GAME_OVER", "GAME_PASS"]
-            ranks.append([self.ai_clients()[1]["name"]])
-            ranks.append([self.ai_clients()[0]["name"]])
+            attachment = [{
+                "player": self.ai_clients()[0]["name"],
+                "rank": 2,
+                "score": self._score[0],
+                "status": "GAME_OVER",
+
+                "ball_speed": self._ball.speed,
+            },
+                {
+                    "player": self.ai_clients()[1]["name"],
+                    "rank": 1,
+                    "score": self._score[1],
+                    "status": "GAME_PASS",
+                    "ball_speed": self._ball.speed,
+
+                },
+
+            ]
+
         else:
             # TODO if ball_speed is to high should be draw
-            status = ["GAME_DRAW", "GAME_DRAW"]
-            ranks.append([self.ai_clients()[0]["name"], self.ai_clients()[1]["name"]])
+
+            attachment = [{
+                "player": self.ai_clients()[0]["name"],
+                "rank": 1,
+                "score": self._score[0],
+                "status": "GAME_DRAW",
+                # "ball_speed": self._ball.speed,
+            },
+                {
+                    "player": self.ai_clients()[1]["name"],
+                    "rank": 1,
+                    "score": self._score[1],
+                    # "ball_speed": self._ball.speed,
+                },
+
+            ]
         return {
             "frame_used": self._frame_count,
             "state": GameResultState.FINISH,
-            "ranks": ranks,
-            "attachment": {
-                "ball_speed": self._ball.speed,
-                "1P_score": self._score[0],
-                "2P_score": self._score[1]
-            }
+            "attachment": attachment
 
         }
 
