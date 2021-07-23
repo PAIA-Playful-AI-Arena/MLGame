@@ -140,13 +140,15 @@ class Arkanoid(PaiaGame):
         return {
             "frame_used": self.frame_count,
             "state": self.game_result_state,
-            "ranks": [
-                self.ai_clients()[0]['name']
-            ],
-            "attachment":
-                {"brick_remain": len(self._brick_container),
-                 "count_of_catching_ball": self._ball.hit_platform_times
-                 }
+            "attachment": [
+                {
+                    "player": self.ai_clients()[0]['name'],
+                    "brick_remain": len(self._brick_container),
+                    "count_of_catching_ball": self._ball.hit_platform_times
+
+                }
+            ]
+
         }
 
     def get_keyboard_command(self):
