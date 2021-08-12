@@ -7,14 +7,17 @@ from .gameobject import (
     Ball, Platform, Brick, HardBrick, PlatformAction, SERVE_BALL_ACTIONS
 )
 
+
 class Difficulty(StringEnum):
     EASY = auto()
     NORMAL = auto()
+
 
 class GameStatus(StringEnum):
     GAME_ALIVE = auto()
     GAME_OVER = auto()
     GAME_PASS = auto()
+
 
 class Scene:
     area_rect = pygame.Rect(0, 0, 200, 500)
@@ -60,7 +63,7 @@ class Scene:
                 }.get(type, Brick)
 
                 brick = BrickType((pos_x + offset_x, pos_y + offset_y),
-                    self._group_brick)
+                                  self._group_brick)
                 self._brick_container.append(brick)
 
     def reset(self):
@@ -84,7 +87,7 @@ class Scene:
         if not self._ball_served:
             # Force to serve the ball after 150 frames
             if (self._frame_count >= 150 and
-                platform_action not in SERVE_BALL_ACTIONS):
+                    platform_action not in SERVE_BALL_ACTIONS):
                 platform_action = random.choice(SERVE_BALL_ACTIONS)
 
             self._wait_for_serving_ball(platform_action)

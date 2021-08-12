@@ -1,0 +1,54 @@
+{
+  "game_name": "easy_game",
+  "version": "1.0.1",
+  "url": "None",
+  "game_params": [
+    {
+      "name": "time_to_play",
+      "verbose": "遊戲總幀數",
+      "type": "int",
+      "max": 2000,
+      "min": 600,
+      "default": 600,
+      "help": "set the limit of frame count , actually time will be revised according to your FPS ."
+    },
+    {
+      "name": "total_point_count",
+      "verbose": "總食物數量",
+      "type": "int",
+      "choices":[ 5 ,10 ,15,20,15],
+      "help": "set the total number of points",
+      "default": 10
+    },
+    {
+      "name": "score",
+      "verbose": "通關分數",
+      "type": "int",
+      "min": 1,
+      "max": 30,
+      "default": 10,
+      "help": "set the score to win this game "
+    },
+    {
+      "name": "color",
+      "verbose": "矩形顏色",
+      "type": "str",
+      "choices": [
+        {
+          "verbose": "CYAN",
+          "value": "00BCD4"
+        },
+        {
+          "verbose": "YELLOW",
+          "value": "FFEB3B"
+        },
+        {
+          "verbose": "ORANGE",
+          "value": "FF9800"
+        }
+      ],
+      "help": "set the color of rectangle",
+      "default": "00BCD4"
+    }
+  ]
+}

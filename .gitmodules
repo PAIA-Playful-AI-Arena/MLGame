@@ -1,0 +1,6 @@
+[submodule "games/Maze_Car"]
+	path = games/Maze_Car
+	url = git@github.com:yen900611/Maze_Car.git
+[submodule "games/RacingCar"]
+	path = games/RacingCar
+	url = git@github.com:yen900611/RacingCar.git
