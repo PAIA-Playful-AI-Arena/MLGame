@@ -1,0 +1,31 @@
+{
+  "game_name": "arkanoid",
+  "version": "2.0.1",
+  "url": "None",
+  "game_params": [
+    {
+      "name": "difficulty",
+      "verbose": "遊戲模式",
+      "type": "str",
+      "choices": [
+        {
+          "verbose": "簡單",
+          "value": "EASY"
+        },
+        {
+          "verbose": "一般",
+          "value": "NORMAL"
+        }
+      ],
+      "help": "Specify the game style. Choices: %(choices)s"
+    },
+    {
+      "name": "level",
+      "verbose": "關卡",
+      "type": "int",
+      "min": 1,
+      "max": 10,
+      "help": "Specify the level map"
+    }
+  ]
+}

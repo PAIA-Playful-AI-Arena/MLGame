@@ -1,0 +1,36 @@
+{
+    "GAME_STATUS": [
+        ["GAME_ALIVE", "alive", "存活"],
+        ["GAME_PASS", "pass", "通關"],
+        ["GAME_OVER", "over", "失敗"]
+    ],
+    "SCENE_INFO": [
+        ["scene_info['frame']", "# frame", "# 幀數"],
+        ["scene_info['status']", "game status", "遊戲狀態"],
+        ["scene_info['ball'][0]", "x coordinate of ball", "球的 x 座標"],
+        ["scene_info['ball'][1]", "y coordinate of ball", "球的 y 座標"],
+        ["scene_info['platform'][0]", "x coordinate of platform", "平台的 x 座標"],
+        ["scene_info['platform'][1]", "y coordinate of platform", "平台的 y 座標"],
+        ["scene_info['bricks']", "list of brick positions", "磚塊的位置清單"],
+        ["scene_info['hard_bricks']", "list of hard brick positions", "堅硬磚塊的位置清單"],
+        ["scene_info", "dictionary of all information", "包含所有資訊的字典"]
+    ],
+    "CONSTANT": [
+        [0, "left boundary", "左邊界"],
+        [200, "right boundary", "右邊界"],
+        [0, "top boundary", "上邊界"],
+        [500, "bottom boundary", "下邊界"],
+        [40, "platform width", "平台寬度"],
+        [5, "platform height", "平台高度"],
+        [25, "brick width", "磚塊寬度"],
+        [10, "brick height", "磚塊高度"]
+    ],
+    "ACTION": [
+        ["SERVE_TO_LEFT", "serving left", "向左發球"],
+        ["SERVE_TO_RIGHT", "serving right", "向右發球"],
+        ["MOVE_LEFT", "moving left", "向左移動"],
+        ["MOVE_RIGHT", "moving right", "向右移動"],
+        ["NONE", "doing nothing", "不動作"],
+        ["RESET", "reset", "重置"]
+    ]
+}
