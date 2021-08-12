@@ -32,7 +32,10 @@ def parse_config(config_data):
         if "choices" in param:
             choices = []
             for choice in param["choices"]:
-                choices.append(choice["value"])
+                if type(choice) == dict:
+                    choices.append(choice["value"])
+                else:
+                    choices.append(choice)
             obj["choices"] = choices
         result[param["name"]] = obj
     result["()"] = {

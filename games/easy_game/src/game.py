@@ -1,4 +1,5 @@
 import time
+from os import path
 
 import pygame
 
@@ -6,7 +7,6 @@ from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
 from mlgame.view.test_decorator import check_game_progress, check_game_result
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
 from .game_object import Ball, Food
-from os import path
 
 ASSET_PATH = path.join(path.dirname(__file__), "../asset")
 
@@ -16,13 +16,14 @@ class EasyGame(PaiaGame):
     This is a Interface of a game
     """
 
-    def __init__(self, time_to_play , total_point_count, score,color):
+    def __init__(self, time_to_play, total_point_count, score, color):
         super().__init__()
         self.game_result_state = GameResultState.FAIL
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
-        self.ball = Ball(color)
+        print(color)
+        self.ball = Ball("#"+color)
         self.foods = pygame.sprite.Group()
-        self.score =0
+        self.score = 0
         self.score_to_win = score
         self._create_foods(total_point_count)
         self._begin_time = time.time()
@@ -151,9 +152,9 @@ class EasyGame(PaiaGame):
                 "state": self.game_result_state,
                 "attachment": [
 
-                    {"player":self.ai_clients()[0]["name"],
+                    {"player": self.ai_clients()[0]["name"],
                      "score": self.score,
-                     "rank":1
+                     "rank": 1
                      }
                 ]
 
