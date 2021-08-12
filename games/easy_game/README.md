@@ -1,6 +1,6 @@
 # Easy Game
 這是一個簡單的遊戲，主要用來示範如何在PAIA 上發布一個遊戲
-
+![](asset/easy_game.gif)
 ## Game Config
 遊戲參數定義檔案需要使用json格式，且需要命名為`game_config.json`
 ```json
