@@ -1,0 +1,34 @@
+{
+    "GAME_STATUS": [
+        ["GAME_ALIVE", "alive", "存活"],
+        ["GAME_PASS", "pass", "通關"],
+        ["GAME_OVER", "over", "失敗"]
+    ],
+    "SCENE_INFO": [
+        ["scene_info['frame']", "# frame", "# 幀數"],
+        ["scene_info['status']", "game status", "遊戲狀態"],
+        ["scene_info['ball_x']", "x coordinate of ball", "球的 x 座標"],
+        ["scene_info['ball_y']", "y coordinate of ball", "球的 y 座標"],
+        ["scene_info['score']", "x coordinate of platform", "平台的 x 座標"],
+        ["scene_info['foods']", "list of foods positions", "點點的位置清單"],
+        ["scene_info", "dictionary of all information", "包含所有資訊的字典"]
+    ],
+    "CONSTANT": [
+        [0, "left boundary", "左邊界"],
+        [800, "right boundary", "右邊界"],
+        [0, "top boundary", "上邊界"],
+        [600, "bottom boundary", "下邊界"],
+        [50, "ball width", "球身的寬度"],
+        [50, "ball height", "球身的高度"],
+        [8, "food width", "食物的寬度"],
+        [8, "food height", "食物的高度"]
+    ],
+    "ACTION": [
+        ["UP", "moving up", "向上移動"],
+        ["DOWN", "moving down", "向下移動"],
+        ["LEFT", "moving left", "向左移動"],
+        ["RIGHT", "moving right", "向右移動"],
+        ["NONE", "doing nothing", "不動作"]
+
+    ]
+}
