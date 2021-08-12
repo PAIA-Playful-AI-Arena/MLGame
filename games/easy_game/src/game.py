@@ -16,17 +16,19 @@ class EasyGame(PaiaGame):
     This is a Interface of a game
     """
 
-    def __init__(self, param1, param2, param3):
+    def __init__(self, time_to_play , total_point_count, score,color):
         super().__init__()
         self.game_result_state = GameResultState.FAIL
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
-        self.ball = Ball()
+        self.ball = Ball(color)
         self.foods = pygame.sprite.Group()
-        self.score = 0
-        self._create_foods()
+        self.score =0
+        self.score_to_win = score
+        self._create_foods(total_point_count)
         self._begin_time = time.time()
         self._timer = 0
         self.frame_count = 0
+        self.time_limit = time_to_play
 
     def update(self, commands):
         # handle command
@@ -74,9 +76,10 @@ class EasyGame(PaiaGame):
         return to_players_data
 
     def get_game_status(self):
+
         if self.is_running:
             status = GameStatus.GAME_ALIVE
-        elif self.score > 5:
+        elif self.score > self.score_to_win:
             status = GameStatus.GAME_PASS
         else:
             status = GameStatus.GAME_OVER
@@ -87,7 +90,7 @@ class EasyGame(PaiaGame):
 
     @property
     def is_running(self):
-        return self.frame_count < 300
+        return self.frame_count < self.time_limit
 
     def get_scene_init_data(self):
         """
