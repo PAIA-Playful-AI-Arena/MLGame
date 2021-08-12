@@ -62,6 +62,7 @@ class EasyGame(PaiaGame):
         for food in self.foods:
             foods_data.append({"x": food.rect.x, "y": food.rect.y})
         data_to_1p = {
+            "frame": self.frame_count,
             "ball_x": self.ball.rect.centerx,
             "ball_y": self.ball.rect.centery,
             "foods": foods_data,
