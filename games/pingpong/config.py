@@ -1,34 +1,13 @@
+from os import path
+
 from games.pingpong.src.game import PingPong
+from mlgame.utils.parse_config import read_json_file, parse_config
 
-GAME_VERSION = "1.2"
+config_file = path.join(path.dirname(__file__), "game_config.json")
 
-from argparse import ArgumentTypeError
-
-def positive_int(string):
-    value = int(string)
-    if value < 1:
-        raise ArgumentTypeError()
-    return value
-
-GAME_PARAMS = {
-    "()": {
-        "prog": "pingpong",
-        "game_usage": "%(prog)s <difficulty> [game_over_score]"
-    },
-    "difficulty": {
-        "choices": ("EASY", "NORMAL", "HARD"),
-        "metavar": "difficulty",
-        "help": "Specify the game style. Choices: %(choices)s"
-    },
-    "game_over_score": {
-        "type": positive_int,
-        "nargs": "?",
-        "default": 3,
-        "help": ("[Optional] The score that the game will be exited "
-            "when either side reaches it.[default: %(default)s]")
-    }
-}
-
+config_data = read_json_file(config_file)
+GAME_VERSION = config_data["version"]
+GAME_PARAMS = parse_config(config_data)
 
 GAME_SETUP = {
     "game": PingPong,
