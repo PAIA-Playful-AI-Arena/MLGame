@@ -281,6 +281,7 @@ class MLExecutor:
         while True:
             scene_info = self._comm_manager.recv_from_game()
             if scene_info is None:
+                # game over
                 break
             command = ml.update(scene_info)
             # print(command)
