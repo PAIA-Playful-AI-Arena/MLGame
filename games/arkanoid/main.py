@@ -1,7 +1,7 @@
-from time import process_time
+import sys
+
 import pygame
 
-import sys
 sys.path.append(r"../..")
 
 from mlgame.view.view import PygameView

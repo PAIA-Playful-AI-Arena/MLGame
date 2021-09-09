@@ -193,9 +193,13 @@ class Arkanoid(PaiaGame):
         self._group_brick = pygame.sprite.RenderPlain()
         self._brick_container = []
 
-        import os.path
-        dir_path = os.path.dirname(__file__)
-        level_file_path = os.path.join(dir_path, "level_data/{0}.dat".format(level))
+        import os.path as path
+        asset_path = path.join(path.dirname(__file__),'..','asset')
+
+        level_file_path = path.join(asset_path, "level_data/{0}.dat".format(level))
+        if not path.exists(level_file_path):
+            print("此關卡不存在，自動載入第一關")
+            level_file_path = path.join(asset_path, "level_data/{0}.dat".format(1))
 
         with open(level_file_path, 'r') as input_file:
             offset_x, offset_y, _ = get_coordinate_and_type(input_file.readline())
