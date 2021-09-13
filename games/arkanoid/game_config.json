@@ -17,6 +17,7 @@
           "value": "NORMAL"
         }
       ],
+      "default":"NORMAL",
       "help": "Specify the game style. Choices: %(choices)s"
     },
     {
@@ -25,7 +26,8 @@
       "type": "int",
       "min": 1,
       "max": 100,
-      "help": "Specify the level map"
+      "help": "Specify the level map",
+      "default": 1
     }
   ]
 }
