@@ -1,6 +1,6 @@
 {
   "game_name": "arkanoid",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "url": "None",
   "game_params": [
     {
@@ -24,7 +24,7 @@
       "verbose": "關卡",
       "type": "int",
       "min": 1,
-      "max": 10,
+      "max": 100,
       "help": "Specify the level map"
     }
   ]
