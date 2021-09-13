@@ -1,6 +1,6 @@
 {
   "game_name": "arkanoid",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "url": "None",
   "game_params": [
     {
@@ -17,6 +17,7 @@
           "value": "NORMAL"
         }
       ],
+      "default":"NORMAL",
       "help": "Specify the game style. Choices: %(choices)s"
     },
     {
@@ -24,8 +25,9 @@
       "verbose": "關卡",
       "type": "int",
       "min": 1,
-      "max": 10,
-      "help": "Specify the level map"
+      "max": 100,
+      "help": "Specify the level map",
+      "default": 1
     }
   ]
 }
