@@ -206,8 +206,6 @@ class GameCommManager:
         If the received object is `MLProcessError`, raise the exception.
         """
         obj = self._comm_to_ml_set.recv(ml_name, to_wait = False)
-        if isinstance(obj, MLProcessError):
-            raise obj
         return obj
 
     def recv_from_all_ml(self):

@@ -3,8 +3,10 @@ The loop executor for running games and ml client
 """
 
 import importlib
+from re import M
 import time
 import traceback
+import sys
 
 from .gamedev.game_interface import PaiaGame
 from .view.view import PygameView
@@ -103,7 +105,8 @@ class GameMLModeExecutor:
         self._comm_manager = propty.comm_manager
 
         # Get the active ml names from the created ml processes
-        self._active_ml_names = self._comm_manager.get_ml_names()
+        self._active_ml_names = list(self._comm_manager.get_ml_names())
+        self._dead_ml_names = []
         self._ml_execution_time = 1 / self._execution_cmd.fps
         self._fps = self._execution_cmd.fps
         self._ml_delayed_frames = {}
@@ -148,6 +151,11 @@ class GameMLModeExecutor:
             game_view.draw(view_data)
             game_view.flip()
 
+            if len(self._active_ml_names) == 0:
+                raise MLProcessError(self._proc_name, 
+                                     "The process {} exit because all ml processes has exited.".
+                                     format(self._proc_name))
+
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
                 scene_info_dict = game.game_to_player_data()
@@ -177,7 +185,13 @@ class GameMLModeExecutor:
         """
         # Wait the ready command one by one
         for ml_name in self._active_ml_names:
-            while self._comm_manager.recv_from_ml(ml_name) != "READY":
+            recv = self._comm_manager.recv_from_ml(ml_name)
+            if isinstance(recv, MLProcessError):
+                print(recv.message)
+                self._dead_ml_names.append(ml_name)
+                self._active_ml_names.remove(ml_name)
+                continue
+            while recv != "READY":
                 pass
 
     def _make_ml_execute(self, scene_info_dict) -> dict:
@@ -197,15 +211,22 @@ class GameMLModeExecutor:
 
         time.sleep(self._ml_execution_time)
         response_dict = self._comm_manager.recv_from_all_ml()
-
+        
         cmd_dict = {}
-        for ml_name in self._active_ml_names:
+        for ml_name in self._active_ml_names[:]:
             cmd_received = response_dict[ml_name]
-            if isinstance(cmd_received, dict):
+            if isinstance(cmd_received, MLProcessError):
+                print(cmd_received.message)
+                self._dead_ml_names.append(ml_name)
+                self._active_ml_names.remove(ml_name)
+            elif isinstance(cmd_received, dict):
                 self._check_delay(ml_name, cmd_received["frame"])
                 cmd_dict[ml_name] = cmd_received["command"]
             else:
                 cmd_dict[ml_name] = None
+
+        for ml_name in self._dead_ml_names:
+            cmd_dict[ml_name] = None
 
         return cmd_dict
 
@@ -267,6 +288,7 @@ class MLExecutor:
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._name, traceback.format_exc()))
             self._comm_manager.send_to_game(exception)
+            sys.exit()
 
         #except SystemExit:  # Catch the exception made by 'sys.exit()'
         #    exception = MLProcessError(self._name,
@@ -281,7 +303,7 @@ class MLExecutor:
         """
         ml_module = importlib.import_module(self._target_module, __package__)
         ml = ml_module.MLPlay(*self._init_args, **self._init_kwargs)
-
+        
         self._ml_ready()
         while True:
             scene_info = self._comm_manager.recv_from_game()
