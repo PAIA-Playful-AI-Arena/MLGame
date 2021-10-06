@@ -18,7 +18,6 @@ class MLPlay:
         if (scene_info["status"] == "GAME_OVER" or
                 scene_info["status"] == "GAME_PASS"):
             return "RESET"
-
         if not self.ball_served:
             self.ball_served = True
             command = "SERVE_TO_LEFT"

@@ -140,6 +140,8 @@ class PingPong(PaiaGame):
 
         if self._difficulty == "HARD":
             scene_info["blocker"] = self._blocker.pos
+        else:
+            scene_info["blocker"] = (0, 0)
 
         for ai_client in self.ai_clients():
             to_players_data[ai_client['name']] = scene_info

@@ -264,8 +264,9 @@ class Ball(Sprite):
             if abs(self._speed[0]) == 7:
                 for brick in hit_bricks:
                     if isinstance(brick, HardBrick) and brick.hit():
-                        group_brick.add((brick,))
+                        new_brick = Brick(brick.pos,group_brick)
                         num_of_destroyed_brick -= 1
+
 
         return num_of_destroyed_brick
 

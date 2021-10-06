@@ -62,7 +62,7 @@ class Arkanoid(PaiaGame):
             "hard_bricks": []
         }
 
-        for brick in self._brick_container:
+        for brick in self._group_brick:
             if isinstance(brick, HardBrick) and brick.hp == 2:
                 data_to_1p["hard_bricks"].append(brick.pos)
             else:
@@ -198,7 +198,7 @@ class Arkanoid(PaiaGame):
 
         level_file_path = path.join(asset_path, "level_data/{0}.dat".format(level))
         if not path.exists(level_file_path):
-            print("此關卡不存在，自動載入第一關")
+            print("level is not existed , turn to level 1")
             level_file_path = path.join(asset_path, "level_data/{0}.dat".format(1))
 
         with open(level_file_path, 'r') as input_file:
