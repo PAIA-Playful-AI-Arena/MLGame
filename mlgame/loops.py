@@ -192,7 +192,7 @@ class GameMLModeExecutor:
                 self._active_ml_names.remove(ml_name)
                 continue
             while recv != "READY":
-                pass
+                recv = self._comm_manager.recv_from_ml(ml_name)
 
     def _make_ml_execute(self, scene_info_dict) -> dict:
         """
