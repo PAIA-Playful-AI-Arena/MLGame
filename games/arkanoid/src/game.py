@@ -25,6 +25,7 @@ class Arkanoid(PaiaGame):
         self.frame_count += 1
         self._platform.move(command)
 
+
         if not self.ball_served:
             # Force to serve the ball after 150 frames
             if (self.frame_count >= 150 and
@@ -34,6 +35,7 @@ class Arkanoid(PaiaGame):
             self._wait_for_serving_ball(command)
         else:
             self._ball_moving()
+        # print(self._ball.hit_brick_false)
 
         if not self.is_running:
             return "RESET"
@@ -44,6 +46,7 @@ class Arkanoid(PaiaGame):
         if platform_action in SERVE_BALL_ACTIONS:
             self._ball.serve(platform_action)
             self.ball_served = True
+
 
     def _ball_moving(self):
         self._ball.move()
@@ -77,6 +80,8 @@ class Arkanoid(PaiaGame):
         if len(self._group_brick) == 0:
             self._game_status = GameStatus.GAME_PASS
         elif self._ball.rect.top >= self._platform.rect.bottom:
+            self._game_status = GameStatus.GAME_OVER
+        elif self._ball.hit_brick_false > 50:
             self._game_status = GameStatus.GAME_OVER
         else:
             self._game_status = GameStatus.GAME_ALIVE

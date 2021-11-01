@@ -161,6 +161,8 @@ class Ball(Sprite):
         # For additional collision checking
         self._last_pos = self.rect.copy()
 
+        self.hit_brick_false = 0
+
 
     def _create_surface(self):
         surface = pygame.Surface((self.rect.width, self.rect.height))
@@ -186,14 +188,16 @@ class Ball(Sprite):
         elif platform_action == PlatformAction.SERVE_TO_RIGHT:
             self._speed = [7, -7]
 
+
     def move(self):
         self._last_pos.topleft = self.rect.topleft
         self.rect.move_ip(self._speed)
 
     def check_bouncing(self, platform: Platform):
         if (physics.collide_or_contact(self, platform) or
-            self._platform_additional_check(platform)):
+                self._platform_additional_check(platform)):
             self.hit_platform_times += 1
+            self.hit_brick_false += 1
 
             rect_after_bounce, speed_after_bounce = physics.bounce_off(
                 self.rect, self._speed, platform.rect, platform._speed)
@@ -242,20 +246,23 @@ class Ball(Sprite):
         """
         Check if the ball hits bricks in the `group_brick`.
         The hit bricks will be removed from `group_brick`, but the alive hard brick will not.
-        However, if the ball speed is high, the hard brick will be removed with only one hit.
+        However, if the ball speed is high, the hard brick will be rdedmoved with only one hit.
 
         @param group_brick The sprite group containing bricks
         @return The number of destroyed bricks
         """
         hit_bricks = pygame.sprite.spritecollide(self, group_brick, 1,
-            physics.collide_or_contact)
+                                                 physics.collide_or_contact)
         num_of_destroyed_brick = len(hit_bricks)
+        if hit_bricks:
+            self.hit_brick_false = 0
+
 
         if num_of_destroyed_brick > 0:
             # XXX: Bad multiple collision bouncing handling
             if (num_of_destroyed_brick == 2 and
-                (hit_bricks[0].rect.y == hit_bricks[1].rect.y or
-                 hit_bricks[0].rect.x == hit_bricks[1].rect.x)):
+                    (hit_bricks[0].rect.y == hit_bricks[1].rect.y or
+                     hit_bricks[0].rect.x == hit_bricks[1].rect.x)):
                 combined_rect = hit_bricks[0].rect.union(hit_bricks[1].rect)
                 physics.bounce_off_ip(self.rect, self._speed, combined_rect, (0, 0))
             else:
