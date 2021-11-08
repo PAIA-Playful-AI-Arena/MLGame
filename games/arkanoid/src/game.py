@@ -152,7 +152,7 @@ class Arkanoid(PaiaGame):
 
     @check_game_result
     def get_game_result(self):
-        if len(self._group_brick) == 0:
+        if self._game_status == GameStatus.GAME_PASS :
             self.game_result_state = GameResultState.FINISH
         return {
             "frame_used": self.frame_count,
@@ -160,7 +160,7 @@ class Arkanoid(PaiaGame):
             "attachment": [
                 {
                     "player": self.ai_clients()[0]['name'],
-                    "brick_remain": len(self._brick_container),
+                    "brick_remain": len(self._brick)+2*len(self._hard_brick),
                     "count_of_catching_ball": self._ball.hit_platform_times
 
                 }
