@@ -249,10 +249,12 @@ class Ball(Sprite):
         However, if the ball speed is high, the hard brick will be rdedmoved with only one hit.
 
         @param group_brick The sprite group containing bricks
-        @return The number of destroyed bricks
+        @return destroyed bricks and created bricks
         """
         hit_bricks = pygame.sprite.spritecollide(self, group_brick, 1,
                                                  physics.collide_or_contact)
+        new_bricks = []
+
         num_of_destroyed_brick = len(hit_bricks)
         if hit_bricks:
             self.hit_brick_false = 0
@@ -271,11 +273,10 @@ class Ball(Sprite):
             if abs(self._speed[0]) == 7:
                 for brick in hit_bricks:
                     if isinstance(brick, HardBrick) and brick.hit():
-                        new_brick = Brick(brick.pos,group_brick)
+                        new_bricks.append(Brick(brick.pos,group_brick))
                         num_of_destroyed_brick -= 1
 
-
-        return num_of_destroyed_brick
+        return hit_bricks, new_bricks
 
     @property
     def get_object_data(self):

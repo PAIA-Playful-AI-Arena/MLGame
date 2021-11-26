@@ -15,9 +15,9 @@ class Arkanoid(PaiaGame):
         self.game_result_state = GameResultState.FAIL
         self.ball_served = False
         self.scene = Scene(width=200, height=500, color="#000000", bias_x=0, bias_y=0)
-        self._create_init_scene()
         self._hard_brick = []
         self._brick = []
+        self._create_init_scene()
 
     def update(self, commands):
         ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
@@ -27,14 +27,6 @@ class Arkanoid(PaiaGame):
         self.frame_count += 1
         self._platform.move(command)
 
-        self._brick = []
-        self._hard_brick = []
-
-        for brick in self._group_brick:
-            if isinstance(brick, HardBrick) and brick.hp == 2:
-                self._hard_brick.append(brick)
-            else:
-                self._brick.append(brick)
         if not self.ball_served:
             # Force to serve the ball after 150 frames
             if (self.frame_count >= 150 and
@@ -44,7 +36,6 @@ class Arkanoid(PaiaGame):
             self._wait_for_serving_ball(command)
         else:
             self._ball_moving()
-        # print(self._ball.hit_brick_false)
 
         if not self.is_running:
             return "RESET"
@@ -59,7 +50,14 @@ class Arkanoid(PaiaGame):
     def _ball_moving(self):
         self._ball.move()
 
-        self._ball.check_hit_brick(self._group_brick)
+        hit_bricks, new_bricks = self._ball.check_hit_brick(self._group_brick)
+        for brick in hit_bricks:
+            if isinstance(brick, HardBrick):
+                self._hard_brick.remove(brick)
+            else:
+                self._brick.remove(brick)
+        self._brick.extend(new_bricks)
+        
         self._ball.check_bouncing(self._platform)
 
     def game_to_player_data(self):
@@ -98,6 +96,8 @@ class Arkanoid(PaiaGame):
         self.game_result_state = GameResultState.FAIL
         self.ball_served = False
         self.frame_count = 0
+        self._brick = []
+        self._hard_brick = []
         self._create_init_scene()
         pass
 
@@ -230,6 +230,11 @@ class Arkanoid(PaiaGame):
                 brick = BrickType((pos_x + offset_x, pos_y + offset_y),
                                   self._group_brick)
                 self._brick_container.append(brick)
+                
+                if BrickType == Brick:
+                    self._brick.append(brick)
+                else:
+                    self._hard_brick.append(brick)
 
     @staticmethod
     def ai_clients():
