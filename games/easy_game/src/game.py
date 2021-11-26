@@ -33,7 +33,7 @@ class EasyGame(PaiaGame):
 
     def update(self, commands):
         # handle command
-        ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
+        ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
         # print(ai_1p_cmd)
         self.ball.update(ai_1p_cmd)
 
