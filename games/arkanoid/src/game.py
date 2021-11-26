@@ -16,6 +16,8 @@ class Arkanoid(PaiaGame):
         self.ball_served = False
         self.scene = Scene(width=200, height=500, color="#000000", bias_x=0, bias_y=0)
         self._create_init_scene()
+        self._hard_brick = []
+        self._brick = []
 
     def update(self, commands):
         ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
@@ -25,7 +27,14 @@ class Arkanoid(PaiaGame):
         self.frame_count += 1
         self._platform.move(command)
 
+        self._brick = []
+        self._hard_brick = []
 
+        for brick in self._group_brick:
+            if isinstance(brick, HardBrick) and brick.hp == 2:
+                self._hard_brick.append(brick)
+            else:
+                self._brick.append(brick)
         if not self.ball_served:
             # Force to serve the ball after 150 frames
             if (self.frame_count >= 150 and
@@ -47,7 +56,6 @@ class Arkanoid(PaiaGame):
             self._ball.serve(platform_action)
             self.ball_served = True
 
-
     def _ball_moving(self):
         self._ball.move()
 
@@ -64,12 +72,11 @@ class Arkanoid(PaiaGame):
             "bricks": [],
             "hard_bricks": []
         }
+        for brick in self._hard_brick:
+            data_to_1p["hard_bricks"].append(brick.pos)
 
-        for brick in self._group_brick:
-            if isinstance(brick, HardBrick) and brick.hp == 2:
-                data_to_1p["hard_bricks"].append(brick.pos)
-            else:
-                data_to_1p["bricks"].append(brick.pos)
+        for brick in self._brick:
+            data_to_1p["bricks"].append(brick.pos)
 
         for ai_client in self.ai_clients():
             to_players_data[ai_client['name']] = data_to_1p
@@ -82,7 +89,7 @@ class Arkanoid(PaiaGame):
         elif self._ball.rect.top >= self._platform.rect.bottom:
             self._game_status = GameStatus.GAME_OVER
         elif self._ball.hit_brick_false > 50:
-            self._game_status = GameStatus.GAME_OVER
+            self._game_status = GameStatus.GAME_PASS
         else:
             self._game_status = GameStatus.GAME_ALIVE
         return self._game_status
@@ -124,7 +131,12 @@ class Arkanoid(PaiaGame):
 
         catch_ball_text = create_text_view_data("catching ball: " + str(self._ball.hit_platform_times), 1,
                                                 self.scene.height - 21, "#FFFFFF", "18px Arial")
-        foreground = [catch_ball_text]
+
+        remain_brick_text = create_text_view_data("remain brick: " + str(len(self._brick)), 1,
+                                                  self.scene.height - 41, "#FFFFFF", "18px Arial")
+        remain_hard_brick_text = create_text_view_data("remain hard brick: " + str(len(self._hard_brick)), 1,
+                                                  self.scene.height - 61, "#FFFFFF", "18px Arial")
+        foreground = [catch_ball_text, remain_brick_text, remain_hard_brick_text]
         foreground.extend(lines)
 
         scene_progress = {
@@ -140,7 +152,7 @@ class Arkanoid(PaiaGame):
 
     @check_game_result
     def get_game_result(self):
-        if len(self._group_brick) == 0:
+        if self._game_status == GameStatus.GAME_PASS :
             self.game_result_state = GameResultState.FINISH
         return {
             "frame_used": self.frame_count,
@@ -148,7 +160,7 @@ class Arkanoid(PaiaGame):
             "attachment": [
                 {
                     "player": self.ai_clients()[0]['name'],
-                    "brick_remain": len(self._brick_container),
+                    "brick_remain": len(self._brick)+2*len(self._hard_brick),
                     "count_of_catching_ball": self._ball.hit_platform_times
 
                 }
