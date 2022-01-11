@@ -11,16 +11,16 @@ class Ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (400, 300)
 
-    def update(self, motions):
-        for motion in motions:
-            if motion == "UP":
-                self.rect.centery -= 10.5
-            elif motion == "DOWN":
-                self.rect.centery += 10.5
-            elif motion == "LEFT":
-                self.rect.centerx -= 10.5
-            elif motion == "RIGHT":
-                self.rect.centerx += 10.5
+    def update(self, motion):
+        # for motion in motions:
+        if motion == "UP":
+            self.rect.centery -= 10.5
+        elif motion == "DOWN":
+            self.rect.centery += 10.5
+        elif motion == "LEFT":
+            self.rect.centerx -= 10.5
+        elif motion == "RIGHT":
+            self.rect.centerx += 10.5
 
     @property
     def game_object_data(self):
