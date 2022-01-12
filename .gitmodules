@@ -6,7 +6,7 @@
 	url = git@github.com:yen900611/RacingCar.git
 [submodule "games/arkanoid"]
 	path = games/arkanoid
-	url = git@github.com:PAIA-Playful-AI-Arena/arkanoid.git
+	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid
 [submodule "games/pingpong"]
 	path = games/pingpong
-	url = git@github.com:PAIA-Playful-AI-Arena/pingpong.git
+	url = https://github.com/PAIA-Playful-AI-Arena/pingpong
