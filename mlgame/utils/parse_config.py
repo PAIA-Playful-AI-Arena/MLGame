@@ -39,6 +39,9 @@ def parse_config(config_data):
             obj["choices"] = choices
 
         if "flag" in param:
+            """
+            ex -t --time_to_play
+            """
             obj["name_or_flags"] = (param["flag"], f'--{param["name"]}')
 
         result[param["name"]] = obj
