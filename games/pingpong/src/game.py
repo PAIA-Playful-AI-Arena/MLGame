@@ -329,6 +329,6 @@ class PingPong(PaiaGame):
         you can also use this names to get different cmd and send different data to each ai client
         """
         return [
-            {"name": "ml_1P", "args": ("1P",)},
-            {"name": "ml_2P", "args": ("2P",)}
+            {"name": "1P", "args": ("1P",)},
+            {"name": "2P", "args": ("2P",)}
         ]
