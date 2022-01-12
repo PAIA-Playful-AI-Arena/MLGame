@@ -37,6 +37,11 @@ def parse_config(config_data):
                 else:
                     choices.append(choice)
             obj["choices"] = choices
+
+        if "flag" in param:
+            obj["name_or_flags"] = (f'-{param["flag"]}', f'--{param["name"]}')
+        else:
+            obj["name_or_flags"] = (f'--{param["name"]}',)
         result[param["name"]] = obj
     result["()"] = {
         "prog": config_data["game_name"],
