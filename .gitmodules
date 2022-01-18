@@ -4,3 +4,9 @@
 [submodule "games/RacingCar"]
 	path = games/RacingCar
 	url = git@github.com:yen900611/RacingCar.git
+[submodule "games/arkanoid"]
+	path = games/arkanoid
+	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid
+[submodule "games/pingpong"]
+	path = games/pingpong
+	url = https://github.com/PAIA-Playful-AI-Arena/pingpong

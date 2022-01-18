@@ -6,6 +6,7 @@ games/*
 !games/snake
 !games/easy_game
 kylin_dev/
+*.env
 *.swp
 *.pyproj
 *.pyproj.user
