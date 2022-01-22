@@ -45,6 +45,14 @@ class PygameView():
         self._toggle_on = True
         self._toggle_last_time = 0
 
+    def reset(self):
+        self.bias_point_var = [0, 0]
+        self.bias_point = self.origin_bias_point.copy()
+
+        self.scale = 1
+        self._toggle_on = True
+        self._toggle_last_time = 0
+
     def loading_image(self):
         result = {}
         if "assets" in self.scene_init_data:

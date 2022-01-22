@@ -67,7 +67,7 @@ class GameManualModeExecutor:
                 print(game.get_game_result())
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
-
+                game_view.reset()
                 game.reset()
 
 
@@ -173,6 +173,8 @@ class GameMLModeExecutor:
                     break
 
                 game.reset()
+                game_view.reset()
+
                 self._frame_count = 0
                 # TODO think more
                 for name in self._active_ml_names:
