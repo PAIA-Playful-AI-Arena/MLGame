@@ -1,2 +1,2 @@
-python MLGame.py -i ml_play_template.py easy_game 1200 15 10 FF9800
-#python MLGame.py -m easy_game 1200 15 10 FF9800
+python MLGame.py -i ml_play_template.py \
+easy_game  --score 10 --color FF9800 --time_to_play 1200 --total_point 15
