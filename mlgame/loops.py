@@ -3,6 +3,7 @@ The loop executor for running games and ml client
 """
 
 import importlib
+import json
 from re import M
 import time
 import traceback
@@ -64,7 +65,7 @@ class GameManualModeExecutor:
                 scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-                print(game.get_game_result())
+                print(json.dumps( game.get_game_result(),indent=2))
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
                 game_view.reset()
@@ -167,7 +168,7 @@ class GameMLModeExecutor:
                 time.sleep(0.1)
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-                print(game.get_game_result())
+                print(json.dumps( game.get_game_result(),indent=2))
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
