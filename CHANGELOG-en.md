@@ -5,16 +5,19 @@ The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0
 
 
 ### [9.2.1-beta] - 2021.01.24
-**變更**
+**Changed**
 
-* 改變啟動遊戲指令中，遊戲的參數格式
+* change the format of command 
   * old: `python MLGame.py -i ml_play_template.py easy_game 1200 15 10 FF9800`
   * now: `python MLGame.py -i ml_play_template.py easy_game  --score 10 --color FF9800 --time_to_play 1200 --total_point 15`
 
-**新增**
-* 新增縮放功能 遊戲畫面中可以使用 `I` `J` `K` `L` `U` `O` `H` 來控制畫面
-* 遊戲重新啟動，遊戲畫面會重置。
-* 新增中文英文 變更文件
+
+
+**Added**
+* Add scroll button, we could use `I` `J` `K` `L` `U` `O` `H` to update the view now.
+* Screen will be reset when game is reset.
+
+
 
 
 ### [9.0.7-beta] - 2021.07.23

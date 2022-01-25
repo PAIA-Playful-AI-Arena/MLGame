@@ -8,8 +8,8 @@ For the concept and the API of the MLGame, visit the [wiki page](https://github.
 
 ## Requirements
 
-* Python==3.8
-* pygame==2.0.0
+* Python==3.9
+* pygame==2.0.1
 * Other machine learning libraries you needed
 
 ## Usage
@@ -49,13 +49,13 @@ For example:
 
 * Play the game arkanoid level 3 in manual mode on easy difficulty with 45 fps
   ```
-  $ python MLGame.py -m -f 45 arkanoid EASY 3
+  $ python MLGame.py -m -f 45 arkanoid --difficulty NORMAL --level 3
   ```
 
 * Play the game arkanoid level 2 on normal difficulty, record the game progress, and specify the script `ml_play_template.py`
 
   ```
-  $ python MLGame.py -r -i ml_play_template.py arkanoid NORMAL 2
+  $ python MLGame.py -i ml_play_template.py -f 120 arkanoid --difficulty NORMAL --level 2
   ```
 
 ## Play the Game
