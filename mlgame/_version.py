@@ -1,1 +1,1 @@
-version = "MLGame 9.2.1-beta "
+version = "MLGame 9.2.2-beta "
