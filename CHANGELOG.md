@@ -4,7 +4,11 @@ The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0
 
 
 
-### [9.2.1-beta] - 2021.01.24
+### [9.2.2-beta] - 2022.02.09
+**變更**
+* 更新 easy_game中的積木設定檔案
+
+### [9.2.1-beta] - 2022.01.24
 **變更**
 
 * 改變啟動遊戲指令中，遊戲的參數格式
