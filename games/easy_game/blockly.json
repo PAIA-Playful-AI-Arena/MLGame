@@ -24,11 +24,11 @@
         [8, "food height", "食物的高度"]
     ],
     "ACTION": [
-        ["UP", "moving up", "向上移動"],
-        ["DOWN", "moving down", "向下移動"],
-        ["LEFT", "moving left", "向左移動"],
-        ["RIGHT", "moving right", "向右移動"],
-        ["NONE", "doing nothing", "不動作"]
+        ["['UP']", "moving up", "向上移動"],
+        ["['DOWN']", "moving down", "向下移動"],
+        ["['LEFT']", "moving left", "向左移動"],
+        ["['RIGHT']", "moving right", "向右移動"],
+        ["['NONE']", "doing nothing", "不動作"]
 
     ]
 }
