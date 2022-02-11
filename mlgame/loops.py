@@ -65,7 +65,7 @@ class GameManualModeExecutor:
                 scene_info_dict = game.game_to_player_data()
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-                print(json.dumps( game.get_game_result(),indent=2))
+                print(json.dumps(game.get_game_result(), indent=2))
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
                 game_view.reset()
@@ -153,7 +153,7 @@ class GameMLModeExecutor:
             game_view.flip()
 
             if len(self._active_ml_names) == 0:
-                raise MLProcessError(self._proc_name, 
+                raise MLProcessError(self._proc_name,
                                      "The process {} exit because all ml processes has exited.".
                                      format(self._proc_name))
 
@@ -168,7 +168,7 @@ class GameMLModeExecutor:
                 time.sleep(0.1)
                 self._recorder.record(scene_info_dict, {})
                 self._recorder.flush_to_file()
-                print(json.dumps( game.get_game_result(),indent=2))
+                print(json.dumps(game.get_game_result(), indent=2))
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
@@ -214,7 +214,7 @@ class GameMLModeExecutor:
 
         time.sleep(self._ml_execution_time)
         response_dict = self._comm_manager.recv_from_all_ml()
-        
+
         cmd_dict = {}
         for ml_name in self._active_ml_names[:]:
             cmd_received = response_dict[ml_name]
@@ -293,7 +293,7 @@ class MLExecutor:
             self._comm_manager.send_to_game(exception)
             sys.exit()
 
-        #except SystemExit:  # Catch the exception made by 'sys.exit()'
+        # except SystemExit:  # Catch the exception made by 'sys.exit()'
         #    exception = MLProcessError(self._name,
         #                               "The process '{}' is exited by itself. {}"
         #                               .format(self._name, traceback.format_exc()))
@@ -306,7 +306,7 @@ class MLExecutor:
         """
         ml_module = importlib.import_module(self._target_module, __package__)
         ml = ml_module.MLPlay(*self._init_args, **self._init_kwargs)
-        
+
         self._ml_ready()
         while True:
             scene_info = self._comm_manager.recv_from_game()
@@ -314,9 +314,8 @@ class MLExecutor:
                 # game over
                 break
             command = ml.update(scene_info)
-            # print(command)
-            if command == "RESET":
-                # TODO refactor reset method
+            if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
+                command = "RESET"
                 ml.reset()
                 self._frame_count = 0
                 self._ml_ready()
