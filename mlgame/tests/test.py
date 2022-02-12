@@ -20,3 +20,14 @@ def test_parse_config():
     for param in params:
         assert param["name"] in result
     print(result)
+import pandas as pd
+def test_print_json_to_table():
+    data = [
+        {"a":1,
+         "b":2},
+
+        {"a":2,
+         "b":4},
+            ]
+    print("")
+    print(pd.DataFrame(data))
