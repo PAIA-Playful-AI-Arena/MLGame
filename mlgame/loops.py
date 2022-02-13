@@ -291,6 +291,7 @@ class MLExecutor:
         try:
             self._loop()
         except Exception:
+            # TODO handle syntax error
             exception = MLProcessError(self._name,
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._name, traceback.format_exc()))
