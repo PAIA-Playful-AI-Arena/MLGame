@@ -2,6 +2,9 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.2.3] - 2022.02.13
+**Fix**
+* Fix game will not stop when AI didn't return `RESET` .
 
 ### [9.2.2-beta] - 2022.02.09
 **Changed**

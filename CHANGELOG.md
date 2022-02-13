@@ -2,6 +2,9 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.2.3] - 2022.02.13
+**修復**
+* 修復遊戲AI沒有回傳 `RESET` 會無法停止的錯誤
 
 
 ### [9.2.2-beta] - 2022.02.09

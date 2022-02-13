@@ -37,7 +37,8 @@ def parse_config(config_data):
                 else:
                     choices.append(choice)
             obj["choices"] = choices
-
+        if "min" in param and "max" in param:
+            obj["choices"] = range(param["min"], param["max"]+1)
         """
         ex -t --time_to_play
         """
