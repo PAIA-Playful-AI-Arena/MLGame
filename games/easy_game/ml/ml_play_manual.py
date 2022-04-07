@@ -1,4 +1,7 @@
 import random
+import pygame
+
+
 class MLPlay:
     def __init__(self):
         print("Initial ml script")
@@ -10,8 +13,19 @@ class MLPlay:
         # print("AI received data from game :", json.dumps(scene_info))
         # print(scene_info)
         actions = ["UP", "DOWN", "LEFT", "RIGHT"]
+        # TODO assert keyboard
 
-        return random.sample(actions, 1)
+        if pygame.K_w in keyboard:
+            return ["UP"]
+        elif pygame.K_s in keyboard:
+            return ["DOWN"]
+        elif pygame.K_a in keyboard:
+            return ["LEFT"]
+        elif pygame.K_d in keyboard:
+            return ["RIGHT"]
+        else:
+            return ["NONE"]
+        # return random.sample(actions, 1)
 
     def reset(self):
         """

@@ -9,6 +9,8 @@ import time
 import traceback
 import sys
 
+import pygame.key
+
 from .gamedev.game_interface import PaiaGame
 from .view.view import PygameView
 from .communication import GameCommManager, MLCommManager
@@ -94,6 +96,17 @@ class GameMLModeExecutorProperty:
         self.ml_names = ml_names
         self.comm_manager = GameCommManager()
 
+KEYS=[
+    pygame.K_i,
+    pygame.K_j,
+    pygame.K_k,
+    pygame.K_l,
+    pygame.K_w,
+    pygame.K_a,
+    pygame.K_s,
+    pygame.K_d,
+
+]
 
 class GameMLModeExecutor:
     """
@@ -143,7 +156,13 @@ class GameMLModeExecutor:
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
-            cmd_dict = self._make_ml_execute(scene_info_dict)
+            pressed_keys = pygame.key.get_pressed()
+            keyboard_info=[]
+            for k in KEYS:
+                if pressed_keys[k]:
+                    keyboard_info.append(k)
+
+            cmd_dict = self._make_ml_execute(scene_info_dict,keyboard_info)
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
@@ -201,7 +220,7 @@ class GameMLModeExecutor:
             while recv != "READY":
                 recv = self._comm_manager.recv_from_ml(ml_name)
 
-    def _make_ml_execute(self, scene_info_dict) -> dict:
+    def _make_ml_execute(self, scene_info_dict,keyboard_info) -> dict:
         """
         Send the scene information to all ml processes and wait for commands
 
@@ -210,7 +229,7 @@ class GameMLModeExecutor:
         """
         try:
             for ml_name in self._active_ml_names:
-                self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+                self._comm_manager.send_to_ml((scene_info_dict[ml_name],keyboard_info), ml_name)
         except KeyError as e:
             raise KeyError(
                 "The game doesn't provide scene information "
@@ -314,11 +333,12 @@ class MLExecutor:
 
         self._ml_ready()
         while True:
-            scene_info = self._comm_manager.recv_from_game()
+            scene_info,keyboard_info = self._comm_manager.recv_from_game()
             if scene_info is None:
                 # game over
                 break
-            command = ml.update(scene_info)
+            # assert keyboard_info == "1"
+            command = ml.update(scene_info,keyboard_info)
             if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
                 command = "RESET"
                 ml.reset()
