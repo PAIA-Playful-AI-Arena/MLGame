@@ -6,7 +6,7 @@ class MLPlay:
     def __init__(self):
         print("Initial ml script")
 
-    def update(self, scene_info: dict, keyboard:list=[]):
+    def update(self, scene_info: dict, keyboard:list=[], *args, **kwargs):
         """
         Generate the command according to the received scene information
         """
