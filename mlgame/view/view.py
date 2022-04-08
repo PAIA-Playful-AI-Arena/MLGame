@@ -188,6 +188,7 @@ class PygameView():
     def limit_pygame_screen(self):
 
         key_state = pygame.key.get_pressed()
+        # 上下左右 放大縮小
         if key_state[pygame.K_i]:
             self.bias_point_var[1] += 10
             self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
@@ -204,8 +205,7 @@ class PygameView():
             self.scale += 0.01
         elif key_state[pygame.K_u]:
             self.scale -= 0.01
-
-        mods = pygame.key.get_mods()
+        # 隱藏鍵
         if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
             self._toggle_last_time = time.time()

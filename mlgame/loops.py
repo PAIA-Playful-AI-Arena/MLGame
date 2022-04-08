@@ -3,19 +3,21 @@ The loop executor for running games and ml client
 """
 
 import importlib
-import json
-from re import M
 import time
 import traceback
 import sys
 
+import pygame.key
+
 from .gamedev.game_interface import PaiaGame
+from .utils.enum import KEYS
 from .view.view import PygameView
 from .communication import GameCommManager, MLCommManager
 from .exceptions import GameProcessError, MLProcessError
 from .gamedev.generic import quit_or_esc
 from .recorder import get_recorder
 import pandas as pd
+
 
 class GameManualModeExecutor:
     """
@@ -95,6 +97,8 @@ class GameMLModeExecutorProperty:
         self.comm_manager = GameCommManager()
 
 
+
+
 class GameMLModeExecutor:
     """
     The loop executor for the game process running in ml mode
@@ -143,7 +147,14 @@ class GameMLModeExecutor:
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
-            cmd_dict = self._make_ml_execute(scene_info_dict)
+            keyboard_info = []
+            pressed_keys = pygame.key.get_pressed()
+            if True in pressed_keys:
+                for k in KEYS:
+                    if pressed_keys[k]:
+                        keyboard_info.append(k)
+
+            cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
             self._recorder.record(scene_info_dict, cmd_dict)
 
             result = game.update(cmd_dict)
@@ -165,7 +176,7 @@ class GameMLModeExecutor:
                 # send to ml_clients and don't parse any command , while client reset ,
                 # self._wait_all_ml_ready() will works and not blocks the process
                 for ml_name in self._active_ml_names:
-                    self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+                    self._comm_manager.send_to_ml((scene_info_dict[ml_name],[]), ml_name)
                 # TODO check what happen when bigfile is saved
                 time.sleep(0.1)
                 self._recorder.record(scene_info_dict, {})
@@ -201,7 +212,7 @@ class GameMLModeExecutor:
             while recv != "READY":
                 recv = self._comm_manager.recv_from_ml(ml_name)
 
-    def _make_ml_execute(self, scene_info_dict) -> dict:
+    def _make_ml_execute(self, scene_info_dict, keyboard_info) -> dict:
         """
         Send the scene information to all ml processes and wait for commands
 
@@ -210,7 +221,7 @@ class GameMLModeExecutor:
         """
         try:
             for ml_name in self._active_ml_names:
-                self._comm_manager.send_to_ml(scene_info_dict[ml_name], ml_name)
+                self._comm_manager.send_to_ml((scene_info_dict[ml_name], keyboard_info), ml_name)
         except KeyError as e:
             raise KeyError(
                 "The game doesn't provide scene information "
@@ -314,11 +325,12 @@ class MLExecutor:
 
         self._ml_ready()
         while True:
-            scene_info = self._comm_manager.recv_from_game()
+            scene_info, keyboard_info = self._comm_manager.recv_from_game()
             if scene_info is None:
                 # game over
                 break
-            command = ml.update(scene_info)
+            # assert keyboard_info == "1"
+            command = ml.update(scene_info, keyboard_info)
             if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
                 command = "RESET"
                 ml.reset()
