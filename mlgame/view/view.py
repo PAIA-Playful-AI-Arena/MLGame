@@ -59,7 +59,7 @@ class PygameView():
             for file in self.scene_init_data["assets"]:
                 # print(file)
                 if file[TYPE] == IMAGE:
-                    image = pygame.image.load(file["file_path"])
+                    image = pygame.image.load(file["file_path"]).convert_alpha()
                     result[file["image_id"]] = image
         return result
 
