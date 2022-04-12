@@ -59,9 +59,8 @@ class GameManualModeExecutor:
 
             result = game.update(cmd_dict)
             view_data = game.get_scene_progress_data()
-            game_view.draw_screen()
+
             game_view.draw(view_data)
-            game_view.flip()
 
             if result == "RESET" or result == "QUIT":
                 scene_info_dict = game.game_to_player_data()
@@ -161,9 +160,7 @@ class GameMLModeExecutor:
             self._frame_count += 1
             view_data = game.get_scene_progress_data()
             # TODO add a flag to determine if draw the screen
-            game_view.draw_screen()
             game_view.draw(view_data)
-            game_view.flip()
 
             if len(self._active_ml_names) == 0:
                 raise MLProcessError(self._proc_name,

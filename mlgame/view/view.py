@@ -1,13 +1,10 @@
 import math
 import time
 from functools import lru_cache
-
 import pygame
 
 LINE = "line"
-
 TEXT = "text"
-
 NAME = "name"
 TYPE = "type"
 ANGLE = "angle"
@@ -18,6 +15,7 @@ RECTANGLE = "rect"
 POLYGON = "polygon"
 
 
+@lru_cache
 def trnsfer_hex_to_rgb(hex):
     h = hex.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
@@ -91,7 +89,7 @@ class PygameView():
         :param object_information:
         :return:
         '''
-        self.draw_screen()
+        self.screen.fill(self.background_color)
         self.adjust_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
             self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
@@ -109,6 +107,7 @@ class PygameView():
         for game_object in object_information["foreground"]:
             # object should not be shifted
             self.draw_game_obj_according_type(game_object)
+        pygame.display.flip()
 
     def draw_game_obj_according_type(self, game_object, scale=1):
         if game_object[TYPE] == IMAGE:
@@ -128,7 +127,6 @@ class PygameView():
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"], game_object["y1"], game_object["x2"], game_object["y2"],
                            game_object["width"], game_object[COLOR], scale)
-
         else:
             pass
 
@@ -157,8 +155,7 @@ class PygameView():
         else:
             pass
 
-    def draw_screen(self):
-        self.screen.fill(self.background_color)  # hex # need turn to RGB
+        # hex # need turn to RGB
 
     def draw_image(self, image_id, x, y, width, height, radian_angle, scale=1):
         scaled_img = scale_img(self.image_dict[image_id], width, height, scale)
@@ -190,16 +187,13 @@ class PygameView():
                              (p["y"] + bias_y) * scale + scale_bias_of_coordinate(self.height, scale)))
         pygame.draw.polygon(self.screen, color, vertices)
 
-    def flip(self):
-        pygame.display.flip()
-
     def draw_text(self, text, font_style, x, y, color, scale=1):
         if font_style in self.font.keys():
             font = self.font[font_style]
         else:
-            list = font_style.split(" ", -1)
-            size = int(list[0].replace("px", "", 1))
-            font_type = list[1].lower()
+            font_style_list = font_style.split(" ", -1)
+            size = int(font_style_list[0].replace("px", "", 1))
+            font_type = font_style_list[1].lower()
             font = pygame.font.Font(pygame.font.match_font(font_type), size * scale)
             self.font[font_style] = font
         text_surface = font.render(text, True, color)
