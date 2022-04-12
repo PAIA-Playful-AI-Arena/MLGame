@@ -1,5 +1,7 @@
 import math
 import time
+from functools import lru_cache
+
 import pygame
 
 LINE = "line"
@@ -19,6 +21,26 @@ POLYGON = "polygon"
 def trnsfer_hex_to_rgb(hex):
     h = hex.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+@lru_cache
+def scale_bias_of_coordinate(obj_length, scale):
+    return obj_length / 2 * (1 - scale)
+
+
+@lru_cache
+def rotate_img(scaled_img, radian_angle):
+    return pygame.transform.rotate(
+        scaled_img,
+        (radian_angle * 180 / math.pi) % 360
+    )
+
+
+@lru_cache
+def scale_img(img, origin_width, origin_height, scale_ratio):
+    return pygame.transform.scale(
+        img, (int(origin_width * scale_ratio), int(origin_height * scale_ratio))
+    )
 
 
 class PygameView():
@@ -70,14 +92,14 @@ class PygameView():
         :return:
         '''
         self.draw_screen()
-        self.limit_pygame_screen()
+        self.adjust_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
             self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
                                       object_information["game_sys_info"]["view_center_coordinate"][1]]
             self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
             self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
         for game_object in object_information["background"]:
-            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1],self.scale)
+            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
         for game_object in object_information["object_list"]:
             # let object could be shifted
             self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
@@ -138,34 +160,34 @@ class PygameView():
     def draw_screen(self):
         self.screen.fill(self.background_color)  # hex # need turn to RGB
 
-    def draw_image(self, image_id, x, y, width, height, angle, scale=1):
-        image = pygame.transform.rotate(
-            pygame.transform.scale(self.image_dict[image_id], (int(width * scale), int(height * scale))),
-            (angle * 180 / math.pi) % 360)
-        rect = image.get_rect()
-        rect.x = x * scale + self.width / 2 * (1 - scale)
-        rect.y = y * scale + self.height / 2 * (1 - scale)
-        self.screen.blit(image, rect)
+    def draw_image(self, image_id, x, y, width, height, radian_angle, scale=1):
+        scaled_img = scale_img(self.image_dict[image_id], width, height, scale)
+        rotated_img = rotate_img(scaled_img, radian_angle)
+        # print(angle)
+        rect = rotated_img.get_rect()
+        rect.x = x * scale + scale_bias_of_coordinate(self.width, scale)
+        rect.y = y * scale + scale_bias_of_coordinate(self.height, scale)
+        self.screen.blit(rotated_img, rect)
 
     def draw_rect(self, x, y, width, height, color, scale=1):
         pygame.draw.rect(self.screen, color,
-                         pygame.Rect(x * scale + self.width / 2 * (1 - scale),
-                                     y * scale + self.height / 2 * (1 - scale),
+                         pygame.Rect(x * scale + scale_bias_of_coordinate(self.width, scale),
+                                     y * scale + scale_bias_of_coordinate(self.height, scale),
                                      width * scale,
                                      height * scale))
 
     def draw_line(self, x1, y1, x2, y2, width, color, scale=1):
         # TODO revise
-        offset_width = self.width / 2 * (1 - scale)
-        offset_height = self.height / 2 * (1 - scale)
+        offset_width = scale_bias_of_coordinate(self.width, scale)
+        offset_height = scale_bias_of_coordinate(self.height, scale)
         pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
-                         (x2 * scale + offset_width, y2 * scale + offset_height), (int)(width * scale))
+                         (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
 
     def draw_polygon(self, points, color, bias_x=0, bias_y=0, scale=1):
         vertices = []
         for p in points:
-            vertices.append(((p["x"] + bias_x) * scale + self.width / 2 * (1 - scale),
-                             (p["y"] + bias_y) * scale + self.height / 2 * (1 - scale)))
+            vertices.append(((p["x"] + bias_x) * scale + scale_bias_of_coordinate(self.width, scale),
+                             (p["y"] + bias_y) * scale + scale_bias_of_coordinate(self.height, scale)))
         pygame.draw.polygon(self.screen, color, vertices)
 
     def flip(self):
@@ -182,11 +204,14 @@ class PygameView():
             self.font[font_style] = font
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.x, text_rect.y = (x * scale + self.width / 2 * (1 - scale), y * scale + self.height / 2 * (1 - scale))
+        text_rect.x, text_rect.y = (x * scale + scale_bias_of_coordinate(self.width, scale),
+                                    y * scale + scale_bias_of_coordinate(self.height, scale))
         self.screen.blit(text_surface, text_rect)
 
-    def limit_pygame_screen(self):
-
+    def adjust_pygame_screen(self):
+        """
+        zoom in zoom out and shift the window.
+        """
         key_state = pygame.key.get_pressed()
         # 上下左右 放大縮小
         if key_state[pygame.K_i]:
@@ -201,10 +226,13 @@ class PygameView():
         elif key_state[pygame.K_l]:
             self.bias_point_var[0] -= 10
             self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
-        elif key_state[pygame.K_o]:
+
+        if key_state[pygame.K_o]:
             self.scale += 0.01
         elif key_state[pygame.K_u]:
             self.scale -= 0.01
+            if self.scale < 0.05:
+                self.scale = 0.05
         # 隱藏鍵
         if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
