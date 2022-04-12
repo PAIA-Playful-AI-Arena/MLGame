@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.3.2] - 2022.04.12
+**修復**
+* 改善 MLGame 繪圖機制
+
 ### [9.3.1] - 2022.04.08
 **變更**
 * MLGame會將鍵盤事件(英文字母、數字、方向鍵)，傳送給 AI Client。
