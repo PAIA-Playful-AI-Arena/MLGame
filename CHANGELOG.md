@@ -2,6 +2,14 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.3.3] - 2022.04.14
+
+**新增**
+* 在 `view_model.py` 中 新增 `create_scene_progress_data` 
+
+**變更**
+* `get_scene_progress_data` 須回傳 `frame`
+
 ### [9.3.2] - 2022.04.12
 **修復**
 * 改善 MLGame 繪圖機制
