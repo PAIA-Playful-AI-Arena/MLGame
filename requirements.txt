@@ -1,5 +1,4 @@
-
-box2d-py==2.3.8
+# box2d-py==2.3.8
 # if you install box2d-py with trouble , you could try to comment last line and uncomment next line
 # Box2D==2.3.10
 pygame==2.0.1
