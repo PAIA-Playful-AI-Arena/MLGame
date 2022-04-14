@@ -1,6 +1,13 @@
 # Change Log
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+### [9.3.3] - 2022.04.14
+
+**Added**
+* Add  `create_scene_progress_data` in `view_model.py`  
+
+**Change**
+*  Must return `frame` in`get_scene_progress_data` 
 
 ### [9.3.2] - 2022.04.12
 **Fixed**
