@@ -1,6 +1,6 @@
 {
   "game_name": "easy_game",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "url": "None",
   "game_params": [
     {
@@ -16,7 +16,7 @@
       "name": "total_point_count",
       "verbose": "總食物數量",
       "type": "int",
-      "choices":[ 5 ,10 ,15,20,15],
+      "choices":[ 5 ,10 ,15,20,25,30,35,40,45,50],
       "help": "set the total number of points",
       "default": 10
     },

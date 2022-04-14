@@ -5,7 +5,8 @@ import pygame
 
 from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
 from mlgame.view.test_decorator import check_game_progress, check_game_result
-from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene
+from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene, \
+    create_scene_progress_data
 from .game_object import Ball, Food
 
 ASSET_PATH = path.join(path.dirname(__file__), "../asset")
@@ -21,7 +22,7 @@ class EasyGame(PaiaGame):
         self.game_result_state = GameResultState.FAIL
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         print(color)
-        self.ball = Ball("#"+color)
+        self.ball = Ball("#" + color)
         self.foods = pygame.sprite.Group()
         self.score = 0
         self.score_to_win = score
@@ -119,26 +120,12 @@ class EasyGame(PaiaGame):
             foods_data.append(food.game_object_data)
         game_obj_list = [self.ball.game_object_data]
         game_obj_list.extend(foods_data)
-        background = create_image_view_data("background", 0, 0, 800, 600)
-        score_text = create_text_view_data("Score = " + str(self.score), 650, 50, "#FF0000")
-        timer_text = create_text_view_data("Timer = " + str(self._timer) + " s", 650, 100, "#FFAA00")
-        scene_progress = {
-            # background view data will be draw first
-            "background": [
-                background,
-
-            ],
-            # game object view data will be draw on screen by order , and it could be shifted by WASD
-            "object_list": game_obj_list,
-            "toggle": [timer_text],
-            "foreground": [
-                score_text
-            ],
-            # other information to display on web
-            "user_info": [],
-            # other information to display on web
-            "game_sys_info": {}
-        }
+        backgrounds = [create_image_view_data("background", 0, 0, 800, 600)]
+        foregrounds = [create_text_view_data(f"Score = {str(self.score)}", 650, 50, "#FF0000", "24px Arial BOLD")]
+        toggle_objs = [create_text_view_data(f"Timer = {str(self._timer)} s", 650, 100, "#FFAA00", "24px Arial")]
+        scene_progress = create_scene_progress_data(frame=self.frame_count, background=backgrounds,
+                                                    object_list=game_obj_list,
+                                                    foreground=foregrounds, toggle=toggle_objs)
         return scene_progress
 
     @check_game_result
@@ -151,16 +138,14 @@ class EasyGame(PaiaGame):
         return {"frame_used": self.frame_count,
                 "state": self.game_result_state,
                 "attachment": [
-
-                    {"player": self.ai_clients()[0]["name"],
-                     "score": self.score,
-                     "rank": 1
-                     }
+                    {
+                        "player": self.ai_clients()[0]["name"],
+                        "rank": 1,
+                        "score": self.score
+                    }
                 ]
 
                 }
-
-        pass
 
     def get_keyboard_command(self):
         """
