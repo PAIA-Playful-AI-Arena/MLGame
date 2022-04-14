@@ -3,7 +3,6 @@ games/*
 !games/pingpong
 !games/Maze_Car
 !games/RacingCar
-!games/snake
 !games/easy_game
 kylin_dev/
 *.env

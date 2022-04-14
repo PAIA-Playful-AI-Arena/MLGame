@@ -1,14 +1,13 @@
 import random
 
 
-class Scene():
+class Scene:
     def __init__(self, width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
         """
         This is a value object
         :param width:
         :param height:
         :param color:
-        :param image:
         """
         self.width = width
         self.height = height
@@ -37,18 +36,24 @@ def create_scene_view_data(width: int, height: int, color: str = "#000000"):
     }
 
 
-def create_scene_progress_data(background: list, object_list: list, toggle=None, foreground=None,
-                               user_info=None, game_sys_info=None):
-    if game_sys_info is None:
-        game_sys_info = {}
-    if user_info is None:
-        user_info = []
-    if foreground is None:
-        foreground = []
+def create_scene_progress_data(frame: int = 0, background=None, object_list=None,
+                               toggle=None, foreground=None, user_info=None,
+                               game_sys_info=None):
+    if background is None:
+        background = []
+    if object_list is None:
+        object_list = []
     if toggle is None:
         toggle = []
+    if foreground is None:
+        foreground = []
+    if user_info is None:
+        user_info = []
+    if game_sys_info is None:
+        game_sys_info = {}
     return {
         # background view data will be draw first
+        "frame": frame,
         "background": background,
         # game object view data will be draw on screen by order , and it could be shifted by WASD
         "object_list": object_list,

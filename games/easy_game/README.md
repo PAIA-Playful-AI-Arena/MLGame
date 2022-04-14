@@ -1,10 +1,10 @@
 # **Easy Game**
 
 [comment]: <> (![python]&#40;https://img.shields.io/pypi/pyversions/pygame&#41;)
-![pygame](https://img.shields.io/badge/release-1.0.2-red.svg)
+![pygame](https://img.shields.io/badge/release-1.1.0-red.svg)
 
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
-[![MLGame](https://img.shields.io/badge/MLGame-9.2.3-<COLOR>.svg)](https://github.com/PAIA-Playful-AI-Arena/MLGame)
+[![MLGame](https://img.shields.io/badge/MLGame-9.4.0-<COLOR>.svg)](https://github.com/PAIA-Playful-AI-Arena/MLGame)
 [![pygame](https://img.shields.io/badge/pygame-2.0.1-<COLOR>.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
 
 

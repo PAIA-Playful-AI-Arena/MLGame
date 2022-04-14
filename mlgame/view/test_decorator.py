@@ -5,11 +5,7 @@ from mlgame.gamedev.game_interface import GameResultState
 from mlgame.view.view_model import get_scene_init_sample_data, get_dummy_progress_data
 
 K_ATTACHMENT = "attachment"
-
-K_RANKS = "ranks"
-
 K_STATE = "state"
-
 K_ASSET = "assets"
 
 OBJ_TYPE_TXT = "text"
@@ -19,7 +15,6 @@ OBJ_TYPE_POLY = "polygon"
 OBJ_TYPE_LINE = "line"
 
 K_FRAME_USED = "frame_used"
-K_RANK = "ranks"
 K_URL = "url"
 K_IMG_ID = "image_id"
 K_IMG = "images"
@@ -122,7 +117,8 @@ def assert_game_progress_data(data: dict = None):
     """
 
     assert type(data) == dict
-    assert_contains_keys(data, ["background", "object_list", "toggle", "foreground", "user_info", "game_sys_info"])
+    assert_contains_keys(data,
+                         ["frame", "background", "object_list", "toggle", "foreground", "user_info", "game_sys_info"])
     assert type(data[K_Game_Objs]) == list
     total_objs = []
     total_objs.extend(data[K_Game_Objs])
@@ -155,12 +151,6 @@ def assert_game_result_data(data: dict = None):
     assert data[K_STATE] in GameResultState.__dict__.values()
 
     assert isinstance(data[K_ATTACHMENT], list)
-
-    # check every player in every rank
-    # for r in data[K_RANK]:
-    #     assert type(r) == list
-    #     for game_result in r:
-    #         assert_contains_keys(game_result, ["player", "game_result"])
 
 
 def check_game_result(func):

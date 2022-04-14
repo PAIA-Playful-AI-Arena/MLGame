@@ -194,7 +194,10 @@ class PygameView():
             font_style_list = font_style.split(" ", -1)
             size = int(font_style_list[0].replace("px", "", 1))
             font_type = font_style_list[1].lower()
-            font = pygame.font.Font(pygame.font.match_font(font_type), size * scale)
+            if "BOLD" in font_style_list:
+                font = pygame.font.Font(pygame.font.match_font(font_type,bold=True), size * scale)
+            else:
+                font = pygame.font.Font(pygame.font.match_font(font_type), size * scale)
             self.font[font_style] = font
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
