@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.3.4] - 2022.04.18
+**修復**
+* 修正 easy_game 的 `main.py`
+
 ### [9.3.3] - 2022.04.14
 
 **新增**
