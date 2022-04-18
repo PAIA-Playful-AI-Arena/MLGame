@@ -155,14 +155,14 @@ class EasyGame(PaiaGame):
         key_pressed_list = pygame.key.get_pressed()
         if key_pressed_list[pygame.K_UP]:
             cmd_1p.append("UP")
-        if key_pressed_list[pygame.K_DOWN]:
+        elif key_pressed_list[pygame.K_DOWN]:
             cmd_1p.append("DOWN")
-
-        if key_pressed_list[pygame.K_LEFT]:
+        elif key_pressed_list[pygame.K_LEFT]:
             cmd_1p.append("LEFT")
-
-        if key_pressed_list[pygame.K_RIGHT]:
+        elif key_pressed_list[pygame.K_RIGHT]:
             cmd_1p.append("RIGHT")
+        else:
+            cmd_1p.append("NONE")
         ai_1p = self.ai_clients()[0]["name"]
         return {ai_1p: cmd_1p}
 

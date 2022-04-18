@@ -68,7 +68,10 @@ class GameManualModeExecutor:
                 self._recorder.flush_to_file()
                 # print(json.dumps(game.get_game_result(), indent=2))
                 attachments = game.get_game_result()['attachment']
-                print(pd.DataFrame(attachments))
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.width', None)
+                pd.set_option('max_colwidth', None)
+                print(pd.DataFrame(attachments).to_markdown())
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
                 game_view.reset()
@@ -180,7 +183,7 @@ class GameMLModeExecutor:
                 self._recorder.flush_to_file()
                 # print(json.dumps(game.get_game_result(), indent=2))
                 attachments = game.get_game_result()['attachment']
-                print(pd.DataFrame(attachments))
+                print(pd.DataFrame(attachments).to_string())
 
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
