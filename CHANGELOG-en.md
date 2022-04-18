@@ -3,6 +3,10 @@
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+### [9.3.5] - 2022.04.18
+**Added**
+* Add  `toggle_with_bias` in game_progress 
+
 ### [9.3.4] - 2022.04.18
 **Fixed**
 * Fix `main.py` in easy_game.
