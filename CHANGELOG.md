@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.3.5] - 2022.04.18
+**新增**
+* 新增 game_progress 欄位: `toggle_with_bias` 
+
 ### [9.3.4] - 2022.04.18
 **修復**
 * 修正 easy_game 的 `main.py`
