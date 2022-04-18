@@ -1,6 +1,13 @@
 # Change Log
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+
+### [9.3.4] - 2022.04.18
+**Fixed**
+* Fix `main.py` in easy_game.
+
+
 ### [9.3.3] - 2022.04.14
 
 **Added**
