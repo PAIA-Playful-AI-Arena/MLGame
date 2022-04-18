@@ -37,7 +37,7 @@ def create_scene_view_data(width: int, height: int, color: str = "#000000"):
 
 
 def create_scene_progress_data(frame: int = 0, background=None, object_list=None,
-                               toggle=None, foreground=None, user_info=None,
+                               toggle=None, toggle_with_bias=None, foreground=None, user_info=None,
                                game_sys_info=None):
     if background is None:
         background = []
@@ -45,6 +45,8 @@ def create_scene_progress_data(frame: int = 0, background=None, object_list=None
         object_list = []
     if toggle is None:
         toggle = []
+    if toggle_with_bias is None:
+        toggle_with_bias = []
     if foreground is None:
         foreground = []
     if user_info is None:
@@ -57,6 +59,7 @@ def create_scene_progress_data(frame: int = 0, background=None, object_list=None
         "background": background,
         # game object view data will be draw on screen by order , and it could be shifted by WASD
         "object_list": object_list,
+        "toggle_with_bias": toggle_with_bias,
         "toggle": toggle,
         "foreground": foreground,
         # other information to display on web
@@ -109,13 +112,11 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
 
 def create_line_view_data(name: str, x1: int, y1: int, x2: int, y2: int, color: str, width: int = 2):
     """
-    這是一個用來繪製矩形的資料格式，
-    "type"表示不同的類型
-    "x""y"表示其位置，位置表示物體左上角的座標
-    "size"表示其大小
-    "image"表示其圖片
-    "angle"表示其順時針旋轉的角度
+    這是一個用來繪製直線的資料格式，
+    "x1","y1"表示起點位置，位置表示物體左上角的座標
+    "x2","y2"表示終點位置，位置表示物體左上角的座標
     "color"以字串表示
+    "width" 表示寬度
     :return:
     """
     return {"type": "line",

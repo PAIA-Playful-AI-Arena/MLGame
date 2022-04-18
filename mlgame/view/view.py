@@ -102,6 +102,10 @@ class PygameView():
             # let object could be shifted
             self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
         if self._toggle_on:
+            for game_object in object_information["toggle_with_bias"]:
+                # let object could be shifted
+                self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1],
+                                                            self.scale)
             for game_object in object_information["toggle"]:
                 self.draw_game_obj_according_type(game_object)
         for game_object in object_information["foreground"]:
