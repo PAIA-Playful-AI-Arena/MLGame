@@ -68,10 +68,8 @@ class GameManualModeExecutor:
                 self._recorder.flush_to_file()
                 # print(json.dumps(game.get_game_result(), indent=2))
                 attachments = game.get_game_result()['attachment']
-                pd.set_option('display.max_columns', None)
-                pd.set_option('display.width', None)
-                pd.set_option('max_colwidth', None)
-                print(pd.DataFrame(attachments).to_markdown())
+                print(pd.DataFrame(attachments).to_string())
+
                 if self._execution_cmd.one_shot_mode or result == "QUIT":
                     break
                 game_view.reset()
@@ -97,8 +95,6 @@ class GameMLModeExecutorProperty:
         self.game_cls = game_cls
         self.ml_names = ml_names
         self.comm_manager = GameCommManager()
-
-
 
 
 class GameMLModeExecutor:
@@ -176,7 +172,7 @@ class GameMLModeExecutor:
                 # send to ml_clients and don't parse any command , while client reset ,
                 # self._wait_all_ml_ready() will works and not blocks the process
                 for ml_name in self._active_ml_names:
-                    self._comm_manager.send_to_ml((scene_info_dict[ml_name],[]), ml_name)
+                    self._comm_manager.send_to_ml((scene_info_dict[ml_name], []), ml_name)
                 # TODO check what happen when bigfile is saved
                 time.sleep(0.1)
                 self._recorder.record(scene_info_dict, {})
