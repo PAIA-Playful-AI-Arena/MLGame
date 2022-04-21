@@ -29,7 +29,6 @@ def execute():
         _run_manual_mode(execution_cmd, game_config.game_setup)
     else:
         _run_ml_mode(execution_cmd, game_config.game_setup)
-
 def _parse_command_line():
     """
     Parse the command line arguments

@@ -3,7 +3,6 @@ Handle the game defined config
 """
 
 import importlib
-import inspect
 
 from .exceptions import GameConfigError
 

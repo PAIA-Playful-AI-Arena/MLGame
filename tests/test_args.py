@@ -1,8 +1,12 @@
 import argparse
 import importlib
+import inspect
 import os
+import random
 import sys
 from argparse import ArgumentParser, REMAINDER
+
+from tests.mock_included_file import MockMLPlay
 
 version = "9.3.5"
 
@@ -15,7 +19,7 @@ def validate_file(f):
     return f
 
 
-def get_command_parser():
+def get_args_parser():
     """
     Generate an ArgumentParser for parse the arguments in the command line
     """
@@ -39,58 +43,88 @@ def get_command_parser():
                        help="show this help message and exit. "
                             "If this flag is specified after the <game>, "
                             "show the help message of the game instead.")
-    # group.add_argument("-l", "--list", action="store_true", dest="list_games",
-    #                    help="list available games. If the game in the 'games' directory "
-    #                         "provides 'config.py' which can be loaded, it will be listed.")
 
-    group = parser.add_argument_group(title="game execution options",
-                                      description="Game execution options must be specified before <game> arguments.")
-    # group.add_argument("-f", "--fps", type=int, default=30,
-    #                    help="the updating frequency of the game process [default: %(default)s]")
-    # group.add_argument("-m", "--manual-mode", action="store_true",
-    #                    help="start the game in the manual mode instead of "
-    #                         "the machine learning mode [default: %(default)s]")
-    # group.add_argument("-r", "--record", action="store_true", dest="record_progress",
-    #                    help="pickle the game progress (a list of SceneInfo) to the log file. "
-    #                         "One file for a round, and stored in '<game>/log/' directory. "
-    #                         "[default: %(default)s]")
-    # group.add_argument("-1", "--one-shot", action="store_true", dest="one_shot_mode",
-    #                    help="quit the game when the game is passed or is over. "
-    #                         "Otherwise, the game will restart automatically. [default: %(default)s]")
+    group.add_argument("-f", "--fps", type=int, default=30,
+                       help="the updating frequency of the game process [default: %(default)s]")
 
-    group.add_argument("-i", "--input-script",
+    group.add_argument("-1", "--one-shot", action="store_true",
+                       dest="one_shot_mode",
+                       help="quit the game when the game is passed or is over. "
+                            "Otherwise, the game will restart automatically. [default: %(default)s]")
+
+    group.add_argument("-i", "--input-ai",
                        # type=validate_file,
                        type=os.path.abspath,
                        action="append",
+                       dest="ai_clients",
                        default=None, metavar="SCRIPT",
                        help="specify user script(s) for the machine learning mode. "
                             "For multiple user scripts, use this flag multiple times. "
-                            "The script path starts from 'games/<game_name>/ml/' directory. "
-                            "'-i ml_play.py' means the script path is 'games/<game_name>/ml/ml_play.py', and "
-                            "'-i foo/ml_play.py' means the script path is 'games<game_name>/ml/foo/ml_play.py'. "
-                            "If the script is in the subdirectory of the 'ml' directory, make sure the "
-                            "subdirectory has '__init__.py' file.")
+                            "The script path could be relative path or absolute path "
+                       )
 
     return parser
 
 
-if __name__ == '__main__':
-    print(sys.argv)
-    # filename will be placed at first arg
-    assert "test_args.py" in sys.argv[0]
+def test_to_get_fps_and_one_shot_mode():
+    fps = random.randint(10, 100)
+    arg_str = f"-f {fps} " \
+              " mygame --user 1 --map 2"
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    assert parsed_args.fps == fps
+    assert not parsed_args.one_shot_mode
 
-    cmd_parser = get_command_parser()
-    parsed_args = cmd_parser.parse_args()
-    # print(parsed_args)
+    arg_str = f"-1 " \
+              " mygame --user 1 --map 2"
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    assert parsed_args.fps == 30
+    assert parsed_args.one_shot_mode
+    assert parsed_args.ai_clients is None
+    # parse args to get file and import module class
 
-    # parse args to get file
-    file = parsed_args.input_script[0]
-    # print(file)
 
-    # import module
-    module_name = os.path.basename(file)
-    spec = importlib.util.spec_from_file_location(module_name, file)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    print(module)
-    # assert "./mock_included_file.py" in parsed_args.input_script
+def test_to_get_ai_module():
+    arg_str = "-i ./mock_included_file.py -i ../tests/mock_included_file.py " \
+              "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
+              " mygame --user 1 --map 2"
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    assert parsed_args.ai_clients
+    # parse args to get file and import module class
+    for file in parsed_args.ai_clients:
+        module_name = os.path.basename(file)
+        module_name = module_name.replace('.py', '')
+
+        spec = importlib.util.spec_from_file_location(module_name, file)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        assert inspect.ismodule(module)
+        assert inspect.getmembers(module, inspect.isclass)
+        assert inspect.isclass(module.MockMLPlay)
+        obj1 = module.MockMLPlay()
+        obj2 = MockMLPlay()
+        assert type(obj1).__name__ == type(obj2).__name__
+        assert obj2.func() == obj1.func()
+
+# if __name__ == '__main__':
+#     # filename will be placed at first arg
+#     cmd = "-i ./mock_included_file.py -i ./mock_included_file.py mygame --user 1 --map 2"
+#     # sys.argv = cmd.split(" ")
+#     cmd_parser = get_command_parser()
+#     parsed_args = cmd_parser.parse_args(cmd.split())
+#     print(parsed_args)
+
+# parse args to get file
+# file = parsed_args.input_script[0]
+# print(file)
+
+# import module
+# module_name = os.path.basename(file)
+# spec = importlib.util.spec_from_file_location(module_name, file)
+# module = importlib.util.module_from_spec(spec)
+# spec.loader.exec_module(module)
+# print(module)
+# assert "./mock_included_file.py" in parsed_args.input_script
