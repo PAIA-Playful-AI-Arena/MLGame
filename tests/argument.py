@@ -79,7 +79,7 @@ class MLGameArgument(pydantic.BaseModel):
         return values['ai_clients'] is None
 
 
-def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
+def create_MLGameArgument_obj(arg_str) -> MLGameArgument :
     parsed_args = get_parsed_args(arg_str)
     print(parsed_args)
     arg_obj = MLGameArgument(**parsed_args.__dict__)
