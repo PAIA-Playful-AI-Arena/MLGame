@@ -2,66 +2,9 @@ import importlib
 import inspect
 import os
 import random
-import sys
-from argparse import ArgumentParser, REMAINDER
 
-from tests.argument import MLGameArgument
+from tests.argument import MLGameArgument, get_parsed_args, create_MLGameArgument_obj
 from tests.mock_included_file import MockMLPlay
-
-version = "9.3.5"
-
-
-def get_args_parser():
-    """
-    Generate an ArgumentParser for parse the arguments in the command line
-    """
-    usage_str = ("python %(prog)s [options] <game> [game_params]")
-    description_str = ("A platform for applying machine learning algorithm "
-                       "to play pixel games. "
-                       "In default, the game runs in the machine learning mode. ")
-
-    parser = ArgumentParser(usage=usage_str, description=description_str,
-                            add_help=False)
-
-    parser.add_argument("game", type=str, nargs="?",
-                        help="the name of the game to be started")
-    parser.add_argument("game_params", nargs=REMAINDER, default=None,
-                        help="[optional] the additional settings for the game. "
-                             "Note that all arguments after <game> will be collected to 'game_params'.")
-
-    group = parser.add_argument_group(title="functional options")
-    group.add_argument("--version", action="version", version=version)
-    group.add_argument("-h", "--help", action="store_true",
-                       help="show this help message and exit. "
-                            "If this flag is specified after the <game>, "
-                            "show the help message of the game instead.")
-
-    group.add_argument("-f", "--fps", type=int, default=30,
-                       help="the updating frequency of the game process [default: %(default)s]")
-
-    group.add_argument("-1", "--one-shot", action="store_true",
-                       dest="one_shot_mode",
-                       help="quit the game when the game is passed or is over. "
-                            "Otherwise, the game will restart automatically. [default: %(default)s]")
-
-    group.add_argument("-i", "--input-ai",
-                       # type=validate_file,
-                       type=os.path.abspath,
-                       action="append",
-                       dest="ai_clients",
-                       default=None, metavar="SCRIPT",
-                       help="specify user script(s) for the machine learning mode. "
-                            "For multiple user scripts, use this flag multiple times. "
-                            "The script path could be relative path or absolute path "
-                       )
-
-    return parser
-
-
-def get_parsed_args(arg_str: str):
-    arg_parser = get_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
-    return parsed_args
 
 
 def test_to_get_fps_and_one_shot_mode():
@@ -89,50 +32,38 @@ def test_to_get_ai_module():
     assert parsed_args.ai_clients
     # parse args to get file and import module class
     for file in parsed_args.ai_clients:
-        module_name = os.path.basename(file)
-        module_name = module_name.replace('.py', '')
+        assert_contain_MockMLPlay(file)
 
-        spec = importlib.util.spec_from_file_location(module_name, file)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
 
-        assert inspect.ismodule(module)
-        assert inspect.getmembers(module, inspect.isclass)
-        assert inspect.isclass(module.MockMLPlay)
-        obj1 = module.MockMLPlay()
-        obj2 = MockMLPlay()
-        assert type(obj1).__name__ == type(obj2).__name__
-        assert obj2.func() == obj1.func()
+def assert_contain_MockMLPlay(file):
+    module_name = os.path.basename(file)
+    module_name = module_name.replace('.py', '')
+    spec = importlib.util.spec_from_file_location(module_name, file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert inspect.ismodule(module)
+    assert inspect.getmembers(module, inspect.isclass)
+    assert inspect.isclass(module.MockMLPlay)
+    obj1 = module.MockMLPlay()
+    obj2 = MockMLPlay()
+    assert type(obj1).__name__ == type(obj2).__name__
+    assert obj2.func() == obj1.func()
 
 
 def test_use_argument_model():
     arg_str = "-f 60 -1 -i ./mock_included_file.py -i ../tests/mock_included_file.py " \
               "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
-              " mygame --user 1 --map 2"
-    parsed_args = get_parsed_args(arg_str)
-    arg_obj = MLGameArgument(**parsed_args.__dict__)
+              " ../games/easy_game --score 10 --color FF9800 --time_to_play 600 --total_point 50"
+    arg_obj = create_MLGameArgument_obj(arg_str)
     print(arg_obj)
-    assert arg_obj
-    assert arg_obj.one_shot_mode == True
-    assert arg_obj.is_manual == False
+    assert arg_obj.one_shot_mode is True
+    assert arg_obj.is_manual is False
+    for file in arg_obj.ai_clients:
+        assert_contain_MockMLPlay(file)
+    # TODO parse game parameters
+    # TODO catch exception when unvalidated
+
+    # assert arg_obj.game_folder
+    # assert arg_obj.game_folder
+
     pass
-
-# if __name__ == '__main__':
-#     # filename will be placed at first arg
-#     cmd = "-i ./mock_included_file.py -i ./mock_included_file.py mygame --user 1 --map 2"
-#     # sys.argv = cmd.split(" ")
-#     cmd_parser = get_command_parser()
-#     parsed_args = cmd_parser.parse_args(cmd.split())
-#     print(parsed_args)
-
-# parse args to get file
-# file = parsed_args.input_script[0]
-# print(file)
-
-# import module
-# module_name = os.path.basename(file)
-# spec = importlib.util.spec_from_file_location(module_name, file)
-# module = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(module)
-# print(module)
-# assert "./mock_included_file.py" in parsed_args.input_script
