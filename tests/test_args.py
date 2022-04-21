@@ -1,4 +1,3 @@
-import argparse
 import importlib
 import inspect
 import os
@@ -6,17 +5,10 @@ import random
 import sys
 from argparse import ArgumentParser, REMAINDER
 
+from tests.argument import MLGameArgument
 from tests.mock_included_file import MockMLPlay
 
 version = "9.3.5"
-
-
-def validate_file(f):
-    if not os.path.exists(f):
-        # Argparse uses the ArgumentTypeError to give a rejection message like:
-        # error: argument input: x does not exist
-        raise argparse.ArgumentTypeError("{0} does not exist".format(f))
-    return f
 
 
 def get_args_parser():
@@ -66,19 +58,23 @@ def get_args_parser():
     return parser
 
 
+def get_parsed_args(arg_str: str):
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    return parsed_args
+
+
 def test_to_get_fps_and_one_shot_mode():
     fps = random.randint(10, 100)
     arg_str = f"-f {fps} " \
               " mygame --user 1 --map 2"
-    arg_parser = get_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
+    parsed_args = get_parsed_args(arg_str)
     assert parsed_args.fps == fps
     assert not parsed_args.one_shot_mode
 
     arg_str = f"-1 " \
               " mygame --user 1 --map 2"
-    arg_parser = get_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
+    parsed_args = get_parsed_args(arg_str)
     assert parsed_args.fps == 30
     assert parsed_args.one_shot_mode
     assert parsed_args.ai_clients is None
@@ -89,8 +85,7 @@ def test_to_get_ai_module():
     arg_str = "-i ./mock_included_file.py -i ../tests/mock_included_file.py " \
               "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
               " mygame --user 1 --map 2"
-    arg_parser = get_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
+    parsed_args = get_parsed_args(arg_str)
     assert parsed_args.ai_clients
     # parse args to get file and import module class
     for file in parsed_args.ai_clients:
@@ -108,6 +103,19 @@ def test_to_get_ai_module():
         obj2 = MockMLPlay()
         assert type(obj1).__name__ == type(obj2).__name__
         assert obj2.func() == obj1.func()
+
+
+def test_use_argument_model():
+    arg_str = "-f 60 -1 -i ./mock_included_file.py -i ../tests/mock_included_file.py " \
+              "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
+              " mygame --user 1 --map 2"
+    parsed_args = get_parsed_args(arg_str)
+    arg_obj = MLGameArgument(**parsed_args.__dict__)
+    print(arg_obj)
+    assert arg_obj
+    assert arg_obj.one_shot_mode == True
+    assert arg_obj.is_manual == False
+    pass
 
 # if __name__ == '__main__':
 #     # filename will be placed at first arg
