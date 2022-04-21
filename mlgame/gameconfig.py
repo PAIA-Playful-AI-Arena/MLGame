@@ -13,16 +13,16 @@ class GameConfig:
     The data class storing the game defined config
     """
 
-    def __init__(self, game_name):
+    def __init__(self, game_folder:str):
         """
         Parse the game defined config and generate a `GameConfig` instance
         """
-        game_config = self._load_game_config(game_name)
+        game_config = self._load_game_config(game_folder)
 
         self.game_version = getattr(game_config, "GAME_VERSION", "")
         self.game_params = getattr(game_config, "GAME_PARAMS", {
             "()": {
-                "prog": game_name,
+                "prog": game_folder,
                 "game_usage": "%(prog)s"
             }
         })
@@ -35,20 +35,26 @@ class GameConfig:
 
         self._process_game_setup_dict()
 
-    def _load_game_config(self, game_name):
+    def _load_game_config(self, game_folder):
         """
         Load the game config
         """
         try:
-            game_config = importlib.import_module(f"games.{game_name}.config")
+            # game_config = importlib.import_module(f"{game_folder}.config")
+
+            spec = importlib.util.spec_from_file_location("config", f"{game_folder}/config.py")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            game_config = module
+            print(module)
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
-            if failed_module_name == "games." + game_name:
+            if failed_module_name == "games." + game_folder:
                 msg = (
-                    f"Game '{game_name}' dosen't exist or "
+                    f"Game '{game_folder}' dosen't exist or "
                     "it doesn't provide '__init__.py' in the game directory")
             else:
-                msg = f"Game '{game_name}' dosen't provide '{CONFIG_FILE_NAME}'"
+                msg = f"Game '{game_folder}' dosen't provide '{CONFIG_FILE_NAME}'"
             raise GameConfigError(msg)
         else:
             return game_config

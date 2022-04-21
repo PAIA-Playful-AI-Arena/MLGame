@@ -2,9 +2,20 @@ import importlib
 import inspect
 import os
 import random
+import sys
+import time
 
+import pandas as pd
 import pydantic
 
+from mlgame import errno
+from mlgame.exceptions import GameProcessError
+from mlgame.execution import _run_manual_mode
+from mlgame.gameconfig import GameConfig
+from mlgame.gamedev.game_interface import PaiaGame
+from mlgame.gamedev.generic import quit_or_esc
+from mlgame.utils.argparser_generator import get_parser_from_dict
+from mlgame.view.view import PygameView
 from tests.argument import MLGameArgument, get_parsed_args, create_MLGameArgument_obj
 from tests.mock_included_file import MockMLPlay
 
@@ -55,6 +66,14 @@ def assert_contain_MockMLPlay(file):
 def test_use_argument_model():
     arg_str = "-f 60 -1 -i ./mock_included_file.py -i ../tests/mock_included_file.py " \
               "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
+              " ../games/easy_gam --score 10 --color FF9800 --time_to_play 600 --total_point 50"
+    try:
+        arg_obj = create_MLGameArgument_obj(arg_str)
+        assert False
+    except pydantic.ValidationError as e:
+        print(e.__str__())
+    arg_str = "-f 60 -1 -i ./mock_included_file.py -i ../tests/mock_included_file.py " \
+              "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
               " ../games/easy_game --score 10 --color FF9800 --time_to_play 600 --total_point 50"
     arg_obj = create_MLGameArgument_obj(arg_str)
     assert arg_obj.one_shot_mode is True
@@ -62,17 +81,65 @@ def test_use_argument_model():
     for file in arg_obj.ai_clients:
         assert_contain_MockMLPlay(file)
 
-    arg_str = "-f 60 -1 -i ./mock_included_file.py -i ../tests/mock_included_file.py " \
-              "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
-              " ../games/easy_gam --score 10 --color FF9800 --time_to_play 600 --total_point 50"
-    try:
-        arg_obj = create_MLGameArgument_obj(arg_str)
-        assert False
-    except pydantic.ValidationError as e:
-        print(e.__str__())
-    # TODO parse game parameters
 
-    # assert arg_obj.game_folder
-    # assert arg_obj.game_folder
+def test_play_easy_game():
+    arg_str = "-f 60 -1 "\
+              "../games/easy_game --score 10 --color FF9800 --time_to_play 600 --total_point 50"
+    arg_obj = create_MLGameArgument_obj(arg_str)
+    # parse game_folder/config.py
+    game_config = GameConfig(arg_obj.game_folder.__str__())
+    assert game_config
+    param_parser = get_parser_from_dict(game_config.game_params)
+    parsed_game_params = param_parser.parse_args(arg_obj.game_params)
 
+    # init game
+    # print(parsed_game_params)
+
+    if arg_obj.is_manual :
+        # _run_manual_mode(execution_cmd, game_config.game_setup)
+        game_setup = game_config.game_setup
+        ml_names = []
+        # for client in arg_obj.ai_clients:
+        #     ml_names.append(client["name"])
+
+        game_cls = game_setup["game"]
+        _frame_interval = 1/arg_obj.fps
+        try:
+            game = game_cls(**parsed_game_params.__dict__)
+            assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+
+            scene_init_info_dict = game.get_scene_init_data()
+            game_view = PygameView(scene_init_info_dict)
+            while not quit_or_esc():
+                scene_info_dict = game.game_to_player_data()
+                time.sleep(_frame_interval)
+                # pygame.time.Clock().tick_busy_loop(self._fps)
+                cmd_dict = game.get_keyboard_command()
+                # self._recorder.record(scene_info_dict, cmd_dict)
+
+                result = game.update(cmd_dict)
+                view_data = game.get_scene_progress_data()
+
+                game_view.draw(view_data)
+
+                if result == "RESET" or result == "QUIT":
+                    scene_info_dict = game.game_to_player_data()
+                    # self._recorder.record(scene_info_dict, {})
+                    # self._recorder.flush_to_file()
+                    # print(json.dumps(game.get_game_result(), indent=2))
+                    attachments = game.get_game_result()['attachment']
+                    print(pd.DataFrame(attachments).to_string())
+
+                    if arg_obj.one_shot_mode or result == "QUIT":
+                        break
+                    game_view.reset()
+                    game.reset()
+        except GameProcessError as e:
+            print("Error: Exception occurred in 'game' process:")
+            print(e.message)
+            sys.exit(errno.GAME_EXECUTION_ERROR)
+    else:
+        pass
+        # _run_ml_mode(execution_cmd, game_config.game_setup)
+    # Replace the input game_params with the parsed one
     pass

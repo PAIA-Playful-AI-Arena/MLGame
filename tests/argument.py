@@ -69,7 +69,7 @@ class MLGameArgument(pydantic.BaseModel):
     is_manual: bool = (ai_clients is None)
 
     game_folder: DirectoryPath
-    # game_params: str
+    game_params: List[str]
 
     # def __init__(self,**kwargs):
     #     self.
