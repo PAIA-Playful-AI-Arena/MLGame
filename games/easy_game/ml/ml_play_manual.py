@@ -3,7 +3,7 @@ import pygame
 
 
 class MLPlay:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         print("Initial ml script")
 
     def update(self, scene_info: dict, keyboard:list=[], *args, **kwargs):

@@ -16,11 +16,13 @@ from mlgame.view.view import PygameView
 
 
 class AIClientExecutor():
-    def __init__(self, ai_client_path, ai_comm: MLCommManager):
+    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, args, kwargs):
         self._frame_count = 0
         self.ai_comm = ai_comm
         self.ai_path = ai_client_path
         self._proc_name = ai_client_path
+        self._args_for_ml_play = args
+        self._kwargs_for_ml_play = kwargs
 
     def run(self):
         self.ai_comm.start_recv_obj_thread()
@@ -28,10 +30,9 @@ class AIClientExecutor():
         spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
         self.__module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.__module)
-        # TODO add init args
-        # self.ml = self.__module.MLPlay(*self._init_args, **self._init_kwargs)
-        self.ml = self.__module.MLPlay()
-        # cmd = self.ml.update({})
+
+        ai_obj = self.__module.MLPlay(*self._args_for_ml_play, **self._kwargs_for_ml_play)
+        # cmd = ai_obj.update({})
         print("             AI Client runs")
         self._ml_ready()
         while True:
@@ -40,10 +41,10 @@ class AIClientExecutor():
                 # game over
                 break
             # assert keyboard_info == "1"
-            command = self.ml.update(scene_info, keyboard_info)
+            command = ai_obj.update(scene_info, keyboard_info)
             if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
                 command = "RESET"
-                # self.ml.reset()
+                ai_obj.reset()
                 self._frame_count = 0
                 self._ml_ready()
                 continue
@@ -59,7 +60,7 @@ class AIClientExecutor():
 
         # Stop the client of the crosslang module
         if self.__module == "mlgame.crosslang.ml_play":
-            self.ml.stop_client()
+            ai_obj.stop_client()
         print("             AI Client ends")
 
     def _ml_ready(self):
@@ -70,19 +71,15 @@ class AIClientExecutor():
 
 
 class GameExecutor():
-    def __init__(self, game_folder: str, game_params, game_comm: GameCommManager, fps=30, one_shot_mode=False):
+    def __init__(self, game_cls: PaiaGame.__class__, game_params: dict, game_comm: GameCommManager, fps=30,
+                 one_shot_mode=False):
         self.frame_count = 0
         self.game_comm = game_comm
-        game_config = GameConfig(game_folder)
-        param_parser = get_parser_from_dict(game_config.game_params)
-        parsed_game_params = param_parser.parse_args(game_params)
-        self.game_params = parsed_game_params.__dict__
-        game_setup = game_config.game_setup
-        self._game_cls = game_setup["game"]
-
-        # game_cls = game_setup["game"]
-        # game = game_cls(**parsed_game_params.__dict__)
-        # assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+        self.game_params = game_params
+        self._game_cls = game_cls
+        self.game = self._game_cls(**self.game_params)
+        assert isinstance(self.game, PaiaGame), "Game " + str(
+            self.game) + " should implement a abstract class : PaiaGame"
 
         self._active_ml_names = []
         self._ml_delayed_frames = {}
@@ -96,22 +93,11 @@ class GameExecutor():
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
         self._frame_count = 0
         self.one_shot_mode = one_shot_mode
-        self._proc_name = "game"
+        self._proc_name = self.game.__class__.__str__
 
     def run(self):
-        # TODO use ai client and return cmd to game
         # TODO catch exception
-        # print("game executor runs")
-        # while self.frame_count < 10:
-        #     print(f"game executor runs at {self.frame_count}")
-        #     self.frame_count += 1
-        #     if self.frame_count % 2 == 0:
-        #         self.game_comm.send_to_all_ml(({"status": "GAME_ALIVE"}, "keyboard_info"))
-        #     recv = self.game_comm.recv_from_all_ml()
-        #     print(f"game receive {recv}")
-        #     time.sleep(0.2)
-        game = self._game_cls(**self.game_params)
-        assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+        game = self.game
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
         self._wait_all_ml_ready()
@@ -149,7 +135,6 @@ class GameExecutor():
                 time.sleep(0.1)
                 # self._recorder.record(scene_info_dict, {})
                 # self._recorder.flush_to_file()
-                # print(json.dumps(game.get_game_result(), indent=2))
                 attachments = game.get_game_result()['attachment']
                 print(pd.DataFrame(attachments).to_string())
 

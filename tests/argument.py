@@ -76,7 +76,9 @@ class MLGameArgument(pydantic.BaseModel):
     #     self.is_manual = self.ai_clients is None
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
-        return values['ai_clients'] is None
+        if hasattr(values,'ai_clients'):
+            return values['ai_clients'] is None
+        return True
 
 
 def create_MLGameArgument_obj(arg_str) -> MLGameArgument :

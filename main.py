@@ -1,17 +1,22 @@
+import sys
 from multiprocessing import Process, Pipe
+
+import pydantic
 
 from mlgame.communication import GameCommManager, MLCommManager
 from mlgame.gameconfig import GameConfig
 from mlgame.utils.argparser_generator import get_parser_from_dict
 from tests.argument import create_MLGameArgument_obj
-from tests.executor import GameExecutor, AIClientExecutor
+from tests.executor import AIClientExecutor, GameExecutor
 
 if __name__ == '__main__':
-    arg_str = "-f 120  -i /Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game/ml/ml_play_template.py " \
-              "/Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game " \
-              "--score 10 --color FF9800 --time_to_play 600 --total_point 50"
+    arg_str = " ".join(sys.argv[1:])
     # 1. parse command line
-    arg_obj = create_MLGameArgument_obj(arg_str)
+    try:
+        arg_obj = create_MLGameArgument_obj(arg_str)
+    except pydantic.ValidationError as e:
+        print(e.__str__())
+        sys.exit()
 
     # 2. parse game_folder/config.py and get game_config
     game_config = GameConfig(arg_obj.game_folder.__str__())
@@ -61,3 +66,5 @@ if __name__ == '__main__':
             game_comm.send_to_ml(
                 None, ai_proc.name)
             ai_proc.terminate()
+
+    pass

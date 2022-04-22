@@ -179,5 +179,10 @@ class EasyGame(PaiaGame):
         you can also use this names to get different cmd and send different data to each ai client
         """
         return [
-            {"name": "1P"}
+            {"name": "1P",
+             "args":('a'),
+             "kwargs":{
+                 "kw1":"1"
+             }
+             },
         ]

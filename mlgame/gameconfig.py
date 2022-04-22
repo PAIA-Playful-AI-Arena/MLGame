@@ -46,7 +46,6 @@ class GameConfig:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             game_config = module
-            print(module)
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
             if failed_module_name == "games." + game_folder:
