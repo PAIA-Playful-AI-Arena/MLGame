@@ -9,6 +9,7 @@ import pandas as pd
 import pydantic
 
 from mlgame import errno
+from mlgame.communication import MLCommManager
 from mlgame.exceptions import GameProcessError
 from mlgame.execution import _run_manual_mode
 from mlgame.gameconfig import GameConfig
@@ -17,6 +18,7 @@ from mlgame.gamedev.generic import quit_or_esc
 from mlgame.utils.argparser_generator import get_parser_from_dict
 from mlgame.view.view import PygameView
 from tests.argument import MLGameArgument, get_parsed_args, create_MLGameArgument_obj
+from tests.executor import GameExecutor, AIClientExecutor
 from tests.mock_included_file import MockMLPlay
 
 
@@ -82,8 +84,8 @@ def test_use_argument_model():
         assert_contain_MockMLPlay(file)
 
 
-def test_play_easy_game():
-    arg_str = "-f 60 -1 "\
+def test_play_easy_game_in_manual_mode():
+    arg_str = "-f 60 -1 " \
               "../games/easy_game --score 10 --color FF9800 --time_to_play 600 --total_point 50"
     arg_obj = create_MLGameArgument_obj(arg_str)
     # parse game_folder/config.py
@@ -95,15 +97,10 @@ def test_play_easy_game():
     # init game
     # print(parsed_game_params)
 
-    if arg_obj.is_manual :
-        # _run_manual_mode(execution_cmd, game_config.game_setup)
+    if arg_obj.is_manual:
         game_setup = game_config.game_setup
-        ml_names = []
-        # for client in arg_obj.ai_clients:
-        #     ml_names.append(client["name"])
-
         game_cls = game_setup["game"]
-        _frame_interval = 1/arg_obj.fps
+        _frame_interval = 1 / arg_obj.fps
         try:
             game = game_cls(**parsed_game_params.__dict__)
             assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
@@ -143,3 +140,122 @@ def test_play_easy_game():
         # _run_ml_mode(execution_cmd, game_config.game_setup)
     # Replace the input game_params with the parsed one
     pass
+
+
+from multiprocessing import Process, Pipe
+
+
+class MLExecutor:
+    """
+    The loop executor for the machine learning process
+    """
+
+    def __init__(self, ai_client: str, comm, *args, **kwargs):
+        # self._target_module = propty.target_module
+        self.ai_client = ai_client
+        self._init_args = args
+        self._init_kwargs = kwargs
+        self._comm_manager = comm
+        # self._frame_count = 0
+
+    def start(self):
+        """
+        Start the loop for the machine learning process
+        """
+        self._comm_manager.start_recv_obj_thread()
+
+        try:
+            module_name = os.path.basename(self.ai_client)
+            spec = importlib.util.spec_from_file_location(module_name, self.ai_client)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            ml_module = module
+            ml = ml_module.MLPlay(*self._init_args, **self._init_kwargs)
+
+            self._ml_ready()
+            while True:
+                scene_info, keyboard_info = self._comm_manager.recv_from_game()
+                if scene_info is None:
+                    # game over
+                    break
+                # assert keyboard_info == "1"
+                command = ml.update(scene_info, keyboard_info)
+                if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
+                    command = "RESET"
+                    ml.reset()
+                    self._frame_count = 0
+                    self._ml_ready()
+                    continue
+
+                if command is not None:
+                    self._comm_manager.send_to_game({
+                        "frame": self._frame_count,
+                        "command": command
+                    })
+
+                self._frame_count += 1
+
+        except Exception:
+            # exception = MLProcessError(self._name,
+            #                            "The process '{}' is exited by itself. {}"
+            #                            .format(self._name, traceback.format_exc()))
+            # self._comm_manager.send_to_game(exception)
+            sys.exit()
+
+    def _ml_ready(self):
+        """
+        Send a "READY" command to the game process
+        """
+        self._comm_manager.send_to_game("READY")
+
+
+def _ml_process_entry_point(ai_client: str):
+    # MLCommManager()
+    executor = MLExecutor(ai_client=ai_client, comm="")
+    pass
+
+
+def start_ml_process(ai_clients: []):
+    for index, ai_client in enumerate(ai_clients, 1):
+        process = Process(target=_ml_process_entry_point,
+                          name=f"ai_client_{index}", args=(ai_client,))
+        process.start()
+
+
+def test_play_easy_game_with_ai():
+    arg_str = "-f 60 -1 -i /Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game/ml/ml_play_template.py " \
+              "/Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game " \
+              "--score 10 --color FF9800 --time_to_play 600 --total_point 50"
+    arg_obj = create_MLGameArgument_obj(arg_str)
+    # parse game_folder/config.py
+    game_config = GameConfig(arg_obj.game_folder.__str__())
+    assert game_config
+    param_parser = get_parser_from_dict(game_config.game_params)
+    parsed_game_params = param_parser.parse_args(arg_obj.game_params)
+
+    game_setup = game_config.game_setup
+    game_cls = game_setup["game"]
+    _frame_interval = 1 / arg_obj.fps
+
+    # prepare ai_clients
+    """
+    Spawn and start all ml processes
+    """
+    # create pipe
+    game_executor = GameExecutor()
+    for index, ai_client in enumerate(arg_obj.ai_clients, 1):
+        ai_executor = AIClientExecutor()
+        process = Process(target=ai_executor.run,
+                          name=f"ai_client_{index}")
+        process.start()
+    # for ml_executor_propty in self._ml_executor_propties:
+    #     recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
+    #     recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
+    #
+    #     self._game_executor_propty.comm_manager.add_comm_to_ml(
+    #         ml_executor_propty.name,
+    #         recv_pipe_for_game, send_pipe_for_game)
+    #     ml_executor_propty.comm_manager.set_comm_to_game(
+    #         recv_pipe_for_ml, send_pipe_for_ml)
+    # start_ml_process(arg_obj.ai_clients)
+    # start_game_process()

@@ -335,6 +335,7 @@ class MLExecutor:
                 continue
 
             if command is not None:
+                # 收到資料就回傳
                 self._comm_manager.send_to_game({
                     "frame": self._frame_count,
                     "command": command
