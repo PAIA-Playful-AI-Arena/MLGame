@@ -31,7 +31,7 @@ if __name__ == '__main__':
     game_comm = GameCommManager()
     ai_process = []
     for index, ai_client in enumerate(arg_obj.ai_clients, 1):
-        ai_name = f"ai_client_{index}"
+        ai_name = f"{index}P"
         recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
         recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
         game_comm.add_comm_to_ml(
@@ -42,13 +42,14 @@ if __name__ == '__main__':
         ai_comm.set_comm_to_game(
             recv_pipe_for_ml, send_pipe_for_ml)
 
-        ai_executor = AIClientExecutor(ai_comm)
+        ai_executor = AIClientExecutor(ai_client, ai_comm)
         process = Process(target=ai_executor.run,
                           name=ai_name)
         process.start()
         ai_process.append(process)
 
-    game_executor = GameExecutor(game_comm)
+    game_executor = GameExecutor(str(arg_obj.game_folder), arg_obj.game_params, game_comm,
+                                 fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
     game_executor.run()
     # terminate
 
