@@ -12,8 +12,10 @@ from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
 from mlgame.utils.enum import KEYS
+from mlgame.utils.logger import get_singleton_logger
 from mlgame.view.view import PygameView
 
+_logger = get_singleton_logger()
 
 class AIClientExecutor():
     def __init__(self, ai_client_path: str, ai_comm: MLCommManager, args, kwargs):
@@ -62,15 +64,18 @@ class AIClientExecutor():
 
         # Stop the client of the crosslang module
         except ModuleNotFoundError as e:
-            # TODO handle ai import error
-            print(e)
+            failed_module_name = e.__str__().split("'")[1]
+            _logger.exception(f"Module '{failed_module_name}' is not found in {self._proc_name}")
             exception = MLProcessError(self._proc_name,
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._proc_name, traceback.format_exc()))
+            # send msg to game process
             self.ai_comm.send_to_game(exception)
         except Exception as e:
-            # TODO handle ai other error
-            print(e)
+            # handle ai other error
+            _logger.exception(f"Error is happened in {self._proc_name}")
+
+            # print(e)
             exception = MLProcessError(self._proc_name,
                                        "The process '{}' is exited by itself."
                                        .format(self._proc_name))
@@ -112,7 +117,6 @@ class GameExecutor():
         self._proc_name = self.game.__class__.__str__
 
     def run(self):
-        # TODO catch exception
         game = self.game
         scene_init_info_dict = game.get_scene_init_data()
         game_view = PygameView(scene_init_info_dict)
@@ -170,8 +174,8 @@ class GameExecutor():
         for ml_name in self._active_ml_names:
             recv = self.game_comm.recv_from_ml(ml_name)
             if isinstance(recv, MLProcessError):
-                # TODO handle error when ai could be ready state.
-                print(recv.message)
+                # handle error when ai_client couldn't be ready state.
+                _logger.debug(recv.message)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
                 continue
@@ -201,7 +205,7 @@ class GameExecutor():
             cmd_received = response_dict[ml_name]
             if isinstance(cmd_received, MLProcessError):
                 # print(cmd_received.message)
-                # TODO handle error from ai clients
+                # handle error from ai clients
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
             elif isinstance(cmd_received, dict):

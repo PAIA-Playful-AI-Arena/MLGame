@@ -5,29 +5,34 @@ from multiprocessing import Process, Pipe
 import pydantic
 
 from mlgame.communication import GameCommManager, MLCommManager
+from mlgame.exceptions import GameConfigError
 from mlgame.gameconfig import GameConfig
 from mlgame.utils.argparser_generator import get_parser_from_dict
+from mlgame.utils.logger import get_singleton_logger
 from tests.argument import create_MLGameArgument_obj
 from tests.executor import AIClientExecutor, GameExecutor
 
 if __name__ == '__main__':
     arg_str = " ".join(sys.argv[1:])
+    _logger = get_singleton_logger()
     # 1. parse command line
     try:
         arg_obj = create_MLGameArgument_obj(arg_str)
         # TODO  add help
+        # 2. parse game_folder/config.py and get game_config
+        game_config = GameConfig(arg_obj.game_folder.__str__())
     except pydantic.ValidationError as e:
-        # TODO should we return to server ?
-        print(e.__str__())
+        _logger.exception("Error in parsing command")
         sys.exit()
-
-    # 2. parse game_folder/config.py and get game_config
-    game_config = GameConfig(arg_obj.game_folder.__str__())
-    # TODO catch GameConfigError (error in game)
+    except Exception as e:
+        # TODO considerate how to handle GameConfigError and others
+        # logger.exception("Error in parsing game command")
+        _logger.info("game is exited")
+        sys.exit()
 
     param_parser = get_parser_from_dict(game_config.game_params)
     # 3. get parsed_game_params
-    # TODO catch parse error (error in game parameter in cli)
+    # Programe will catch parse error (error in game parameter in cli) here.
     parsed_game_params = param_parser.parse_args(arg_obj.game_params)
     # if parse config error game will exit at system code 2
 
@@ -54,7 +59,6 @@ if __name__ == '__main__':
         ai_comm = MLCommManager(ml_name)
         ai_comm.set_comm_to_game(
             recv_pipe_for_ml, send_pipe_for_ml)
-        # TODO catch ai_client error
         ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, args, kwargs)
         process = Process(target=ai_executor.run,
                           name=ml_name)
@@ -67,9 +71,9 @@ if __name__ == '__main__':
     try:
         game_executor.run()
     except Exception as e:
-        # TODO handle game error
+        _logger.exception("Some errors happened in game process.")
         # print(traceback.format_exc())
-        print(e.__str__())
+        # print(e.__str__())
         pass
     finally:
         print("Game is going to terminate")
