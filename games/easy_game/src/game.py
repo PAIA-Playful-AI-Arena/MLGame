@@ -180,9 +180,6 @@ class EasyGame(PaiaGame):
         """
         return [
             {"name": "1P",
-             "args":('a'),
-             "kwargs":{
-                 "kw1":"1"
-             }
+
              },
         ]

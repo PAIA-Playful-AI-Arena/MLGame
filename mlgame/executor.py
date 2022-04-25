@@ -4,14 +4,12 @@ import time
 import traceback
 
 import pandas as pd
-import pygame
 
 from mlgame.communication import GameCommManager, MLCommManager
 from mlgame.exceptions import MLProcessError
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
-from mlgame.utils.enum import KEYS
 from mlgame.utils.logger import get_singleton_logger
 from mlgame.view.view import PygameView
 
@@ -92,16 +90,13 @@ class AIClientExecutor():
 
 
 class GameExecutor():
-    def __init__(self, game_cls: PaiaGame.__class__, game_params: dict, game_comm: GameCommManager, fps=30,
-                 one_shot_mode=False):
+    def __init__(self,
+                 game: PaiaGame,
+                 game_comm: GameCommManager,
+                 fps=30, one_shot_mode=False):
         self.frame_count = 0
         self.game_comm = game_comm
-        self.game_params = game_params
-        self._game_cls = game_cls
-        self.game = self._game_cls(**self.game_params)
-        assert isinstance(self.game, PaiaGame), "Game " + str(
-            self.game) + " should implement a abstract class : PaiaGame"
-
+        self.game = game
         self._active_ml_names = []
         self._ml_delayed_frames = {}
         self._active_ml_names = list(self.game_comm.get_ml_names())
@@ -123,12 +118,7 @@ class GameExecutor():
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
-            keyboard_info = []
-            pressed_keys = pygame.key.get_pressed()
-            if True in pressed_keys:
-                for k in KEYS:
-                    if pressed_keys[k]:
-                        keyboard_info.append(k)
+            keyboard_info = game_view.get_keyboard_info()
 
             cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
             # self._recorder.record(scene_info_dict, cmd_dict)
@@ -233,14 +223,11 @@ class GameExecutor():
 
 
 class GameManualExecutor():
-    def __init__(self, game_cls: PaiaGame.__class__, game_params: dict, fps=30,
+    def __init__(self, game: PaiaGame,
+                 fps=30,
                  one_shot_mode=False):
         self.frame_count = 0
-        self.game_params = game_params
-        self._game_cls = game_cls
-        self.game = self._game_cls(**self.game_params)
-        assert isinstance(self.game, PaiaGame), "Game " + str(
-            self.game) + " should implement a abstract class : PaiaGame"
+        self.game = game
 
         self._ml_delayed_frames = {}
         self._ml_execution_time = 1 / fps
@@ -257,14 +244,7 @@ class GameManualExecutor():
         game_view = PygameView(scene_init_info_dict)
         # self._wait_all_ml_ready()
         while not quit_or_esc():
-            keyboard_info = []
-            pressed_keys = pygame.key.get_pressed()
-            if True in pressed_keys:
-                for k in KEYS:
-                    if pressed_keys[k]:
-                        keyboard_info.append(k)
 
-            # cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
             cmd_dict = game.get_keyboard_command()
 
             # self._recorder.record(scene_info_dict, cmd_dict)

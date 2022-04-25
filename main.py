@@ -5,11 +5,19 @@ import pydantic
 from mlgame.communication import GameCommManager
 from mlgame.exceptions import GameConfigError
 from mlgame.gameconfig import GameConfig
+from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.process import create_process_of_ai_clients_and_start
 from mlgame.argument import get_parser_from_dict
 from mlgame.utils.logger import get_singleton_logger
 from mlgame.argument import create_MLGameArgument_obj
 from mlgame.executor import GameExecutor, GameManualExecutor
+
+
+def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
+    game = game_cls(**parsed_game_params)
+    assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+    return game
+
 
 if __name__ == '__main__':
     arg_str = " ".join(sys.argv[1:])
@@ -17,6 +25,7 @@ if __name__ == '__main__':
     # 1. parse command line
     try:
         arg_obj = create_MLGameArgument_obj(arg_str)
+        # TODO if contains ws
         # 2. parse game_folder/config.py and get game_config
         game_config = GameConfig(arg_obj.game_folder.__str__())
     except pydantic.ValidationError as e:
@@ -35,26 +44,29 @@ if __name__ == '__main__':
 
     game_setup = game_config.game_setup
     game_cls = game_setup["game"]
+    game = get_paia_game_obj(game_cls, parsed_game_params.__dict__)
     entity_of_ai_clients = game_setup["ml_clients"]
     path_of_ai_clients = arg_obj.ai_clients
 
     # 4. prepare ai_clients , create pipe, start ai_client process
     if arg_obj.is_manual:
+        # play in local and manual mode
         ai_process = []
         game_comm = None
         # TODO create executor class
         game_executor = GameManualExecutor(
-            game_cls, parsed_game_params.__dict__,
-            fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
+            game, fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
     else:
+        # play in local and ai mode
         game_comm = GameCommManager()
         ai_process = create_process_of_ai_clients_and_start(
             game_comm=game_comm, ai_entity_defined_by_game=entity_of_ai_clients,
             path_of_ai_clients=path_of_ai_clients)
-
+        # TODO prepare transmitter and drawer for game executor
+        # ws will start another process to
         # 5. run game in main process
         game_executor = GameExecutor(
-            game_cls, parsed_game_params.__dict__, game_comm,
+            game, game_comm,
             fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
     try:
         game_executor.run()
