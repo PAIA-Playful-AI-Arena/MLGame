@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List, Optional
 import pydantic as pydantic
 from pydantic import FilePath, validator, DirectoryPath, Required
@@ -56,17 +57,11 @@ def get_args_parser():
     return parser
 
 
-def get_parsed_args(arg_str: str):
-    arg_parser = get_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
-    return parsed_args
-
-
 class MLGameArgument(pydantic.BaseModel):
     fps: int = 30
     one_shot_mode: bool = False
     ai_clients: Optional[List[FilePath]] = None
-    is_manual: bool = (ai_clients is None)
+    is_manual: bool = False
 
     game_folder: DirectoryPath
     game_params: List[str]
@@ -76,12 +71,67 @@ class MLGameArgument(pydantic.BaseModel):
     #     self.is_manual = self.ai_clients is None
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
-        if hasattr(values,'ai_clients'):
+        if 'ai_clients' in values:
             return values['ai_clients'] is None
         return True
 
 
-def create_MLGameArgument_obj(arg_str) -> MLGameArgument :
-    parsed_args = get_parsed_args(arg_str)
+def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    if parsed_args.help:
+        arg_parser.print_help()
+        sys.exit()
     arg_obj = MLGameArgument(**parsed_args.__dict__)
     return arg_obj
+
+
+def get_parser_from_dict(parser_config: dict):
+    """
+    Generate `argparse.ArgumentParser` from `parser_config`
+
+    @param parser_config A dictionary carries parameters for creating `ArgumentParser`.
+           The key "()" specifies parameters for constructor of `ArgumentParser`,
+           its value is a dictionary of which the key is the name of parameter and
+           the value is the value to be passed to that parameter.
+           The remaining keys of `parser_config` specifies arguments to be added to the parser,
+           which `ArgumentParser.add_argument() is invoked`. The key is the name
+           of the argument, and the value is similar to the "()"
+           but for the `add_argument()`. Note that the name of the key is used as the name
+           of the argument, but if "name_or_flags" is specified in the dictionary of it,
+           it will be passed to the `add_argument()` instead. The value of "name_or_flags"
+           must be a tuple.
+           An example of `parser_config`:
+           ```
+            {
+                "()": {
+                    "usage": "game <difficulty> <level>"
+                },
+                "difficulty": {
+                    "choices": ["EASY", "NORMAL"],
+                    "metavar": "difficulty",
+                    "help": "Specify the game style. Choices: %(choices)s"
+                },
+                "level": {
+                    "type": int,
+                    "help": "Specify the level map"
+                },
+            }
+           ```
+    """
+    if parser_config.get("()"):
+        parser = ArgumentParser(**parser_config["()"])
+    else:
+        parser = ArgumentParser()
+
+    for arg_name in parser_config.keys():
+        if arg_name != "()":
+            arg_config = parser_config[arg_name].copy()
+
+            name_or_flag = arg_config.pop("name_or_flags", None)
+            if not name_or_flag:
+                name_or_flag = (arg_name,)
+
+            parser.add_argument(*name_or_flag, **arg_config)
+
+    return parser

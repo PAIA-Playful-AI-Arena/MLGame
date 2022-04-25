@@ -17,6 +17,7 @@ from mlgame.view.view import PygameView
 
 _logger = get_singleton_logger()
 
+
 class AIClientExecutor():
     def __init__(self, ai_client_path: str, ai_comm: MLCommManager, args, kwargs):
         self._frame_count = 0
@@ -34,7 +35,6 @@ class AIClientExecutor():
             self.__module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(self.__module)
             ai_obj = self.__module.MLPlay(*self._args_for_ml_play, **self._kwargs_for_ml_play)
-
 
             # cmd = ai_obj.update({})
             print("             AI Client runs")
@@ -133,7 +133,6 @@ class GameExecutor():
             cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
             # self._recorder.record(scene_info_dict, cmd_dict)
 
-
             result = game.update(cmd_dict)
             self._frame_count += 1
             view_data = game.get_scene_progress_data()
@@ -231,3 +230,59 @@ class GameExecutor():
         if delayed_frame > self._ml_delayed_frames[ml_name]:
             self._ml_delayed_frames[ml_name] = delayed_frame
             print("The client '{}' delayed {} frame(s)".format(ml_name, delayed_frame))
+
+
+class GameManualExecutor():
+    def __init__(self, game_cls: PaiaGame.__class__, game_params: dict, fps=30,
+                 one_shot_mode=False):
+        self.frame_count = 0
+        self.game_params = game_params
+        self._game_cls = game_cls
+        self.game = self._game_cls(**self.game_params)
+        assert isinstance(self.game, PaiaGame), "Game " + str(
+            self.game) + " should implement a abstract class : PaiaGame"
+
+        self._ml_delayed_frames = {}
+        self._ml_execution_time = 1 / fps
+        self._fps = fps
+        self._ml_delayed_frames = {}
+        # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
+        self._frame_count = 0
+        self.one_shot_mode = one_shot_mode
+        self._proc_name = self.game.__class__.__str__
+
+    def run(self):
+        game = self.game
+        scene_init_info_dict = game.get_scene_init_data()
+        game_view = PygameView(scene_init_info_dict)
+        # self._wait_all_ml_ready()
+        while not quit_or_esc():
+            keyboard_info = []
+            pressed_keys = pygame.key.get_pressed()
+            if True in pressed_keys:
+                for k in KEYS:
+                    if pressed_keys[k]:
+                        keyboard_info.append(k)
+
+            # cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
+            cmd_dict = game.get_keyboard_command()
+
+            # self._recorder.record(scene_info_dict, cmd_dict)
+
+            result = game.update(cmd_dict)
+            self._frame_count += 1
+            view_data = game.get_scene_progress_data()
+            # TODO add a flag to determine if draw the screen
+            game_view.draw(view_data)
+
+            # Do reset stuff
+            if result == "RESET" or result == "QUIT":
+
+                attachments = game.get_game_result()['attachment']
+                print(pd.DataFrame(attachments).to_string())
+
+                if self.one_shot_mode or result == "QUIT":
+                    break
+                game.reset()
+                game_view.reset()
+                self._frame_count = 0

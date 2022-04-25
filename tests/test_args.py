@@ -9,30 +9,38 @@ import pandas as pd
 import pydantic
 
 from mlgame import errno
-from mlgame.communication import MLCommManager
 from mlgame.exceptions import GameProcessError
-from mlgame.execution import _run_manual_mode
 from mlgame.gameconfig import GameConfig
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
-from mlgame.utils.argparser_generator import get_parser_from_dict
+from mlgame.argument import get_parser_from_dict, get_args_parser
 from mlgame.view.view import PygameView
-from tests.argument import MLGameArgument, get_parsed_args, create_MLGameArgument_obj
-from tests.executor import GameExecutor, AIClientExecutor
+from mlgame.argument import create_MLGameArgument_obj
+from mlgame.executor import GameExecutor, AIClientExecutor
 from tests.mock_included_file import MockMLPlay
+
+
+def get_parsed_args_or_print_help(arg_str):
+    arg_parser = get_args_parser()
+    parsed_args = arg_parser.parse_args(arg_str.split())
+    if parsed_args.help:
+        arg_parser.print_help()
+        sys.exit()
+    return parsed_args
 
 
 def test_to_get_fps_and_one_shot_mode():
     fps = random.randint(10, 100)
     arg_str = f"-f {fps} " \
               " mygame --user 1 --map 2"
-    parsed_args = get_parsed_args(arg_str)
+
+    parsed_args = get_parsed_args_or_print_help(arg_str)
     assert parsed_args.fps == fps
     assert not parsed_args.one_shot_mode
 
     arg_str = f"-1 " \
               " mygame --user 1 --map 2"
-    parsed_args = get_parsed_args(arg_str)
+    parsed_args = get_parsed_args_or_print_help(arg_str)
     assert parsed_args.fps == 30
     assert parsed_args.one_shot_mode
     assert parsed_args.ai_clients is None
@@ -43,7 +51,7 @@ def test_to_get_ai_module():
     arg_str = "-i ./mock_included_file.py -i ../tests/mock_included_file.py " \
               "--input-ai /Users/kylin/Documents/02-PAIA_Project/MLGame/tests/mock_included_file.py" \
               " mygame --user 1 --map 2"
-    parsed_args = get_parsed_args(arg_str)
+    parsed_args = get_parsed_args_or_print_help(arg_str)
     assert parsed_args.ai_clients
     # parse args to get file and import module class
     for file in parsed_args.ai_clients:
@@ -142,7 +150,7 @@ def test_play_easy_game_in_manual_mode():
     pass
 
 
-from multiprocessing import Process, Pipe
+from multiprocessing import Process
 
 
 class MLExecutor:
@@ -220,42 +228,3 @@ def start_ml_process(ai_clients: []):
         process = Process(target=_ml_process_entry_point,
                           name=f"ai_client_{index}", args=(ai_client,))
         process.start()
-
-
-def test_play_easy_game_with_ai():
-    arg_str = "-f 60 -1 -i /Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game/ml/ml_play_template.py " \
-              "/Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game " \
-              "--score 10 --color FF9800 --time_to_play 600 --total_point 50"
-    arg_obj = create_MLGameArgument_obj(arg_str)
-    # parse game_folder/config.py
-    game_config = GameConfig(arg_obj.game_folder.__str__())
-    assert game_config
-    param_parser = get_parser_from_dict(game_config.game_params)
-    parsed_game_params = param_parser.parse_args(arg_obj.game_params)
-
-    game_setup = game_config.game_setup
-    game_cls = game_setup["game"]
-    _frame_interval = 1 / arg_obj.fps
-
-    # prepare ai_clients
-    """
-    Spawn and start all ml processes
-    """
-    # create pipe
-    game_executor = GameExecutor()
-    for index, ai_client in enumerate(arg_obj.ai_clients, 1):
-        ai_executor = AIClientExecutor()
-        process = Process(target=ai_executor.run,
-                          name=f"ai_client_{index}")
-        process.start()
-    # for ml_executor_propty in self._ml_executor_propties:
-    #     recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
-    #     recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
-    #
-    #     self._game_executor_propty.comm_manager.add_comm_to_ml(
-    #         ml_executor_propty.name,
-    #         recv_pipe_for_game, send_pipe_for_game)
-    #     ml_executor_propty.comm_manager.set_comm_to_game(
-    #         recv_pipe_for_ml, send_pipe_for_ml)
-    # start_ml_process(arg_obj.ai_clients)
-    # start_game_process()

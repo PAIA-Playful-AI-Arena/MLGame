@@ -2,9 +2,9 @@ from multiprocessing import Process, Pipe
 
 from mlgame.communication import GameCommManager, MLCommManager
 from mlgame.gameconfig import GameConfig
-from mlgame.utils.argparser_generator import get_parser_from_dict
-from tests.argument import create_MLGameArgument_obj
-from tests.executor import GameExecutor, AIClientExecutor
+from mlgame.argument import get_parser_from_dict
+from mlgame.argument import create_MLGameArgument_obj
+from mlgame.executor import GameExecutor, AIClientExecutor
 
 if __name__ == '__main__':
     arg_str = "-f 120  -i /Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game/ml/ml_play_template.py " \

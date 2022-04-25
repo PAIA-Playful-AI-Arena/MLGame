@@ -1,9 +1,37 @@
-import importlib
-import traceback
-
 from multiprocessing import Process, Pipe
+
+from mlgame.executor import AIClientExecutor
+from .communication import GameCommManager, MLCommManager
 from .loops import GameMLModeExecutorProperty, MLExecutorProperty
 from .exceptions import ProcessError
+
+def create_process_of_ai_clients_and_start(
+        game_comm: GameCommManager, ai_entity_defined_by_game: list, path_of_ai_clients: list) -> list:
+    """
+    return a process list to main
+    """
+    ai_process=[]
+    for index, ai_client in enumerate(path_of_ai_clients):
+        ai_client_info_defined_by_game = ai_entity_defined_by_game[index]
+        ml_name = ai_client_info_defined_by_game["name"]
+        args = ai_client_info_defined_by_game.get("args", ())
+        kwargs = ai_client_info_defined_by_game.get("kwargs", {})
+
+        recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
+        recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
+        game_comm.add_comm_to_ml(
+            ml_name,
+            recv_pipe_for_game, send_pipe_for_game)
+
+        ai_comm = MLCommManager(ml_name)
+        ai_comm.set_comm_to_game(
+            recv_pipe_for_ml, send_pipe_for_ml)
+        ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, args, kwargs)
+        process = Process(target=ai_executor.run,
+                          name=ml_name)
+        process.start()
+        ai_process.append(process)
+    return ai_process
 
 class ProcessManager:
     """

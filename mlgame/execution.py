@@ -12,7 +12,7 @@ from .execution_command import get_command_parser, GameMode, ExecutionCommand
 from .exceptions import ExecutionCommandError, GameConfigError
 from .gameconfig import GameConfig
 from .loops import GameMLModeExecutorProperty, MLExecutorProperty
-from .utils.argparser_generator import get_parser_from_dict
+from .argument import get_parser_from_dict
 from . import errno
 
 def execute():

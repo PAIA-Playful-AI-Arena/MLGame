@@ -1,1 +1,1 @@
-python MLGame.py -i ml_play_manual.py -f 60 arkanoid --difficulty NORMAL --level 1
+python main.py -f 60 ./games/arkanoid  --level 3 --difficulty NORMAL

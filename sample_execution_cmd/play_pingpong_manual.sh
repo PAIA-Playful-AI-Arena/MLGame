@@ -1,2 +1,1 @@
-python MLGame.py -i ml_play_manual.py -i ml_play_manual.py -f 45 \
-pingpong --difficulty HARD --game_over_score 3
+python main.py -f 60 ./games/pingpong --game_over_score 3 --difficulty NORMAL
