@@ -42,6 +42,9 @@ def get_args_parser():
                        dest="one_shot_mode",
                        help="quit the game when the game is passed or is over. "
                             "Otherwise, the game will restart automatically. [default: %(default)s]")
+    group.add_argument("-d", "--no-display", action="store_true",
+                       dest="no_display",
+                       help="didn't display the game on screen. [default: %(default)s]")
 
     group.add_argument("-i", "--input-ai",
                        # type=validate_file,
@@ -62,7 +65,7 @@ class MLGameArgument(pydantic.BaseModel):
     one_shot_mode: bool = False
     ai_clients: Optional[List[FilePath]] = None
     is_manual: bool = False
-
+    no_display: bool = True
     game_folder: DirectoryPath
     game_params: List[str]
 

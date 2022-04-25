@@ -94,7 +94,8 @@ class GameExecutor():
                  game: PaiaGame,
                  game_comm: GameCommManager,
                  game_view: IPygameView,
-                 fps=30, one_shot_mode=False):
+                 fps=30, one_shot_mode=False, no_display=False):
+        self.no_display = no_display
         self.game_view = game_view
         self.frame_count = 0
         self.game_comm = game_comm
@@ -117,7 +118,7 @@ class GameExecutor():
         game = self.game
         game_view = self.game_view
         self._wait_all_ml_ready()
-        while not quit_or_esc():
+        while not self.quit_or_esc():
             scene_info_dict = game.game_to_player_data()
             keyboard_info = game_view.get_keyboard_info()
 
@@ -221,6 +222,12 @@ class GameExecutor():
         if delayed_frame > self._ml_delayed_frames[ml_name]:
             self._ml_delayed_frames[ml_name] = delayed_frame
             print("The client '{}' delayed {} frame(s)".format(ml_name, delayed_frame))
+
+    def quit_or_esc(self)->bool:
+        if self.no_display:
+            return self._frame_count > 30000
+        else:
+            return quit_or_esc()
 
 
 class GameManualExecutor():

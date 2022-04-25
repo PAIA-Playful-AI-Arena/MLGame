@@ -11,7 +11,7 @@ from mlgame.argument import get_parser_from_dict
 from mlgame.utils.logger import get_singleton_logger
 from mlgame.argument import create_MLGameArgument_obj
 from mlgame.executor import GameExecutor, GameManualExecutor
-from mlgame.view.view import PygameView
+from mlgame.view.view import PygameView, DummyPygameView
 
 
 def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
@@ -55,8 +55,10 @@ if __name__ == '__main__':
         ai_process = []
         game_comm = None
         game_view = PygameView(game.get_scene_init_data())
+
         game_executor = GameManualExecutor(
             game, game_view, fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
+
     else:
         # play in local and ai mode
         game_comm = GameCommManager()
@@ -65,12 +67,16 @@ if __name__ == '__main__':
             path_of_ai_clients=path_of_ai_clients)
         # TODO prepare transmitter for game executor
         # ws will start another process to
+        if arg_obj.no_display:
+            game_view = DummyPygameView(game.get_scene_init_data())
+        else:
+            game_view = PygameView(game.get_scene_init_data())
+
         # 5. run game in main process
-        game_view = PygameView(game.get_scene_init_data())
         game_executor = GameExecutor(
             game, game_comm,
             game_view,
-            fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
+            fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode,no_display=arg_obj.no_display)
     try:
         game_executor.run()
     except Exception as e:
