@@ -11,7 +11,7 @@ from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
 from mlgame.utils.logger import get_singleton_logger
-from mlgame.view.view import PygameView
+from mlgame.view.view import PygameView, IPygameView
 
 _logger = get_singleton_logger()
 
@@ -93,7 +93,9 @@ class GameExecutor():
     def __init__(self,
                  game: PaiaGame,
                  game_comm: GameCommManager,
+                 game_view: IPygameView,
                  fps=30, one_shot_mode=False):
+        self.game_view = game_view
         self.frame_count = 0
         self.game_comm = game_comm
         self.game = game
@@ -113,8 +115,7 @@ class GameExecutor():
 
     def run(self):
         game = self.game
-        scene_init_info_dict = game.get_scene_init_data()
-        game_view = PygameView(scene_init_info_dict)
+        game_view = self.game_view
         self._wait_all_ml_ready()
         while not quit_or_esc():
             scene_info_dict = game.game_to_player_data()
@@ -224,8 +225,10 @@ class GameExecutor():
 
 class GameManualExecutor():
     def __init__(self, game: PaiaGame,
+                 game_view: IPygameView,
                  fps=30,
-                 one_shot_mode=False):
+                 one_shot_mode=False, ):
+        self.game_view = game_view
         self.frame_count = 0
         self.game = game
 
@@ -240,8 +243,7 @@ class GameManualExecutor():
 
     def run(self):
         game = self.game
-        scene_init_info_dict = game.get_scene_init_data()
-        game_view = PygameView(scene_init_info_dict)
+        game_view = self.game_view
         # self._wait_all_ml_ready()
         while not quit_or_esc():
 

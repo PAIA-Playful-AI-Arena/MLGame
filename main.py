@@ -11,6 +11,7 @@ from mlgame.argument import get_parser_from_dict
 from mlgame.utils.logger import get_singleton_logger
 from mlgame.argument import create_MLGameArgument_obj
 from mlgame.executor import GameExecutor, GameManualExecutor
+from mlgame.view.view import PygameView
 
 
 def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
@@ -53,20 +54,22 @@ if __name__ == '__main__':
         # play in local and manual mode
         ai_process = []
         game_comm = None
-        # TODO create executor class
+        game_view = PygameView(game.get_scene_init_data())
         game_executor = GameManualExecutor(
-            game, fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
+            game, game_view, fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
     else:
         # play in local and ai mode
         game_comm = GameCommManager()
         ai_process = create_process_of_ai_clients_and_start(
             game_comm=game_comm, ai_entity_defined_by_game=entity_of_ai_clients,
             path_of_ai_clients=path_of_ai_clients)
-        # TODO prepare transmitter and drawer for game executor
+        # TODO prepare transmitter for game executor
         # ws will start another process to
         # 5. run game in main process
+        game_view = PygameView(game.get_scene_init_data())
         game_executor = GameExecutor(
             game, game_comm,
+            game_view,
             fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode)
     try:
         game_executor.run()

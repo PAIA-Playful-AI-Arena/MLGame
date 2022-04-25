@@ -1,3 +1,4 @@
+import abc
 import math
 import time
 from functools import lru_cache
@@ -43,83 +44,43 @@ def scale_img(img, origin_width, origin_height, scale_ratio):
     )
 
 
-class DummyPygameView():
+class IPygameView(abc.ABC):
     def __init__(self, game_info: dict):
         self.scene_init_data = game_info
-        self.width = self.scene_init_data["scene"]["width"]
-        self.height = self.scene_init_data["scene"]["height"]
-        self.background_color = trnsfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        self.address = "GameView"
-        self.image_dict = self.loading_image()
-        self.font = {}
-        # self.map_width = game_info["map_width"]
-        # self.map_height = game_info["map_height"]
-        self.origin_bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
-        self.bias_point_var = [0, 0]
-        self.bias_point = self.origin_bias_point.copy()
 
-        self.scale = 1
-        # if "images" in game_info.keys():
-        #     self.image_dict = self.loading_image(game_info["images"])
-        self._toggle_on = True
-        self._toggle_last_time = 0
+    @abc.abstractmethod
+    def reset(self):
+        pass
+
+    @abc.abstractmethod
+    def draw(self, object_information):
+        pass
+
+    @abc.abstractmethod
+    def get_keyboard_info(self) -> list:
+        return []
+
+
+class DummyPygameView(IPygameView):
+    def __init__(self, game_info: dict):
+        super().__init__(game_info)
 
     def reset(self):
-        self.bias_point_var = [0, 0]
-        self.bias_point = self.origin_bias_point.copy()
-
-        self.scale = 1
-        self._toggle_on = True
-        self._toggle_last_time = 0
-
-    def loading_image(self):
-        result = {}
-        if "assets" in self.scene_init_data:
-            for file in self.scene_init_data["assets"]:
-                # print(file)
-                if file[TYPE] == IMAGE:
-                    image = pygame.image.load(file["file_path"]).convert_alpha()
-                    result[file["image_id"]] = image
-        return result
+        pass
 
     def draw(self, object_information):
-        '''
-        每個frame呼叫一次，把角色畫在螢幕上
-        :param object_information:
-        :return:
-        '''
-        self.screen.fill(self.background_color)
-        self.adjust_pygame_screen()
-        if "view_center_coordinate" in object_information["game_sys_info"]:
-            self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
-                                      object_information["game_sys_info"]["view_center_coordinate"][1]]
-            self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
-            self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
-        for game_object in object_information["background"]:
-            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
-        for game_object in object_information["object_list"]:
-            # let object could be shifted
-            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
-        if self._toggle_on:
-            for game_object in object_information["toggle_with_bias"]:
-                # let object could be shifted
-                self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1],
-                                                            self.scale)
-            for game_object in object_information["toggle"]:
-                self.draw_game_obj_according_type(game_object)
-        for game_object in object_information["foreground"]:
-            # object should not be shifted
-            self.draw_game_obj_according_type(game_object)
-        pygame.display.flip()
+        pass
+
+    def get_keyboard_info(self) -> list:
+        return []
 
 
-
-class PygameView():
+class PygameView(IPygameView):
     def __init__(self, game_info: dict):
+        super().__init__(game_info)
         pygame.display.init()
         pygame.font.init()
-        self.scene_init_data = game_info
+
         self.width = self.scene_init_data["scene"]["width"]
         self.height = self.scene_init_data["scene"]["height"]
         self.background_color = trnsfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
@@ -273,7 +234,7 @@ class PygameView():
             size = int(font_style_list[0].replace("px", "", 1))
             font_type = font_style_list[1].lower()
             if "BOLD" in font_style_list:
-                font = pygame.font.Font(pygame.font.match_font(font_type,bold=True), size * scale)
+                font = pygame.font.Font(pygame.font.match_font(font_type, bold=True), size * scale)
             else:
                 font = pygame.font.Font(pygame.font.match_font(font_type), size * scale)
             self.font[font_style] = font
@@ -312,7 +273,8 @@ class PygameView():
         if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
             self._toggle_last_time = time.time()
-    def get_keyboard_info(self)->list:
+
+    def get_keyboard_info(self) -> list:
         keyboard_info = []
         pressed_keys = pygame.key.get_pressed()
         if True in pressed_keys:
