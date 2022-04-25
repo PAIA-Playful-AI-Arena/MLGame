@@ -1,16 +1,16 @@
 import importlib
 import os
 import time
+import traceback
 
 import pandas as pd
 import pygame
 
 from mlgame.communication import GameCommManager, MLCommManager
 from mlgame.exceptions import MLProcessError
-from mlgame.gameconfig import GameConfig
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
-from mlgame.utils.argparser_generator import get_parser_from_dict
+
 from mlgame.utils.enum import KEYS
 from mlgame.view.view import PygameView
 
@@ -26,39 +26,55 @@ class AIClientExecutor():
 
     def run(self):
         self.ai_comm.start_recv_obj_thread()
-        module_name = os.path.basename(self.ai_path)
-        spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
-        self.__module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(self.__module)
+        try:
+            module_name = os.path.basename(self.ai_path)
+            spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
+            self.__module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(self.__module)
+            ai_obj = self.__module.MLPlay(*self._args_for_ml_play, **self._kwargs_for_ml_play)
 
-        ai_obj = self.__module.MLPlay(*self._args_for_ml_play, **self._kwargs_for_ml_play)
-        # cmd = ai_obj.update({})
-        print("             AI Client runs")
-        self._ml_ready()
-        while True:
-            scene_info, keyboard_info = self.ai_comm.recv_from_game()
-            if scene_info is None:
-                # game over
-                break
-            # assert keyboard_info == "1"
-            command = ai_obj.update(scene_info, keyboard_info)
-            if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
-                command = "RESET"
-                ai_obj.reset()
-                self._frame_count = 0
-                self._ml_ready()
-                continue
 
-            if command is not None:
-                # 收到資料就回傳
-                self.ai_comm.send_to_game({
-                    "frame": self._frame_count,
-                    "command": command
-                })
+            # cmd = ai_obj.update({})
+            print("             AI Client runs")
+            self._ml_ready()
+            while True:
+                scene_info, keyboard_info = self.ai_comm.recv_from_game()
+                if scene_info is None:
+                    # game over
+                    break
+                # assert keyboard_info == "1"
+                command = ai_obj.update(scene_info, keyboard_info)
+                if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
+                    command = "RESET"
+                    ai_obj.reset()
+                    self._frame_count = 0
+                    self._ml_ready()
+                    continue
 
-            self._frame_count += 1
+                if command is not None:
+                    # 收到資料就回傳
+                    self.ai_comm.send_to_game({
+                        "frame": self._frame_count,
+                        "command": command
+                    })
+
+                self._frame_count += 1
 
         # Stop the client of the crosslang module
+        except ModuleNotFoundError as e:
+            # TODO handle ai import error
+            print(e)
+            exception = MLProcessError(self._proc_name,
+                                       "The process '{}' is exited by itself. {}"
+                                       .format(self._proc_name, traceback.format_exc()))
+            self.ai_comm.send_to_game(exception)
+        except Exception as e:
+            # TODO handle ai other error
+            print(e)
+            exception = MLProcessError(self._proc_name,
+                                       "The process '{}' is exited by itself."
+                                       .format(self._proc_name))
+            self.ai_comm.send_to_game(exception)
         if self.__module == "mlgame.crosslang.ml_play":
             ai_obj.stop_client()
         print("             AI Client ends")
@@ -113,16 +129,12 @@ class GameExecutor():
             cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
             # self._recorder.record(scene_info_dict, cmd_dict)
 
+
             result = game.update(cmd_dict)
             self._frame_count += 1
             view_data = game.get_scene_progress_data()
             # TODO add a flag to determine if draw the screen
             game_view.draw(view_data)
-
-            if len(self._active_ml_names) == 0:
-                raise MLProcessError(self._proc_name,
-                                     "The process {} exit because all ml processes has exited.".
-                                     format(self._proc_name))
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
@@ -158,6 +170,7 @@ class GameExecutor():
         for ml_name in self._active_ml_names:
             recv = self.game_comm.recv_from_ml(ml_name)
             if isinstance(recv, MLProcessError):
+                # TODO handle error when ai could be ready state.
                 print(recv.message)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
@@ -187,7 +200,8 @@ class GameExecutor():
         for ml_name in self._active_ml_names[:]:
             cmd_received = response_dict[ml_name]
             if isinstance(cmd_received, MLProcessError):
-                print(cmd_received.message)
+                # print(cmd_received.message)
+                # TODO handle error from ai clients
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
             elif isinstance(cmd_received, dict):
@@ -199,6 +213,11 @@ class GameExecutor():
         for ml_name in self._dead_ml_names:
             cmd_dict[ml_name] = None
 
+        if len(self._active_ml_names) == 0:
+            # TODO handle all ai client is crashed
+            raise MLProcessError(self._proc_name,
+                                 "The process {} exit because all ml processes has exited.".
+                                 format(self._proc_name))
         return cmd_dict
 
     def _check_delay(self, ml_name, cmd_frame):

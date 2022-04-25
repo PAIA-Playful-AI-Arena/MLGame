@@ -83,6 +83,5 @@ class MLGameArgument(pydantic.BaseModel):
 
 def create_MLGameArgument_obj(arg_str) -> MLGameArgument :
     parsed_args = get_parsed_args(arg_str)
-    print(parsed_args)
     arg_obj = MLGameArgument(**parsed_args.__dict__)
     return arg_obj

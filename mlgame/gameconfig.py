@@ -47,13 +47,16 @@ class GameConfig:
             spec.loader.exec_module(module)
             game_config = module
         except ModuleNotFoundError as e:
+            # TODO print which module is not found or installed at which game_folder
+            print(e.__str__())
             failed_module_name = e.__str__().split("'")[1]
+
             if failed_module_name == "games." + game_folder:
                 msg = (
-                    f"Game '{game_folder}' dosen't exist or "
+                    f"Game '{game_folder}' doesn't exist or "
                     "it doesn't provide '__init__.py' in the game directory")
             else:
-                msg = f"Game '{game_folder}' dosen't provide '{CONFIG_FILE_NAME}'"
+                msg = f"Game '{game_folder}' doesn't provide '{CONFIG_FILE_NAME}'"
             raise GameConfigError(msg)
         else:
             return game_config
