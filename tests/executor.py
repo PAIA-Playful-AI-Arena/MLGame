@@ -175,7 +175,7 @@ class GameExecutor():
             recv = self.game_comm.recv_from_ml(ml_name)
             if isinstance(recv, MLProcessError):
                 # handle error when ai_client couldn't be ready state.
-                _logger.debug(recv.message)
+                _logger.info(recv.message)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
                 continue
@@ -218,7 +218,6 @@ class GameExecutor():
             cmd_dict[ml_name] = None
 
         if len(self._active_ml_names) == 0:
-            # TODO handle all ai client is crashed
             raise MLProcessError(self._proc_name,
                                  "The process {} exit because all ml processes has exited.".
                                  format(self._proc_name))

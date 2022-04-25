@@ -22,12 +22,12 @@ if __name__ == '__main__':
         # 2. parse game_folder/config.py and get game_config
         game_config = GameConfig(arg_obj.game_folder.__str__())
     except pydantic.ValidationError as e:
-        _logger.exception("Error in parsing command")
+        _logger.error(f"Error in parsing command : {e.__str__()}")
         sys.exit()
-    except Exception as e:
+    except GameConfigError as e:
         # TODO considerate how to handle GameConfigError and others
-        # logger.exception("Error in parsing game command")
-        _logger.info("game is exited")
+        _logger.error(f"Error in parsing game parameter : {e.__str__()}")
+        # _logger.info("game is exited")
         sys.exit()
 
     param_parser = get_parser_from_dict(game_config.game_params)
@@ -71,6 +71,7 @@ if __name__ == '__main__':
     try:
         game_executor.run()
     except Exception as e:
+        # handle unknown exception
         _logger.exception("Some errors happened in game process.")
         # print(traceback.format_exc())
         # print(e.__str__())

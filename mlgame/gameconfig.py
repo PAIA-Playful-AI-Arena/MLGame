@@ -5,10 +5,8 @@ Handle the game defined config
 import importlib
 
 from .exceptions import GameConfigError
-from .utils.logger import get_singleton_logger
 
 CONFIG_FILE_NAME = "config.py"
-_logger = get_singleton_logger()
 class GameConfig:
     """
     The data class storing the game defined config
@@ -48,20 +46,9 @@ class GameConfig:
             spec.loader.exec_module(module)
             game_config = module
         except ModuleNotFoundError as e:
-            # TODO print which module is not found or installed at which game_folder
+            # print which module is not found or installed at which game_folder
             failed_module_name = e.__str__().split("'")[1]
             msg = f"Module '{failed_module_name}' is not found in game process"
-            # _logger.exception(f"Module '{failed_module_name}' is not found in game process")
-            _logger.exception(msg)
-            # _logger.debug(msg)
-            # print(e.__str__())
-
-            # if failed_module_name == "games." + game_folder:
-            #     msg = (
-            #         f"Game '{game_folder}' doesn't exist or "
-            #         "it doesn't provide '__init__.py' in the game directory")
-            # else:
-            #     msg = f"Game '{game_folder}' doesn't provide '{CONFIG_FILE_NAME}'"
             raise GameConfigError(msg)
         else:
             return game_config
