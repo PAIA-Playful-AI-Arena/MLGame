@@ -42,7 +42,7 @@ def get_args_parser():
                        dest="one_shot_mode",
                        help="quit the game when the game is passed or is over. "
                             "Otherwise, the game will restart automatically. [default: %(default)s]")
-    group.add_argument("-d", "--no-display", action="store_true",
+    group.add_argument("-nd", "--no-display", action="store_true",
                        dest="no_display",
                        help="didn't display the game on screen. [default: %(default)s]")
     group.add_argument("--ws_url",

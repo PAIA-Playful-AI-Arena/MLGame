@@ -1,4 +1,5 @@
 import sys
+import time
 from multiprocessing import Pipe, Process
 
 import pydantic
@@ -94,6 +95,8 @@ if __name__ == '__main__':
         game_executor.run()
     except Exception as e:
         # handle unknown exception
+        # TODO Game process error
+        # send to es
         _logger.exception("Some errors happened in game process.")
         # print(traceback.format_exc())
         # print(e.__str__())
@@ -108,6 +111,7 @@ if __name__ == '__main__':
                     None, ai_proc.name)
                 ai_proc.terminate()
         if ws_proc is not None:
+            time.sleep(0.1)
             if ws_proc.is_alive():
                 game_comm.send_to_others(None)
                 ws_proc.terminate()

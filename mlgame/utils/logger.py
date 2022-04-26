@@ -1,5 +1,4 @@
 import logging
-import sys
 from functools import cache
 
 _logger = None
@@ -9,7 +8,7 @@ _logger = None
 def get_singleton_logger():
     global _logger
     if _logger is None:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.WARNING)
         _logger = logging.getLogger(__file__)
         # console_handler = logging.StreamHandler(stream=sys.stdout)
         # console_handler.setLevel(level=logging.DEBUG)

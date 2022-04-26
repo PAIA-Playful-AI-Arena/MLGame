@@ -1,10 +1,8 @@
 import random
 
-
 class MLPlay:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs)
         print("Initial ml script")
-        self.count=0
 
     def update(self, scene_info: dict, *args, **kwargs):
         """
@@ -13,9 +11,7 @@ class MLPlay:
         # print("AI received data from game :", json.dumps(scene_info))
         # print(scene_info)
         actions = ["UP", "DOWN", "LEFT", "RIGHT"]
-        self.count+=1
-        if self.count >100:
-            a = actions[100]
+
         return random.sample(actions, 1)
 
     def reset(self):

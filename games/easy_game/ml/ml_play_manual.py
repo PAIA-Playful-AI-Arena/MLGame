@@ -1,6 +1,4 @@
-import random
 import pygame
-
 
 class MLPlay:
     def __init__(self, *args, **kwargs):

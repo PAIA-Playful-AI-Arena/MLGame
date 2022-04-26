@@ -34,9 +34,13 @@ class EasyGame(PaiaGame):
 
     def update(self, commands):
         # handle command
-        ai_1p_cmd = commands[self.ai_clients()[0]["name"]][0]
+        ai_1p_cmd = commands[self.ai_clients()[0]["name"]]
+        if ai_1p_cmd is not None:
+            action = ai_1p_cmd[0]
+        else:
+            action = "NONE"
         # print(ai_1p_cmd)
-        self.ball.update(ai_1p_cmd)
+        self.ball.update(action)
 
         # update sprite
         self.foods.update()

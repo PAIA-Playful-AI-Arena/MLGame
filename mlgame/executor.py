@@ -54,16 +54,13 @@ class AIClientExecutor():
                     self._frame_count = 0
                     self._ml_ready()
                     continue
-
                 if command is not None:
                     # 收到資料就回傳
                     self.ai_comm.send_to_game({
                         "frame": self._frame_count,
                         "command": command
                     })
-
                 self._frame_count += 1
-
         # Stop the client of the crosslang module
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
@@ -76,13 +73,12 @@ class AIClientExecutor():
         except Exception as e:
             # handle ai other error
             _logger.exception(f"Error is happened in {self._proc_name}")
-
-            # print(e)
             exception = MLProcessError(self._proc_name,
-                                       "The process '{}' is exited by itself."
-                                       .format(self._proc_name))
+                                       "The process '{}' is exited by itself. {}"
+                                       .format(self._proc_name, traceback.format_exc()))
             self.ai_comm.send_to_game(exception)
         if self.__module == "mlgame.crosslang.ml_play":
+            # TODO crosslang
             ai_obj.stop_client()
         print("             AI Client ends")
 
@@ -121,52 +117,62 @@ class GameExecutor():
     def run(self):
         game = self.game
         game_view = self.game_view
-        self._wait_all_ml_ready()
-        self.game_comm.send_to_others(game.get_scene_init_data())
-        while not self.quit_or_esc():
-            scene_info_dict = game.game_to_player_data()
-            keyboard_info = game_view.get_keyboard_info()
-
-            cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
-            # self._recorder.record(scene_info_dict, cmd_dict)
-
-            result = game.update(cmd_dict)
-            self._frame_count += 1
-            view_data = game.get_scene_progress_data()
-            game_view.draw(view_data)
-            self.game_comm.send_to_others(view_data)
-
-            # Do reset stuff
-            if result == "RESET" or result == "QUIT":
+        try:
+            self._wait_all_ml_ready()
+            self.game_comm.send_to_others(game.get_scene_init_data())
+            while not self.quit_or_esc():
                 scene_info_dict = game.game_to_player_data()
-                # send to ml_clients and don't parse any command , while client reset ,
-                # self._wait_all_ml_ready() will works and not blocks the process
-                for ml_name in self._active_ml_names:
-                    self.game_comm.send_to_ml((scene_info_dict[ml_name], []), ml_name)
-                # TODO check what happen when bigfile is saved
-                time.sleep(0.1)
-                # self._recorder.record(scene_info_dict, {})
-                # self._recorder.flush_to_file()
-                game_result = game.get_game_result()
-                attachments = game_result['attachment']
-                print(pd.DataFrame(attachments).to_string())
+                keyboard_info = game_view.get_keyboard_info()
 
-                if self.one_shot_mode or result == "QUIT":
-                    self.game_comm.send_to_others(game_result)
-                    # should wait 0.1 s to send msg
+                cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
+                # self._recorder.record(scene_info_dict, cmd_dict)
+
+                result = game.update(cmd_dict)
+                self._frame_count += 1
+                view_data = game.get_scene_progress_data()
+                game_view.draw(view_data)
+                self.game_comm.send_to_others(view_data)
+
+                # Do reset stuff
+                if result == "RESET" or result == "QUIT":
+                    scene_info_dict = game.game_to_player_data()
+                    # send to ml_clients and don't parse any command , while client reset ,
+                    # self._wait_all_ml_ready() will works and not blocks the process
+                    for ml_name in self._active_ml_names:
+                        self.game_comm.send_to_ml((scene_info_dict[ml_name], []), ml_name)
+                    # TODO check what happen when bigfile is saved
                     time.sleep(0.1)
+                    # self._recorder.record(scene_info_dict, {})
+                    # self._recorder.flush_to_file()
+                    game_result = game.get_game_result()
+                    attachments = game_result['attachment']
+                    print(pd.DataFrame(attachments).to_string())
 
-                    break
+                    if self.one_shot_mode or result == "QUIT":
+                        self.game_comm.send_to_others(game_result)
+                        # should wait 0.1 s to send msg
+                        time.sleep(0.1)
 
-                game.reset()
-                game_view.reset()
+                        break
 
-                self._frame_count = 0
-                # TODO think more
-                for name in self._active_ml_names:
-                    self._ml_delayed_frames[name] = 0
-                self._wait_all_ml_ready()
+                    game.reset()
+                    game_view.reset()
 
+                    self._frame_count = 0
+                    # TODO think more
+                    for name in self._active_ml_names:
+                        self._ml_delayed_frames[name] = 0
+                    self._wait_all_ml_ready()
+        except Exception as e:
+            # handle unknown exception
+            # send to es
+            e = GameProcessError(self._proc_name, traceback.format_exc())
+            _logger.exception("Some errors happened in game process.")
+            self.game_comm.send_to_others(e)
+
+        # print(traceback.format_exc())
+        # print(e.__str__())
+        pass
     def _wait_all_ml_ready(self):
         """
         Wait until receiving "READY" commands from all ml processes
@@ -207,6 +213,7 @@ class GameExecutor():
             if isinstance(cmd_received, MLProcessError):
                 # print(cmd_received.message)
                 # handle error from ai clients
+                self.game_comm.send_to_others(cmd_received)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
             elif isinstance(cmd_received, dict):
@@ -219,9 +226,10 @@ class GameExecutor():
             cmd_dict[ml_name] = None
 
         if len(self._active_ml_names) == 0:
-            raise MLProcessError(self._proc_name,
-                                 "The process {} exit because all ml processes has exited.".
-                                 format(self._proc_name))
+            # TODO revise error msg
+            error = MLProcessError(self._proc_name,
+                                   "The process {} exit because all ml processes has exited.".format(self._proc_name))
+            raise error
         return cmd_dict
 
     def _check_delay(self, ml_name, cmd_frame):
@@ -261,31 +269,27 @@ class GameManualExecutor():
     def run(self):
         game = self.game
         game_view = self.game_view
-        # self._wait_all_ml_ready()
-        while not quit_or_esc():
-
-            cmd_dict = game.get_keyboard_command()
-
-            # self._recorder.record(scene_info_dict, cmd_dict)
-
-            result = game.update(cmd_dict)
-            self._frame_count += 1
-            view_data = game.get_scene_progress_data()
-            # TODO add a flag to determine if draw the screen
-            game_view.draw(view_data)
-
-            # Do reset stuff
-            if result == "RESET" or result == "QUIT":
-
-                attachments = game.get_game_result()['attachment']
-                print(pd.DataFrame(attachments).to_string())
-
-                if self.one_shot_mode or result == "QUIT":
-                    break
-                game.reset()
-                game_view.reset()
-                self._frame_count = 0
-
+        try:
+            while not quit_or_esc():
+                cmd_dict = game.get_keyboard_command()
+                # self._recorder.record(scene_info_dict, cmd_dict)
+                result = game.update(cmd_dict)
+                self._frame_count += 1
+                view_data = game.get_scene_progress_data()
+                game_view.draw(view_data)
+                # Do reset stuff
+                if result == "RESET" or result == "QUIT":
+                    attachments = game.get_game_result()['attachment']
+                    print(pd.DataFrame(attachments).to_string())
+                    if self.one_shot_mode or result == "QUIT":
+                        break
+                    game.reset()
+                    game_view.reset()
+                    self._frame_count = 0
+        except Exception as e:
+            # handle unknown exception
+            # send to es
+            _logger.exception("Some errors happened in game process.")
 
 class WebSocketExecutor:
     def __init__(self,ws_uri,ws_comm:TransitionCommManager ):
@@ -295,10 +299,8 @@ class WebSocketExecutor:
         self._comm_manager = ws_comm
         self._recv_data_func = self._comm_manager.recv_from_game
 
-    async def hello(self):
-
+    async def ws_start(self):
         async with websockets.connect(self._ws_uri) as websocket:
-            # name = input("What's your name? ")
             print("ws_client")
             count = 0
             while 1:
@@ -342,9 +344,9 @@ class WebSocketExecutor:
 
     def run(self):
         try:
-            asyncio.get_event_loop().run_until_complete(self.hello())
-
+            asyncio.get_event_loop().run_until_complete(self.ws_start())
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            # TODO WS exception
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
 
