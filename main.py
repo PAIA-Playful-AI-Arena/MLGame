@@ -77,7 +77,7 @@ if __name__ == '__main__':
             ws_executor = WebSocketExecutor(ws_uri=arg_obj.ws_url, ws_comm=ws_comm)
             process = Process(target=ws_executor.run, name="ws")
             process.start()
-            ws_proc=process
+            ws_proc = process
             pass
         else:
             pass
@@ -94,12 +94,9 @@ if __name__ == '__main__':
     try:
         game_executor.run()
     except Exception as e:
-        # handle unknown exception
-        # TODO Game process error
         # send to es
         _logger.exception("Some errors happened in game process.")
-        # print(traceback.format_exc())
-        # print(e.__str__())
+
         pass
     finally:
         print("Game is going to terminate")

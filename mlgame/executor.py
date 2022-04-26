@@ -173,6 +173,7 @@ class GameExecutor():
         # print(traceback.format_exc())
         # print(e.__str__())
         pass
+
     def _wait_all_ml_ready(self):
         """
         Wait until receiving "READY" commands from all ml processes
@@ -241,7 +242,7 @@ class GameExecutor():
             self._ml_delayed_frames[ml_name] = delayed_frame
             print("The client '{}' delayed {} frame(s)".format(ml_name, delayed_frame))
 
-    def quit_or_esc(self)->bool:
+    def quit_or_esc(self) -> bool:
         if self.no_display:
             return self._frame_count > 30000
         else:
@@ -291,8 +292,9 @@ class GameManualExecutor():
             # send to es
             _logger.exception("Some errors happened in game process.")
 
+
 class WebSocketExecutor:
-    def __init__(self,ws_uri,ws_comm:TransitionCommManager ):
+    def __init__(self, ws_uri, ws_comm: TransitionCommManager):
         print("websocket init ")
         self._proc_name = f"websocket({ws_uri}"
         self._ws_uri = ws_uri
@@ -318,7 +320,7 @@ class WebSocketExecutor:
                         }
                     }
                     await websocket.send(json.dumps(send_data))
-                    #exit container
+                    # exit container
                     os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
                 elif isinstance(data, GameProcessError):
                     send_data = {
@@ -330,7 +332,7 @@ class WebSocketExecutor:
                         }
                     }
                     await websocket.send(json.dumps(send_data))
-                    #exit container
+                    # exit container
                     # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
                 else:
 
@@ -349,4 +351,3 @@ class WebSocketExecutor:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             # TODO WS exception
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
-
