@@ -3,6 +3,7 @@ from queue import Queue
 
 from .exceptions import MLProcessError
 
+
 class CommunicationSet:
     """
     A data class for storing a set of communication objects and
@@ -18,6 +19,7 @@ class CommunicationSet:
     @var _send_end A dictionary storing communication objects which are used to
          send objects
     """
+
     def __init__(self):
         self._recv_end = {}
         self._send_end = {}
@@ -127,11 +129,13 @@ class CommunicationSet:
         for comm_obj in self._send_end.values():
             comm_obj.send(obj)
 
+
 class CommunicationHandler:
     """
     A data class for storing a sending and a receiving communication objects
     and providing interface for accessing them
     """
+
     def __init__(self):
         self._recv_end = None
         self._send_end = None
@@ -167,12 +171,15 @@ class CommunicationHandler:
     def send(self, obj):
         self._send_end.send(obj)
 
+
 class GameCommManager:
     """
     The commnuication manager for the game process
     """
+
     def __init__(self):
         self._comm_to_ml_set = CommunicationSet()
+        self._comm_to_others = CommunicationSet()
 
     def add_comm_to_ml(self, ml_name, recv_end, send_end):
         """
@@ -205,7 +212,7 @@ class GameCommManager:
 
         If the received object is `MLProcessError`, raise the exception.
         """
-        obj = self._comm_to_ml_set.recv(ml_name, to_wait = False)
+        obj = self._comm_to_ml_set.recv(ml_name, to_wait=False)
         return obj
 
     def recv_from_all_ml(self):
@@ -217,10 +224,34 @@ class GameCommManager:
             obj_dict[ml_name] = self.recv_from_ml(ml_name)
         return obj_dict
 
+    def add_comm_to_others(self, client_name, recv_end, send_end):
+        """
+        Set communication objects for communicating with specified ml process
+        """
+        self._comm_to_others.add_recv_end(client_name, recv_end)
+        self._comm_to_others.add_send_end(client_name, send_end)
+
+    def send_to_others(self, obj):
+        """
+        Send the object to all ml process
+        """
+        self._comm_to_others.send_all(obj)
+
+    def recv_from_others(self):
+        """
+        Receive objects from all the ml processes
+        """
+        obj_dict = {}
+        for client_name in self._comm_to_others.get_recv_end_names():
+            obj_dict[client_name] = self._comm_to_others.recv(client_name, to_wait=False)
+        return obj_dict
+
+
 class MLCommManager:
     """
     The communication manager for the ml process
     """
+
     def __init__(self, ml_name):
         self._comm_to_game = CommunicationHandler()
         self._ml_name = ml_name
@@ -241,7 +272,7 @@ class MLCommManager:
         """
         self._obj_queue = Queue(15)
 
-        thread = Thread(target = self._keep_recv_obj_from_game)
+        thread = Thread(target=self._keep_recv_obj_from_game)
         thread.start()
 
     def _keep_recv_obj_from_game(self):
@@ -254,12 +285,12 @@ class MLCommManager:
             if self._obj_queue.full():
                 self._obj_queue.get()
                 print("Warning: The object queue for the process '{}' is full. "
-                    "Drop the oldest object."
-                    .format(self._ml_name))
+                      "Drop the oldest object."
+                      .format(self._ml_name))
 
             obj = self._comm_to_game.recv()
             self._obj_queue.put(obj)
-            if obj is None: # Received `None` from the game, quit the loop.
+            if obj is None:  # Received `None` from the game, quit the loop.
                 break
 
     def recv_from_game(self):
@@ -280,4 +311,36 @@ class MLCommManager:
             self._comm_to_game.send(obj)
         except BrokenPipeError:
             print("Process '{}': The connection to the game process is closed."
-                .format(self._ml_name))
+                  .format(self._ml_name))
+
+
+class TransitionCommManager:
+    """
+    The communication manager for the transition process
+    """
+
+    def __init__(self,recv_end=None, send_end=None):
+        self._comm_to_game = CommunicationHandler()
+        self.set_comm_to_game(recv_end,send_end)
+
+    def set_comm_to_game(self, recv_end, send_end):
+        """
+        Set communication objects for communicating with game process
+
+        @param recv_end The communication object for receiving objects from game process
+        @param send_end The communication object for sending objects to game process
+        """
+        self._comm_to_game.set_recv_end(recv_end)
+        self._comm_to_game.set_send_end(send_end)
+
+    def recv_from_game(self):
+        """
+        Receive the object sent from the game process
+        """
+        return self._comm_to_game.recv()
+
+    def send_exception(self, exception):
+        """
+        Send an exception to the game process
+        """
+        self._comm_to_game.send(exception)

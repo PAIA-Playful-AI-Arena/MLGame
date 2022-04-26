@@ -158,7 +158,6 @@ class GameMLModeExecutor:
             result = game.update(cmd_dict)
             self._frame_count += 1
             view_data = game.get_scene_progress_data()
-            # TODO add a flag to determine if draw the screen
             game_view.draw(view_data)
 
             if len(self._active_ml_names) == 0:
@@ -298,18 +297,11 @@ class MLExecutor:
         try:
             self._loop()
         except Exception:
-            # TODO handle syntax error
             exception = MLProcessError(self._name,
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._name, traceback.format_exc()))
             self._comm_manager.send_to_game(exception)
             sys.exit()
-
-        # except SystemExit:  # Catch the exception made by 'sys.exit()'
-        #    exception = MLProcessError(self._name,
-        #                               "The process '{}' is exited by itself. {}"
-        #                               .format(self._name, traceback.format_exc()))
-        #    self._comm_manager.send_to_game(exception)
 
     def _loop(self):
         """

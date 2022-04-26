@@ -1,8 +1,9 @@
 import sys
+from multiprocessing import Pipe, Process
 
 import pydantic
 
-from mlgame.communication import GameCommManager
+from mlgame.communication import GameCommManager, TransitionCommManager
 from mlgame.exceptions import GameConfigError
 from mlgame.gameconfig import GameConfig
 from mlgame.gamedev.game_interface import PaiaGame
@@ -10,7 +11,7 @@ from mlgame.process import create_process_of_ai_clients_and_start
 from mlgame.argument import get_parser_from_dict
 from mlgame.utils.logger import get_singleton_logger
 from mlgame.argument import create_MLGameArgument_obj
-from mlgame.executor import GameExecutor, GameManualExecutor
+from mlgame.executor import GameExecutor, GameManualExecutor, WebSocketExecutor
 from mlgame.view.view import PygameView, DummyPygameView
 
 
@@ -26,7 +27,6 @@ if __name__ == '__main__':
     # 1. parse command line
     try:
         arg_obj = create_MLGameArgument_obj(arg_str)
-        # TODO if contains ws
         # 2. parse game_folder/config.py and get game_config
         game_config = GameConfig(arg_obj.game_folder.__str__())
     except pydantic.ValidationError as e:
@@ -48,6 +48,7 @@ if __name__ == '__main__':
     game = get_paia_game_obj(game_cls, parsed_game_params.__dict__)
     entity_of_ai_clients = game_setup["ml_clients"]
     path_of_ai_clients = arg_obj.ai_clients
+    ws_proc = None
 
     # 4. prepare ai_clients , create pipe, start ai_client process
     if arg_obj.is_manual:
@@ -65,7 +66,20 @@ if __name__ == '__main__':
         ai_process = create_process_of_ai_clients_and_start(
             game_comm=game_comm, ai_entity_defined_by_game=entity_of_ai_clients,
             path_of_ai_clients=path_of_ai_clients)
-        # TODO prepare transmitter for game executor
+        if arg_obj.ws_url:
+            _logger.debug(arg_obj.ws_url)
+            # prepare transmitter for game executor
+            recv_pipe_for_game, send_pipe_for_ws = Pipe(False)
+            recv_pipe_for_ws, send_pipe_for_game = Pipe(False)
+            ws_comm = TransitionCommManager(recv_pipe_for_ws, send_pipe_for_ws)
+            game_comm.add_comm_to_others("ws", recv_pipe_for_game, send_pipe_for_game)
+            ws_executor = WebSocketExecutor(ws_uri=arg_obj.ws_url, ws_comm=ws_comm)
+            process = Process(target=ws_executor.run, name="ws")
+            process.start()
+            ws_proc=process
+            pass
+        else:
+            pass
         # ws will start another process to
         if arg_obj.no_display:
             game_view = DummyPygameView(game.get_scene_init_data())
@@ -74,9 +88,8 @@ if __name__ == '__main__':
 
         # 5. run game in main process
         game_executor = GameExecutor(
-            game, game_comm,
-            game_view,
-            fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode,no_display=arg_obj.no_display)
+            game, game_comm, game_view,
+            fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode, no_display=arg_obj.no_display)
     try:
         game_executor.run()
     except Exception as e:
@@ -94,6 +107,10 @@ if __name__ == '__main__':
                 game_comm.send_to_ml(
                     None, ai_proc.name)
                 ai_proc.terminate()
+        if ws_proc is not None:
+            if ws_proc.is_alive():
+                game_comm.send_to_others(None)
+                ws_proc.terminate()
         print("Game is terminated")
 
     pass

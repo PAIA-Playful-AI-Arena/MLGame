@@ -1,12 +1,16 @@
+import asyncio
 import importlib
+import json
 import os
 import time
 import traceback
 
 import pandas as pd
+import websockets
 
-from mlgame.communication import GameCommManager, MLCommManager
-from mlgame.exceptions import MLProcessError
+from mlgame import errno
+from mlgame.communication import GameCommManager, MLCommManager, TransitionCommManager
+from mlgame.exceptions import MLProcessError, GameProcessError
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
@@ -112,12 +116,13 @@ class GameExecutor():
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
         self._frame_count = 0
         self.one_shot_mode = one_shot_mode
-        self._proc_name = self.game.__class__.__str__
+        self._proc_name = str(self.game)
 
     def run(self):
         game = self.game
         game_view = self.game_view
         self._wait_all_ml_ready()
+        self.game_comm.send_to_others(game.get_scene_init_data())
         while not self.quit_or_esc():
             scene_info_dict = game.game_to_player_data()
             keyboard_info = game_view.get_keyboard_info()
@@ -128,8 +133,8 @@ class GameExecutor():
             result = game.update(cmd_dict)
             self._frame_count += 1
             view_data = game.get_scene_progress_data()
-            # TODO add a flag to determine if draw the screen
             game_view.draw(view_data)
+            self.game_comm.send_to_others(view_data)
 
             # Do reset stuff
             if result == "RESET" or result == "QUIT":
@@ -142,10 +147,15 @@ class GameExecutor():
                 time.sleep(0.1)
                 # self._recorder.record(scene_info_dict, {})
                 # self._recorder.flush_to_file()
-                attachments = game.get_game_result()['attachment']
+                game_result = game.get_game_result()
+                attachments = game_result['attachment']
                 print(pd.DataFrame(attachments).to_string())
 
                 if self.one_shot_mode or result == "QUIT":
+                    self.game_comm.send_to_others(game_result)
+                    # should wait 0.1 s to send msg
+                    time.sleep(0.1)
+
                     break
 
                 game.reset()
@@ -275,3 +285,66 @@ class GameManualExecutor():
                 game.reset()
                 game_view.reset()
                 self._frame_count = 0
+
+
+class WebSocketExecutor:
+    def __init__(self,ws_uri,ws_comm:TransitionCommManager ):
+        print("websocket init ")
+        self._proc_name = f"websocket({ws_uri}"
+        self._ws_uri = ws_uri
+        self._comm_manager = ws_comm
+        self._recv_data_func = self._comm_manager.recv_from_game
+
+    async def hello(self):
+
+        async with websockets.connect(self._ws_uri) as websocket:
+            # name = input("What's your name? ")
+            print("ws_client")
+            count = 0
+            while 1:
+                data = self._recv_data_func()
+                # print("ws received :", data)
+                if not data:
+                    return
+                elif isinstance(data, MLProcessError):
+                    send_data = {
+                        "type": "game_error",
+                        "data": {
+                            "errorcode": errno.ML_PROCESS_ERROR,
+                            "message": ("Error occurred in '{}' process:\n{}"
+                                        .format(data.process_name, data.message))
+                        }
+                    }
+                    await websocket.send(json.dumps(send_data))
+                    #exit container
+                    os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
+                elif isinstance(data, GameProcessError):
+                    send_data = {
+                        "type": "game_error",
+                        "data": {
+                            "errorcode": errno.GAME_EXECUTION_ERROR,
+                            "message": ("Error occurred in '{}' process:\n{}"
+                                        .format(data.process_name, data.message))
+                        }
+                    }
+                    await websocket.send(json.dumps(send_data))
+                    #exit container
+                    # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
+                else:
+
+                    await websocket.send(json.dumps(data))
+                    pass
+                    count += 1
+                    # print(f'Send to ws : {count}:{data.keys()}')
+                    #
+                # greeting = await websocket.recv()
+                # print(f"< {greeting}")
+
+    def run(self):
+        try:
+            asyncio.get_event_loop().run_until_complete(self.hello())
+
+        except Exception as e:
+            # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_exception(f"exception on {self._proc_name}")
+

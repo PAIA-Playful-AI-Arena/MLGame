@@ -218,6 +218,14 @@ class PygameView(IPygameView):
         offset_height = scale_bias_of_coordinate(self.height, scale)
         pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
                          (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
+        # if scale != 1:
+        #
+        #     offset_width = scale_bias_of_coordinate(self.width, scale)
+        #     offset_height = scale_bias_of_coordinate(self.height, scale)
+        #     pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
+        #                      (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
+        # else:
+        #     pygame.draw.line(self.screen, color, (x1, y1), (x2 * scale, y2), int(width))
 
     def draw_polygon(self, points, color, bias_x=0, bias_y=0, scale=1):
         vertices = []

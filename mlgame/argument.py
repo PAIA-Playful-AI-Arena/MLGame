@@ -45,6 +45,10 @@ def get_args_parser():
     group.add_argument("-d", "--no-display", action="store_true",
                        dest="no_display",
                        help="didn't display the game on screen. [default: %(default)s]")
+    group.add_argument("--ws_url",
+                       type=str,
+                       dest="ws_url",
+                       help="ws_url route")
 
     group.add_argument("-i", "--input-ai",
                        # type=validate_file,
@@ -66,6 +70,7 @@ class MLGameArgument(pydantic.BaseModel):
     ai_clients: Optional[List[FilePath]] = None
     is_manual: bool = False
     no_display: bool = True
+    ws_url: str = None
     game_folder: DirectoryPath
     game_params: List[str]
 
