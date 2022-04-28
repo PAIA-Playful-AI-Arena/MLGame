@@ -1,6 +1,6 @@
 from multiprocessing import Process, Pipe
 
-from mlgame.utils.communication import GameCommManager, MLCommManager
+from mlgame.core.communication import GameCommManager, MLCommManager
 from mlgame.argument.model import GameConfig
 from mlgame.argument.argument import create_game_arg_parser
 from mlgame.argument.argument import create_MLGameArgument_obj

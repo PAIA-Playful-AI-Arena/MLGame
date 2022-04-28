@@ -2,7 +2,10 @@ import os
 import sys
 from argparse import ArgumentParser, REMAINDER
 
+import pydantic
+
 from mlgame.argument.model import MLGameArgument
+from mlgame.utils import logger
 from mlgame.version import version
 
 
@@ -63,13 +66,21 @@ def create_cli_args_parser():
 
 
 def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
-    arg_parser = create_cli_args_parser()
-    parsed_args = arg_parser.parse_args(arg_str.split())
-    if parsed_args.help:
-        arg_parser.print_help()
+    try:
+        arg_parser = create_cli_args_parser()
+        parsed_args = arg_parser.parse_args(arg_str.split())
+        if parsed_args.help:
+            arg_parser.print_help()
+            sys.exit()
+        arg_obj = MLGameArgument(**parsed_args.__dict__)
+        return arg_obj
+    except pydantic.ValidationError as e:
+        lg = logger.get_singleton_logger()
+        lg.error(f"Error in parsing command : {e.__str__()}")
+
         sys.exit()
-    arg_obj = MLGameArgument(**parsed_args.__dict__)
-    return arg_obj
+
+
 
 
 def create_game_arg_parser(parser_config: dict):

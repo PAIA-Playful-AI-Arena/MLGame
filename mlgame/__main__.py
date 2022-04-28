@@ -4,22 +4,16 @@ from multiprocessing import Pipe, Process
 
 import pydantic
 
-from mlgame.utils.communication import GameCommManager, TransitionCommManager
+from mlgame.core.communication import GameCommManager, TransitionCommManager
 from mlgame.core.exceptions import GameConfigError
 from mlgame.argument.model import GameConfig
-from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.core.process import create_process_of_ai_clients_and_start
 from mlgame.argument.argument import create_game_arg_parser
-from mlgame.utils.logger import get_singleton_logger
 from mlgame.argument.argument import create_MLGameArgument_obj
 from mlgame.core.executor import GameExecutor, GameManualExecutor, WebSocketExecutor
+from mlgame.gamedev.paia_game import get_paia_game_obj
+from mlgame.utils.logger import get_singleton_logger
 from mlgame.view.view import PygameView, DummyPygameView
-
-
-def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
-    game = game_cls(**parsed_game_params)
-    assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
-    return game
 
 
 if __name__ == '__main__':
@@ -27,6 +21,7 @@ if __name__ == '__main__':
     #     subcommand = self.argv[1]
     # except IndexError:
     #     subcommand = "help"  # Display help if no arguments were given.
+    # TODO parse
     arg_str = " ".join(sys.argv[1:])
     _logger = get_singleton_logger()
     # 1. parse command line
@@ -55,7 +50,7 @@ if __name__ == '__main__':
     entity_of_ai_clients = game_setup["ml_clients"]
     path_of_ai_clients = arg_obj.ai_clients
     ws_proc = None
-
+    # TODO execute ai_process
     # 4. prepare ai_clients , create pipe, start ai_client process
     if arg_obj.is_manual:
         # play in local and manual mode
@@ -100,6 +95,7 @@ if __name__ == '__main__':
         game_executor.run()
     except Exception as e:
         # send to es
+        # TODO delete
         _logger.exception("Some errors happened in game process.")
 
         pass

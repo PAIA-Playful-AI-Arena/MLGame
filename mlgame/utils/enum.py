@@ -1,5 +1,4 @@
-from enum import Enum, auto
-
+from enum import Enum ,auto
 import pygame
 
 KEYS = [
@@ -10,6 +9,7 @@ KEYS = [
     pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0,
     pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT,
 ]
+
 
 class StringEnum(str, Enum):
     def _generate_next_value_(name, start, count, last_values):

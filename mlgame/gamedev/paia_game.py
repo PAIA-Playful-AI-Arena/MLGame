@@ -126,3 +126,7 @@ class PaiaGame(abc.ABC):
         return [
             {"name": "1P"}
         ]
+def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
+    game = game_cls(**parsed_game_params)
+    assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
+    return game

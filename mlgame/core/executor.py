@@ -9,9 +9,9 @@ import pandas as pd
 import websockets
 
 from mlgame.core import errno
-from mlgame.utils.communication import GameCommManager, MLCommManager, TransitionCommManager
+from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError
-from mlgame.gamedev.game_interface import PaiaGame
+from mlgame.gamedev.paia_game import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
 from mlgame.utils.logger import get_singleton_logger
