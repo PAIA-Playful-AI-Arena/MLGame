@@ -2,7 +2,7 @@ import pickle
 import time
 
 from pathlib import Path
-from .execution_command import GameMode
+from mlgame.argument.execution_command import GameMode
 
 RECORD_FORMAT_VERSION = 2
 

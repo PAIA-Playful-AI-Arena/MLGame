@@ -197,6 +197,7 @@ def get_dummy_progress_data():
 
     scene_progress = {
         # background view data will be draw first
+        "frame":1,
         "background": [
             background,
 

@@ -8,14 +8,14 @@ import traceback
 import pandas as pd
 import websockets
 
-from mlgame import errno
-from mlgame.communication import GameCommManager, MLCommManager, TransitionCommManager
-from mlgame.exceptions import MLProcessError, GameProcessError
+from mlgame.core import errno
+from mlgame.utils.communication import GameCommManager, MLCommManager, TransitionCommManager
+from mlgame.core.exceptions import MLProcessError, GameProcessError
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
 from mlgame.utils.logger import get_singleton_logger
-from mlgame.view.view import PygameView, IPygameView
+from mlgame.view.view import IPygameView
 
 _logger = get_singleton_logger()
 
@@ -350,4 +350,6 @@ class WebSocketExecutor:
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             # TODO WS exception
+
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
+        # self._comm_manager.

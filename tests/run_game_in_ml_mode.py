@@ -1,10 +1,10 @@
 from multiprocessing import Process, Pipe
 
-from mlgame.communication import GameCommManager, MLCommManager
-from mlgame.gameconfig import GameConfig
-from mlgame.argument import get_parser_from_dict
-from mlgame.argument import create_MLGameArgument_obj
-from mlgame.executor import GameExecutor, AIClientExecutor
+from mlgame.utils.communication import GameCommManager, MLCommManager
+from mlgame.argument.model import GameConfig
+from mlgame.argument.argument import create_game_arg_parser
+from mlgame.argument.argument import create_MLGameArgument_obj
+from mlgame.core.executor import GameExecutor, AIClientExecutor
 
 if __name__ == '__main__':
     arg_str = "-f 120  -i /Users/kylin/Documents/02-PAIA_Project/MLGame/games/easy_game/ml/ml_play_template.py " \
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # 2. parse game_folder/config.py and get game_config
     game_config = GameConfig(arg_obj.game_folder.__str__())
     assert game_config
-    param_parser = get_parser_from_dict(game_config.game_params)
+    param_parser = create_game_arg_parser(game_config.game_params)
     # 3. get parsed_game_params
     parsed_game_params = param_parser.parse_args(arg_obj.game_params)
     game_setup = game_config.game_setup

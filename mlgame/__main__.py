@@ -4,15 +4,15 @@ from multiprocessing import Pipe, Process
 
 import pydantic
 
-from mlgame.communication import GameCommManager, TransitionCommManager
-from mlgame.exceptions import GameConfigError
-from mlgame.gameconfig import GameConfig
+from mlgame.utils.communication import GameCommManager, TransitionCommManager
+from mlgame.core.exceptions import GameConfigError
+from mlgame.argument.model import GameConfig
 from mlgame.gamedev.game_interface import PaiaGame
-from mlgame.process import create_process_of_ai_clients_and_start
-from mlgame.argument import get_parser_from_dict
+from mlgame.core.process import create_process_of_ai_clients_and_start
+from mlgame.argument.argument import create_game_arg_parser
 from mlgame.utils.logger import get_singleton_logger
-from mlgame.argument import create_MLGameArgument_obj
-from mlgame.executor import GameExecutor, GameManualExecutor, WebSocketExecutor
+from mlgame.argument.argument import create_MLGameArgument_obj
+from mlgame.core.executor import GameExecutor, GameManualExecutor, WebSocketExecutor
 from mlgame.view.view import PygameView, DummyPygameView
 
 
@@ -23,6 +23,10 @@ def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
 
 
 if __name__ == '__main__':
+    # try:
+    #     subcommand = self.argv[1]
+    # except IndexError:
+    #     subcommand = "help"  # Display help if no arguments were given.
     arg_str = " ".join(sys.argv[1:])
     _logger = get_singleton_logger()
     # 1. parse command line
@@ -32,15 +36,16 @@ if __name__ == '__main__':
         game_config = GameConfig(arg_obj.game_folder.__str__())
     except pydantic.ValidationError as e:
         _logger.error(f"Error in parsing command : {e.__str__()}")
+
         sys.exit()
     except GameConfigError as e:
-        _logger.error(f"Error in parsing game parameter : {e.__str__()}")
+        _logger.exception(f"Error in parsing game parameter : {e.__str__()}")
         # _logger.info("game is exited")
         sys.exit()
 
     # 3. get parsed_game_params
     # Program will catch parse error (error in game parameter in cli) here.
-    param_parser = get_parser_from_dict(game_config.game_params)
+    param_parser = create_game_arg_parser(game_config.game_params)
     parsed_game_params = param_parser.parse_args(arg_obj.game_params)
     # if parse config error game will exit at system code 2
 

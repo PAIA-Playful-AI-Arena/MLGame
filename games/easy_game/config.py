@@ -2,7 +2,7 @@ import sys
 from os import path
 sys.path.append(path.dirname(__file__))
 
-from mlgame.utils.parse_config import read_json_file, parse_config
+from mlgame.argument.tool import read_json_file, parse_config
 from src.game import EasyGame
 
 config_file = path.join(path.dirname(__file__), "game_config.json")

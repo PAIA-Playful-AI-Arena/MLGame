@@ -4,7 +4,7 @@ from os import path
 import pygame
 
 from mlgame.gamedev.game_interface import PaiaGame, GameResultState, GameStatus
-from mlgame.view.test_decorator import check_game_progress, check_game_result
+from mlgame.tests.test_decorator import check_game_progress, check_game_result
 from mlgame.view.view_model import create_text_view_data, create_asset_init_data, create_image_view_data, Scene, \
     create_scene_progress_data
 from .game_object import Ball, Food

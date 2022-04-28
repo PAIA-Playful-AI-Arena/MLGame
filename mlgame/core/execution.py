@@ -6,14 +6,15 @@ import os
 import os.path
 import sys
 
-from .crosslang.main import compile_script
-from .crosslang.exceptions import CompilationError
-from .execution_command import get_command_parser, GameMode, ExecutionCommand
-from .exceptions import ExecutionCommandError, GameConfigError
-from .gameconfig import GameConfig
+from mlgame.crosslang.main import compile_script
+from mlgame.crosslang.exceptions import CompilationError
+from mlgame.argument.execution_command import get_command_parser, GameMode, ExecutionCommand
+from mlgame.core.exceptions import ExecutionCommandError, GameConfigError
+from mlgame.argument.model import GameConfig
 from .loops import GameMLModeExecutorProperty, MLExecutorProperty
-from .argument import get_parser_from_dict
+from mlgame.argument.argument import create_game_arg_parser
 from . import errno
+
 
 def execute():
     """
@@ -56,7 +57,7 @@ def _parse_command_line():
     game_config = GameConfig(parsed_args.game)
 
     # Create game_param parser
-    param_parser = get_parser_from_dict(game_config.game_params)
+    param_parser = create_game_arg_parser(game_config.game_params)
     parsed_game_params = param_parser.parse_args(parsed_args.game_params)
 
     # Replace the input game_params with the parsed one

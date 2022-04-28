@@ -3,8 +3,8 @@ from enum import Enum, auto
 from pathlib import Path
 import re
 
-from ._version import version
-from .exceptions import ExecutionCommandError
+from mlgame.version import version
+from mlgame.core.exceptions import ExecutionCommandError
 
 def get_command_parser():
     """
@@ -131,7 +131,7 @@ class ExecutionCommand:
                 module_list.append(("mlgame.crosslang.ml_play", full_script_path.__str__()))
             else:
                 # Replace the file path seperator with the dot
-                sub_module = re.sub(r'[\\/]', r'.', script_name)
+                sub_module = re.sub(r'[\\/]', r'..', script_name)
                 module_list.append("games.{}.ml.{}"
                     .format(self.game_name, sub_module.split('.py')[0]))
 

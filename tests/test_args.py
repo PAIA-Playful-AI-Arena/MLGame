@@ -8,20 +8,19 @@ import time
 import pandas as pd
 import pydantic
 
-from mlgame import errno
-from mlgame.exceptions import GameProcessError
-from mlgame.gameconfig import GameConfig
+from mlgame.core import errno
+from mlgame.core.exceptions import GameProcessError
+from mlgame.argument.model import GameConfig
 from mlgame.gamedev.game_interface import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
-from mlgame.argument import get_parser_from_dict, get_args_parser
+from mlgame.argument.argument import create_game_arg_parser, create_cli_args_parser
 from mlgame.view.view import PygameView
-from mlgame.argument import create_MLGameArgument_obj
-from mlgame.executor import GameExecutor, AIClientExecutor
+from mlgame.argument.argument import create_MLGameArgument_obj
 from tests.mock_included_file import MockMLPlay
 
 
 def get_parsed_args_or_print_help(arg_str):
-    arg_parser = get_args_parser()
+    arg_parser = create_cli_args_parser()
     parsed_args = arg_parser.parse_args(arg_str.split())
     if parsed_args.help:
         arg_parser.print_help()
@@ -99,7 +98,7 @@ def test_play_easy_game_in_manual_mode():
     # parse game_folder/config.py
     game_config = GameConfig(arg_obj.game_folder.__str__())
     assert game_config
-    param_parser = get_parser_from_dict(game_config.game_params)
+    param_parser = create_game_arg_parser(game_config.game_params)
     parsed_game_params = param_parser.parse_args(arg_obj.game_params)
 
     # init game

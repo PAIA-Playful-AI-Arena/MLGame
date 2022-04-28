@@ -1,8 +1,6 @@
 from threading import Thread
 from queue import Queue
 
-from .exceptions import MLProcessError
-
 
 class CommunicationSet:
     """

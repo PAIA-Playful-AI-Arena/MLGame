@@ -1,6 +1,6 @@
 from os import path
 
-from mlgame.utils.parse_config import read_json_file, parse_config
+from mlgame.argument.parse_config import read_json_file, parse_config
 
 
 def test_read_config():

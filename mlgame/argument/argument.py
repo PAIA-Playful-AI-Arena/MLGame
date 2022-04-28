@@ -1,14 +1,12 @@
 import os
 import sys
-from typing import List, Optional
-import pydantic as pydantic
-from pydantic import FilePath, validator, DirectoryPath, Required
 from argparse import ArgumentParser, REMAINDER
 
-version = "9.3.5"
+from mlgame.argument.model import MLGameArgument
+from mlgame.version import version
 
 
-def get_args_parser():
+def create_cli_args_parser():
     """
     Generate an ArgumentParser for parse the arguments in the command line
     """
@@ -64,28 +62,8 @@ def get_args_parser():
     return parser
 
 
-class MLGameArgument(pydantic.BaseModel):
-    fps: int = 30
-    one_shot_mode: bool = False
-    ai_clients: Optional[List[FilePath]] = None
-    is_manual: bool = False
-    no_display: bool = True
-    ws_url: str = None
-    game_folder: DirectoryPath
-    game_params: List[str]
-
-    # def __init__(self,**kwargs):
-    #     self.
-    #     self.is_manual = self.ai_clients is None
-    @validator('is_manual', always=True)
-    def update_manual(cls, v, values) -> bool:
-        if 'ai_clients' in values:
-            return values['ai_clients'] is None
-        return True
-
-
 def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
-    arg_parser = get_args_parser()
+    arg_parser = create_cli_args_parser()
     parsed_args = arg_parser.parse_args(arg_str.split())
     if parsed_args.help:
         arg_parser.print_help()
@@ -94,7 +72,7 @@ def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
     return arg_obj
 
 
-def get_parser_from_dict(parser_config: dict):
+def create_game_arg_parser(parser_config: dict):
     """
     Generate `argparse.ArgumentParser` from `parser_config`
 

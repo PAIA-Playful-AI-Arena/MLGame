@@ -8,6 +8,10 @@ def read_json_file(config_file):
 
 
 def parse_config(config_data):
+    """
+    parse game parameter
+    """
+    # TODO to optimize
     result = {}
     params = config_data["game_params"]
     game_usage = "%(prog)s "

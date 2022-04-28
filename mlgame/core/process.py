@@ -1,9 +1,9 @@
 from multiprocessing import Process, Pipe
 
-from mlgame.executor import AIClientExecutor
-from .communication import GameCommManager, MLCommManager
+from mlgame.core.executor import AIClientExecutor
+from mlgame.utils.communication import GameCommManager, MLCommManager
 from .loops import GameMLModeExecutorProperty, MLExecutorProperty
-from .exceptions import ProcessError
+from mlgame.core.exceptions import ProcessError
 
 def create_process_of_ai_clients_and_start(
         game_comm: GameCommManager, ai_entity_defined_by_game: list, path_of_ai_clients: list) -> list:

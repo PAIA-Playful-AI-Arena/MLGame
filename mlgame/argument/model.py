@@ -1,18 +1,17 @@
-"""
-Handle the game defined config
-"""
-
+from typing import List, Optional
+import pydantic
+from pydantic import FilePath, validator, DirectoryPath, Required
 import importlib
-
-from .exceptions import GameConfigError
+from mlgame.core.exceptions import GameConfigError
 
 CONFIG_FILE_NAME = "config.py"
+
 class GameConfig:
     """
     The data class storing the game defined config
     """
 
-    def __init__(self, game_folder:str):
+    def __init__(self, game_folder: str):
         """
         Parse the game defined config and generate a `GameConfig` instance
         """
@@ -63,6 +62,7 @@ class GameConfig:
         # and set it to the `usage`
         if param_dict.get("()") and param_dict["()"].get("game_usage"):
             game_usage = str(param_dict["()"].pop("game_usage"))
+            # TODO to deprecated
             param_dict["()"]["usage"] = "python MLGame.py [options] " + game_usage
 
         # If the game not specify "--version" flag,
@@ -118,3 +118,23 @@ class GameConfig:
                 f"Warning: 'dynamic_ml_clients' in 'GAME_SETUP' in '{CONFIG_FILE_NAME}' "
                 "is invalid for just one ml client. Set to False.")
             self.game_setup["dynamic_ml_clients"] = False
+
+
+class MLGameArgument(pydantic.BaseModel):
+    fps: int = 30
+    one_shot_mode: bool = False
+    ai_clients: Optional[List[FilePath]] = None
+    is_manual: bool = False
+    no_display: bool = True
+    ws_url: str = None
+    game_folder: DirectoryPath
+    game_params: List[str]
+
+    # def __init__(self,**kwargs):
+    #     self.
+    #     self.is_manual = self.ai_clients is None
+    @validator('is_manual', always=True)
+    def update_manual(cls, v, values) -> bool:
+        if 'ai_clients' in values:
+            return values['ai_clients'] is None
+        return True

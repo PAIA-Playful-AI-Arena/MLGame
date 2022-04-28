@@ -9,13 +9,13 @@ import sys
 
 import pygame.key
 
-from .gamedev.game_interface import PaiaGame
-from .utils.enum import KEYS
-from .view.view import PygameView
-from .communication import GameCommManager, MLCommManager
-from .exceptions import GameProcessError, MLProcessError
-from .gamedev.generic import quit_or_esc
-from .recorder import get_recorder
+from mlgame.gamedev.game_interface import PaiaGame
+from mlgame.utils.enum import KEYS
+from mlgame.view.view import PygameView
+from mlgame.utils.communication import GameCommManager, MLCommManager
+from mlgame.core.exceptions import GameProcessError, MLProcessError
+from mlgame.gamedev.generic import quit_or_esc
+from mlgame.utils.recorder import get_recorder
 import pandas as pd
 
 
