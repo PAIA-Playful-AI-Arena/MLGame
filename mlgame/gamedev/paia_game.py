@@ -54,7 +54,7 @@ class PaiaGame(abc.ABC):
         for ai_client in self.ai_clients():
             to_players_data[ai_client['name']] = data_to_1p
         # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
-
+        # TODO change function name
         return to_players_data
 
     @abc.abstractmethod
@@ -117,15 +117,6 @@ class PaiaGame(abc.ABC):
         ai_1p = self.ai_clients()[0]["name"]
         return {ai_1p: cmd_1p}
 
-    @staticmethod
-    def ai_clients() -> list:
-        """
-        let MLGame know how to parse your ai,
-        you can also use this names to get different cmd and send different data to each ai client
-        """
-        return [
-            {"name": "1P"}
-        ]
 def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
     game = game_cls(**parsed_game_params)
     assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"

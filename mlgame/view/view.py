@@ -44,7 +44,7 @@ def scale_img(img, origin_width, origin_height, scale_ratio):
     )
 
 
-class IPygameView(abc.ABC):
+class PygameViewInterface(abc.ABC):
     def __init__(self, game_info: dict):
         self.scene_init_data = game_info
 
@@ -61,7 +61,7 @@ class IPygameView(abc.ABC):
         return []
 
 
-class DummyPygameView(IPygameView):
+class DummyPygameView(PygameViewInterface):
     def __init__(self, game_info: dict):
         super().__init__(game_info)
 
@@ -75,7 +75,7 @@ class DummyPygameView(IPygameView):
         return []
 
 
-class PygameView(IPygameView):
+class PygameView(PygameViewInterface):
     def __init__(self, game_info: dict):
         super().__init__(game_info)
         pygame.display.init()

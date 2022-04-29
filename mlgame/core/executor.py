@@ -1,3 +1,4 @@
+import abc
 import asyncio
 import importlib
 import json
@@ -14,20 +15,25 @@ from mlgame.core.exceptions import MLProcessError, GameProcessError
 from mlgame.gamedev.paia_game import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
-from mlgame.utils.logger import get_singleton_logger
-from mlgame.view.view import IPygameView
-
-_logger = get_singleton_logger()
+from mlgame.utils.logger import _logger, logger
+from mlgame.view.view import PygameViewInterface
 
 
-class AIClientExecutor():
-    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, args, kwargs):
+class ExecutorInterface(abc.ABC):
+    @abc.abstractmethod
+    def run(self):
+        pass
+
+
+class AIClientExecutor(ExecutorInterface):
+    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, ai_name="1P"):
         self._frame_count = 0
         self.ai_comm = ai_comm
         self.ai_path = ai_client_path
         self._proc_name = ai_client_path
-        self._args_for_ml_play = args
-        self._kwargs_for_ml_play = kwargs
+        # self._args_for_ml_play = args
+        # self._kwargs_for_ml_play = kwargs
+        self.ai_name = ai_name
 
     def run(self):
         self.ai_comm.start_recv_obj_thread()
@@ -36,10 +42,10 @@ class AIClientExecutor():
             spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
             self.__module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(self.__module)
-            ai_obj = self.__module.MLPlay(*self._args_for_ml_play, **self._kwargs_for_ml_play)
+            ai_obj = self.__module.MLPlay(ai_name=self.ai_name)
 
             # cmd = ai_obj.update({})
-            print("             AI Client runs")
+            logger.info("             AI Client runs")
             self._ml_ready()
             while True:
                 scene_info, keyboard_info = self.ai_comm.recv_from_game()
@@ -89,11 +95,11 @@ class AIClientExecutor():
         self.ai_comm.send_to_game("READY")
 
 
-class GameExecutor():
+class GameExecutor(ExecutorInterface):
     def __init__(self,
                  game: PaiaGame,
                  game_comm: GameCommManager,
-                 game_view: IPygameView,
+                 game_view: PygameViewInterface,
                  fps=30, one_shot_mode=False, no_display=False):
         self.no_display = no_display
         self.game_view = game_view
@@ -167,7 +173,7 @@ class GameExecutor():
             # handle unknown exception
             # send to es
             e = GameProcessError(self._proc_name, traceback.format_exc())
-            _logger.exception("Some errors happened in game process.")
+            # _logger.exception("Some errors happened in game process.")
             self.game_comm.send_to_others(e)
 
         # print(traceback.format_exc())
@@ -249,15 +255,16 @@ class GameExecutor():
             return quit_or_esc()
 
 
-class GameManualExecutor():
+class GameManualExecutor(ExecutorInterface):
     def __init__(self, game: PaiaGame,
-                 game_view: IPygameView,
+                 game_view: PygameViewInterface,
+                 game_comm: GameCommManager,
                  fps=30,
                  one_shot_mode=False, ):
         self.game_view = game_view
         self.frame_count = 0
         self.game = game
-
+        self.game_comm = game_comm
         self._ml_delayed_frames = {}
         self._ml_execution_time = 1 / fps
         self._fps = fps
@@ -270,6 +277,8 @@ class GameManualExecutor():
     def run(self):
         game = self.game
         game_view = self.game_view
+        self.game_comm.send_to_others(game_view.scene_init_data)
+
         try:
             while not quit_or_esc():
                 cmd_dict = game.get_keyboard_command()
@@ -277,12 +286,16 @@ class GameManualExecutor():
                 result = game.update(cmd_dict)
                 self._frame_count += 1
                 view_data = game.get_scene_progress_data()
+                self.game_comm.send_to_others(view_data)
                 game_view.draw(view_data)
                 # Do reset stuff
                 if result == "RESET" or result == "QUIT":
-                    attachments = game.get_game_result()['attachment']
+                    game_result = game.get_game_result()
+                    attachments = game_result['attachment']
                     print(pd.DataFrame(attachments).to_string())
                     if self.one_shot_mode or result == "QUIT":
+                        self.game_comm.send_to_others(game_result)
+
                         break
                     game.reset()
                     game_view.reset()
@@ -295,7 +308,7 @@ class GameManualExecutor():
 
 class WebSocketExecutor:
     def __init__(self, ws_uri, ws_comm: TransitionCommManager):
-        print("websocket init ")
+        logger.info("             ws_init ")
         self._proc_name = f"websocket({ws_uri}"
         self._ws_uri = ws_uri
         self._comm_manager = ws_comm
@@ -303,7 +316,7 @@ class WebSocketExecutor:
 
     async def ws_start(self):
         async with websockets.connect(self._ws_uri) as websocket:
-            print("ws_client")
+            logger.info("             ws_start")
             count = 0
             while 1:
                 data = self._recv_data_func()
@@ -349,7 +362,7 @@ class WebSocketExecutor:
             asyncio.get_event_loop().run_until_complete(self.ws_start())
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
-            # TODO WS exception
-
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
+            # catch connection error
+            logger.exception(e.__str__())
         # self._comm_manager.

@@ -4,8 +4,10 @@ from argparse import ArgumentParser, REMAINDER
 
 import pydantic
 
-from mlgame.argument.model import MLGameArgument
-from mlgame.utils import logger
+from mlgame.argument.model import MLGameArgument, GameConfig
+from mlgame.core.exceptions import GameConfigError
+from mlgame.gamedev.paia_game import get_paia_game_obj, PaiaGame
+from mlgame.utils.logger import logger
 from mlgame.version import version
 
 
@@ -65,22 +67,23 @@ def create_cli_args_parser():
     return parser
 
 
-def create_MLGameArgument_obj(arg_str) -> MLGameArgument:
+def parse_cmd_and_get_arg_obj(arg_str: str) -> MLGameArgument:
+    arg_parser = create_cli_args_parser()
     try:
-        arg_parser = create_cli_args_parser()
         parsed_args = arg_parser.parse_args(arg_str.split())
-        if parsed_args.help:
-            arg_parser.print_help()
-            sys.exit()
-        arg_obj = MLGameArgument(**parsed_args.__dict__)
-        return arg_obj
     except pydantic.ValidationError as e:
-        lg = logger.get_singleton_logger()
-        lg.error(f"Error in parsing command : {e.__str__()}")
-
+        logger.exception(f"Error in parsing command : {e.__str__()}")
+        arg_parser.print_help()
         sys.exit()
 
-
+    if parsed_args.help:
+        arg_parser.print_help()
+        sys.exit()
+    else:
+        # TODO version
+        pass
+    arg_obj = MLGameArgument(**parsed_args.__dict__)
+    return arg_obj
 
 
 def create_game_arg_parser(parser_config: dict):
@@ -132,3 +135,25 @@ def create_game_arg_parser(parser_config: dict):
             parser.add_argument(*name_or_flag, **arg_config)
 
     return parser
+
+
+def create_paia_game_obj(arg_obj: MLGameArgument) -> PaiaGame:
+    try:
+        # 2. parse game_folder/config.py and get game_config
+        game_config = GameConfig(arg_obj.game_folder.__str__())
+    except pydantic.ValidationError as e:
+        logger.error(f"Error in parsing command : {e.__str__()}")
+
+        sys.exit()
+    except GameConfigError as e:
+        logger.exception(f"Error in parsing game parameter : {e.__str__()}")
+        # logger.info("game is exited")
+        sys.exit()
+    # 3. get parsed_game_params
+    # Program will catch parse error (error in game parameter in cli) here.
+    param_parser = create_game_arg_parser(game_config.game_params)
+    parsed_game_params = param_parser.parse_args(arg_obj.game_params)
+    # if parse config error game will exit at system code 2
+    game_setup = game_config.game_setup
+    game_cls = game_setup["game"]
+    return get_paia_game_obj(game_cls, parsed_game_params.__dict__)

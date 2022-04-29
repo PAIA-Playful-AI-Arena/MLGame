@@ -16,6 +16,5 @@ GAME_PARAMS = parse_config(config_data)
 
 GAME_SETUP = {
     "game": EasyGame,
-    "ml_clients": EasyGame.ai_clients(),
     # "dynamic_ml_clients":True
 }
