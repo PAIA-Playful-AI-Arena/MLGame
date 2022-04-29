@@ -1,19 +1,22 @@
 import sys
 import time
 
-from mlgame.core.communication import GameCommManager
-from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, terminate
-from mlgame.argument.argument import create_paia_game_obj
-from mlgame.argument.argument import parse_cmd_and_get_arg_obj
-from mlgame.core.executor import GameExecutor, GameManualExecutor
+from mlgame.argument.cmd_argument import parse_cmd_and_get_arg_obj
+from mlgame.argument.game_argument import create_paia_game_obj
 from mlgame.utils.logger import get_singleton_logger
-from mlgame.view.view import PygameView, DummyPygameView
 
 if __name__ == '__main__':
     arg_str = " ".join(sys.argv[1:])
     logger = get_singleton_logger()
     # 1. parse command line
     arg_obj = parse_cmd_and_get_arg_obj(arg_str)
+
+    from mlgame.core.communication import GameCommManager
+    from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, terminate
+
+    from mlgame.core.executor import GameExecutor, GameManualExecutor
+    from mlgame.view.view import PygameView, DummyPygameView
+
     game = create_paia_game_obj(arg_obj)
     path_of_ai_clients = arg_obj.ai_clients
     ai_process = []
