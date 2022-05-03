@@ -143,7 +143,7 @@ class EasyGame(PaiaGame):
                 "state": self.game_result_state,
                 "attachment": [
                     {
-                        "player": self.ai_clients()[0]["name"],
+                        "player": AI_NAMES[0],
                         "rank": 1,
                         "score": self.score
                     }
@@ -175,14 +175,3 @@ class EasyGame(PaiaGame):
             food = Food(self.foods)
         pass
 
-    @staticmethod
-    def ai_clients():
-        """
-        let MLGame know how to parse your ai,
-        you can also use this names to get different cmd and send different data to each ai client
-        """
-        return [
-            {"name": "1P",
-
-             },
-        ]
