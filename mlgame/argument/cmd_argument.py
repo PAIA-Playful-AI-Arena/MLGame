@@ -44,7 +44,7 @@ def create_cli_args_parser():
                        help="quit the game when the game is passed or is over. "
                             "Otherwise, the game will restart automatically. [default: %(default)s]")
     group.add_argument("-nd", "--no-display", action="store_true",
-                       dest="no_display",
+                       dest="no_display",default=False,
                        help="didn't display the game on screen. [default: %(default)s]")
     group.add_argument("--ws_url",
                        type=str,

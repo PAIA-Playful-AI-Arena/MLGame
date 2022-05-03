@@ -15,7 +15,7 @@ from mlgame.core.exceptions import MLProcessError, GameProcessError
 from mlgame.gamedev.paia_game import PaiaGame
 from mlgame.gamedev.generic import quit_or_esc
 
-from mlgame.utils.logger import _logger, logger
+from mlgame.utils.logger import logger
 from mlgame.view.view import PygameViewInterface
 
 
@@ -70,7 +70,7 @@ class AIClientExecutor(ExecutorInterface):
         # Stop the client of the crosslang module
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
-            _logger.exception(f"Module '{failed_module_name}' is not found in {self._proc_name}")
+            logger.exception(f"Module '{failed_module_name}' is not found in {self._proc_name}")
             exception = MLProcessError(self._proc_name,
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._proc_name, traceback.format_exc()))
@@ -78,7 +78,7 @@ class AIClientExecutor(ExecutorInterface):
             self.ai_comm.send_to_game(exception)
         except Exception as e:
             # handle ai other error
-            _logger.exception(f"Error is happened in {self._proc_name}")
+            logger.exception(f"Error is happened in {self._proc_name}")
             exception = MLProcessError(self._proc_name,
                                        "The process '{}' is exited by itself. {}"
                                        .format(self._proc_name, traceback.format_exc()))
@@ -126,7 +126,7 @@ class GameExecutor(ExecutorInterface):
         try:
             self._wait_all_ml_ready()
             self.game_comm.send_to_others(game.get_scene_init_data())
-            while not self.quit_or_esc():
+            while self.quit_or_esc() is False:
                 scene_info_dict = game.game_to_player_data()
                 keyboard_info = game_view.get_keyboard_info()
 
@@ -173,7 +173,7 @@ class GameExecutor(ExecutorInterface):
             # handle unknown exception
             # send to es
             e = GameProcessError(self._proc_name, traceback.format_exc())
-            # _logger.exception("Some errors happened in game process.")
+            logger.exception("Some errors happened in game process.")
             self.game_comm.send_to_others(e)
 
         # print(traceback.format_exc())
@@ -189,7 +189,7 @@ class GameExecutor(ExecutorInterface):
             recv = self.game_comm.recv_from_ml(ml_name)
             if isinstance(recv, MLProcessError):
                 # handle error when ai_client couldn't be ready state.
-                _logger.info(recv.message)
+                logger.info(recv.message)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
                 continue
@@ -288,6 +288,7 @@ class GameManualExecutor(ExecutorInterface):
                 view_data = game.get_scene_progress_data()
                 self.game_comm.send_to_others(view_data)
                 game_view.draw(view_data)
+                time.sleep(self._ml_execution_time)
                 # Do reset stuff
                 if result == "RESET" or result == "QUIT":
                     game_result = game.get_game_result()
@@ -300,10 +301,13 @@ class GameManualExecutor(ExecutorInterface):
                     game.reset()
                     game_view.reset()
                     self._frame_count = 0
+
+
         except Exception as e:
             # handle unknown exception
             # send to es
-            _logger.exception("Some errors happened in game process.")
+            logger.exception(f"Some errors happened in game process. {e.__str__()}")
+        logger.info("pingpong end.")
 
 
 class WebSocketExecutor:
