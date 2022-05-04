@@ -182,14 +182,17 @@ def bounce_off_ip(bounce_obj_rect: Rect, bounce_obj_speed,
         surface_diff_x = -1 if speed_diff_x > 0 else 1
 
     # Calculate the duration to hit the surface for x and y coordination.
+    # 計算先碰到物體的左右 還是先碰到物體上下
     time_hit_y = surface_diff_y / speed_diff_y
     time_hit_x = surface_diff_x / speed_diff_x
 
     if time_hit_y >= 0 and time_hit_y >= time_hit_x:
+        # 先碰到y座標，移動物體的y就會變成對應的y
         bounce_obj_speed[1] *= -1
         bounce_obj_rect.y = extract_pos_y
 
     if time_hit_x >= 0 and time_hit_y <= time_hit_x:
+        # 先碰到x座標，移動物體的x就會變成對應的x
         bounce_obj_speed[0] *= -1
         bounce_obj_rect.x = extract_pos_x
 
