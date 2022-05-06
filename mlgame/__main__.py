@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
     game = create_paia_game_obj(arg_obj)
     path_of_ai_clients = arg_obj.ai_clients
+    # TODO if dynamic clients like pingpong one ai play two
     ai_process = []
     ws_proc = None
 

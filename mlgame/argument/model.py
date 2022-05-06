@@ -1,8 +1,12 @@
+from os import path
 from typing import List, Optional
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath, Required
 import importlib
+
+from mlgame.argument.tool import read_json_file, parse_config
 from mlgame.core.exceptions import GameConfigError
+from mlgame.utils.logger import logger
 
 CONFIG_FILE_NAME = "config.py"
 AI_NAMES = [f"{i}P" for i in range(1, 7)]
@@ -18,14 +22,12 @@ class GameConfig:
         Parse the game defined config and generate a `GameConfig` instance
         """
         game_config = self._load_game_config(game_folder)
+        # logger.debug(game_folder)
+        config_file = path.join(game_folder, "game_config.json")
+        config_data = read_json_file(config_file)
 
-        self.game_version = getattr(game_config, "GAME_VERSION", "")
-        self.game_params = getattr(game_config, "GAME_PARAMS", {
-            "()": {
-                "prog": game_folder,
-                "game_usage": "%(prog)s"
-            }
-        })
+        self.game_version = config_data["version"]
+        self.game_params = parse_config(config_data)
         self._process_game_param_dict()
 
         try:
@@ -33,7 +35,7 @@ class GameConfig:
         except AttributeError:
             raise GameConfigError("Missing 'GAME_SETUP' in the game config")
 
-        self._process_game_setup_dict()
+        # self._process_game_setup_dict()
 
     def _load_game_config(self, game_folder):
         """
@@ -42,7 +44,7 @@ class GameConfig:
         try:
             # game_config = importlib.import_module(f"{game_folder}.config")
 
-            spec = importlib.util.spec_from_file_location("config", f"{game_folder}/config.py")
+            spec = importlib.util.spec_from_file_location("config", path.join(game_folder, "config.py").__str__())
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             game_config = module
@@ -58,69 +60,21 @@ class GameConfig:
         """
         Convert some fields in `GAME_PARAMS`
         """
-        param_dict = self.game_params
 
         # Append the prefix of MLGame.py usage to the `game_usage`
         # and set it to the `usage`
-        if param_dict.get("()") and param_dict["()"].get("game_usage"):
-            game_usage = str(param_dict["()"].pop("game_usage"))
+        if self.game_params.get("()") and self.game_params["()"].get("game_usage"):
+            game_usage = str(self.game_params["()"].pop("game_usage"))
             # TODO to deprecated
-            param_dict["()"]["usage"] = "python MLGame.py [options] " + game_usage
+            self.game_params["()"]["usage"] = "python MLGame.py [options] " + game_usage
 
         # If the game not specify "--version" flag,
         # try to convert `GAME_VERSION` to a flag
-        if not param_dict.get("--version"):
-            param_dict["--version"] = {
+        if not self.game_params.get("--version"):
+            self.game_params["--version"] = {
                 "action": "version",
                 "version": self.game_version
             }
-
-    def _process_game_setup_dict(self):
-        """
-        Process the value of `GAME_SETUP`
-
-        The `GAME_SETUP` is a dictionary which has several keys:
-        - "game": Specify the class of the game to be execute
-        - "dynamic_ml_clients": (Optional) Whether the number of ml clients is decided by
-          the number of input scripts.
-        - "ml_clients": A list containing the information of the ml client.
-            Each element in the list is a dictionary in which members are:
-            - "name": A string which is the name of the ml client.
-            - "args": (Optional) A tuple which contains the initial positional arguments
-                to be passed to the ml client.
-            - "kwargs": (Optional) A dictionary which contains the initial keyword arguments
-                to be passed to the ml client.
-        """
-        try:
-            game_cls = self.game_setup["game"]
-            # ml_clients = self.game_setup["ml_clients"]
-        except KeyError as e:
-            raise GameConfigError(
-                f"Missing {e} in 'GAME_SETUP' in '{CONFIG_FILE_NAME}'")
-
-        # Check if the specified name is existing or duplicated
-        ml_names = []
-        # for client in ml_clients:
-        #     client_name = client.get("name", "")
-        #     if not client_name:
-        #         raise GameConfigError(
-        #             "'name' in 'ml_clients' of 'GAME_SETUP' "
-        #             f"in '{CONFIG_FILE_NAME}' is empty or not existing")
-        #     if client_name in ml_names:
-        #         raise GameConfigError(
-        #             f"Duplicated name '{client_name}' in 'ml_clients' of 'GAME_SETUP' "
-        #             f"in '{CONFIG_FILE_NAME}'")
-        #     ml_names.append(client_name)
-
-        # if not self.game_setup.get("dynamic_ml_clients"):
-        #     self.game_setup["dynamic_ml_clients"] = False
-        #
-        # if self.game_setup["dynamic_ml_clients"] and len(ml_clients) == 1:
-        #     print(
-        #         f"Warning: 'dynamic_ml_clients' in 'GAME_SETUP' in '{CONFIG_FILE_NAME}' "
-        #         "is invalid for just one ml client. Set to False.")
-        #     self.game_setup["dynamic_ml_clients"] = False
-
 
 class MLGameArgument(pydantic.BaseModel):
     fps: int = 30
