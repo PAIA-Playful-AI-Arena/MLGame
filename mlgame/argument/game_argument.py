@@ -74,9 +74,8 @@ def create_paia_game_obj(arg_obj: MLGameArgument) -> PaiaGame:
         sys.exit()
     # 3. get parsed_game_params
     # Program will catch parse error (error in game parameter in cli) here.
-    param_parser = create_game_arg_parser(game_config.game_params)
+    param_parser = create_game_arg_parser(game_config.config_to_create_parser)
     parsed_game_params = param_parser.parse_args(arg_obj.game_params)
     # if parse config error game will exit at system code 2
-    game_setup = game_config.game_setup
-    game_cls = game_setup["game"]
+    game_cls = game_config.game_cls
     return get_paia_game_obj(game_cls, parsed_game_params.__dict__)

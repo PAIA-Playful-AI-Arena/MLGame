@@ -15,6 +15,7 @@ AI_NAMES = [f"{i}P" for i in range(1, 7)]
 class GameConfig:
     """
     The data class storing the game defined config
+    Included game_config.json game_cls
     """
 
     def __init__(self, game_folder: str):
@@ -27,13 +28,15 @@ class GameConfig:
         config_data = read_json_file(config_file)
 
         self.game_version = config_data["version"]
-        self.game_params = parse_config(config_data)
+        self.config_to_create_parser = parse_config(config_data)
         self._process_game_param_dict()
+        self.game_cls = None
 
         try:
-            self.game_setup = getattr(game_config, "GAME_SETUP")
+            game_setup = getattr(game_config, "GAME_SETUP")
+            self.game_cls = game_setup["game"]
         except AttributeError:
-            raise GameConfigError("Missing 'GAME_SETUP' in the game config")
+            raise GameConfigError("Missing variable 'GAME_SETUP' in the config.py")
 
         # self._process_game_setup_dict()
 
@@ -63,15 +66,15 @@ class GameConfig:
 
         # Append the prefix of MLGame.py usage to the `game_usage`
         # and set it to the `usage`
-        if self.game_params.get("()") and self.game_params["()"].get("game_usage"):
-            game_usage = str(self.game_params["()"].pop("game_usage"))
+        if self.config_to_create_parser.get("()") and self.config_to_create_parser["()"].get("game_usage"):
+            game_usage = str(self.config_to_create_parser["()"].pop("game_usage"))
             # TODO to deprecated
-            self.game_params["()"]["usage"] = "python MLGame.py [options] " + game_usage
+            self.config_to_create_parser["()"]["usage"] = "python MLGame.py [options] " + game_usage
 
         # If the game not specify "--version" flag,
         # try to convert `GAME_VERSION` to a flag
-        if not self.game_params.get("--version"):
-            self.game_params["--version"] = {
+        if not self.config_to_create_parser.get("--version"):
+            self.config_to_create_parser["--version"] = {
                 "action": "version",
                 "version": self.game_version
             }
