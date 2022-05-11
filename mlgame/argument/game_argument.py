@@ -2,7 +2,7 @@ import importlib
 from argparse import ArgumentParser
 from os import path
 
-from mlgame.argument.tool import get_data_from_json_file
+from mlgame.argument.tool import get_data_from_json_file, UserNumConfig
 from mlgame.core.exceptions import GameConfigError
 
 
@@ -124,7 +124,7 @@ class GameConfig:
         config_data = get_data_from_json_file(path.join(game_folder, "game_config.json"))
         try:
             self.game_version = config_data["version"]
-            self.user_num_config = config_data["user_num"]
+            self.user_num_config = UserNumConfig(**config_data["user_num"])
             self._process_game_param_dict(config_data)
             self.game_config_parser = create_game_params_parser(self._config_to_create_parser)
             self.game_cls = None
