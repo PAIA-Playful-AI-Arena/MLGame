@@ -14,17 +14,13 @@ if __name__ == '__main__':
 
     from mlgame.argument.game_argument import GameConfig
 
+    # 2. get parsed_game_params
     game_config = GameConfig(arg_obj.game_folder.__str__())
-    # 3. get parsed_game_params
-    # Program will catch parse error (error in game parameter in cli) here.
     parsed_game_params = game_config.parse_game_params(arg_obj.game_params)
-    # if parse config error game will exit at system code 2
     path_of_ai_clients = revise_ai_clients(arg_obj.ai_clients, game_config.user_num_config)
     user_num = len(path_of_ai_clients)
     game = get_paia_game_obj(game_config.game_cls,parsed_game_params,user_num)
 
-    # path_of_ai_clients = arg_obj.ai_clients
-    # TODO if dynamic clients like pingpong one ai play two
     ai_process = []
     ws_proc = None
 

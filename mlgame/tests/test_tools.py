@@ -1,7 +1,11 @@
+from os import path
+
 import pydantic
 import pytest
 
-from mlgame.argument.tool import revise_ai_clients, UserNumConfig
+from mlgame.argument.tool import revise_ai_clients, get_data_from_json_file
+from mlgame.argument.model import UserNumConfig
+
 
 
 def test_UserNum():
@@ -29,3 +33,9 @@ def test_revise_ai_clients(ai_clients_files: list, min: int, max: int, expected_
     user_num_config = UserNumConfig(min=min, max=max)
     ai_clients = revise_ai_clients(ai_clients_files, user_num_config=user_num_config)
     assert len(ai_clients) == expected_ai_count
+
+
+def test_open_config_file():
+    config_file = path.join(path.dirname(__file__), "test_data", "game_config.json")
+    config_data = get_data_from_json_file(config_file)
+    assert isinstance(config_data, dict)

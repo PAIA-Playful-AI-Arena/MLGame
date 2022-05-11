@@ -1,4 +1,5 @@
 import abc
+from functools import lru_cache
 
 from mlgame.view.view_model import Scene
 
@@ -37,8 +38,8 @@ class PaiaGame(abc.ABC):
         self.user_num = user_num
 
     @staticmethod
+    @lru_cache(16)
     def get_ai_name(user_index: int = 0):
-        # TODO cache
         return f"{user_index + 1}P"
 
     @abc.abstractmethod
@@ -59,7 +60,6 @@ class PaiaGame(abc.ABC):
         }
         for i in range(self.user_num):
             data_to_player[self.get_ai_name(i)] = data_to_1p
-        # TODO change function name
         return data_to_player
 
     @abc.abstractmethod

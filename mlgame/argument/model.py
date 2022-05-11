@@ -7,6 +7,9 @@ AI_NAMES = [f"{i}P" for i in range(1, 7)]
 
 
 class MLGameArgument(pydantic.BaseModel):
+    """
+    Data Entity to handle parsed cli arguments
+    """
     fps: int = 30
     one_shot_mode: bool = False
     ai_clients: Optional[List[FilePath]] = None
@@ -24,3 +27,16 @@ class MLGameArgument(pydantic.BaseModel):
         if 'ai_clients' in values:
             return values['ai_clients'] is None
         return True
+
+
+class UserNumConfig(pydantic.BaseModel):
+    """
+    Data Entity to handle user_num in game_config.json
+    """
+    min: int
+    max: int
+
+    @validator('max')
+    def max_should_be_larger_than_min(cls, v, values):
+        assert v >= values['min']
+        return v

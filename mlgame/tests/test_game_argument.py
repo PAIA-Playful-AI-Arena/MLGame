@@ -17,12 +17,6 @@ def test_create_game_config():
     assert isinstance(parsed_game_params,dict)
 
 
-def test_open_config_file():
-    config_file = path.join(path.dirname(__file__), "test_data", "game_config.json")
-    config_data = get_data_from_json_file(config_file)
-    assert isinstance(config_data, dict)
-
-
 def test_parse_game_config_file():
     config_file = path.join(path.dirname(__file__), "test_data", "game_config.json")
     config_data = get_data_from_json_file(config_file)

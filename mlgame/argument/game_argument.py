@@ -4,7 +4,8 @@ from os import path
 
 from pydantic import ValidationError
 
-from mlgame.argument.tool import get_data_from_json_file, UserNumConfig
+from mlgame.argument.tool import get_data_from_json_file
+from mlgame.argument.model import UserNumConfig
 from mlgame.core.exceptions import GameConfigError
 
 

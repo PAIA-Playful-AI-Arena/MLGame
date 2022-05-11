@@ -1,8 +1,7 @@
 import json
 import logging
 
-import pydantic
-from pydantic import validator
+from mlgame.argument.model import UserNumConfig
 
 
 def get_data_from_json_file(file_path) -> dict:
@@ -13,15 +12,6 @@ def get_data_from_json_file(file_path) -> dict:
         config_data = json.load(f)
     return config_data
 
-
-class UserNumConfig(pydantic.BaseModel):
-    min: int
-    max: int
-
-    @validator('max')
-    def max_should_be_larger_than_min(cls, v, values):
-        assert v >= values['min']
-        return v
 
 def revise_ai_clients(ai_clients: list, user_num_config: UserNumConfig):
     ai_clients_result = ai_clients.copy()
