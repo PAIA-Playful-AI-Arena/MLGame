@@ -27,35 +27,40 @@ class GameStatus():
     GAME_2P_WIN = "GAME_2P_WIN"
     GAME_DRAW = "GAME_DRAW"
 
+
 class PaiaGame(abc.ABC):
 
-    def __init__(self):
+    def __init__(self, user_num: int, *args, **kwargs):
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.frame_count = 0
         self.game_result_state = GameResultState.FAIL
+        self.user_num = user_num
+
+    @staticmethod
+    def get_ai_name(user_index: int = 0):
+        # TODO cache
+        return f"{user_index + 1}P"
 
     @abc.abstractmethod
     def update(self, commands):
         self.frame_count += 1
 
     @abc.abstractmethod
-    def game_to_player_data(self) -> dict:
+    def get_data_from_game_to_player(self) -> dict:
         """
         send something to game AI
         we could send different data to different ai
         """
-        to_players_data = {}
+        data_to_player = {}
         data_to_1p = {
             "frame": self.frame_count,
             "key": "value"
 
         }
-
-        for ai_client in self.ai_clients():
-            to_players_data[ai_client['name']] = data_to_1p
-        # should be equal to config. GAME_SETUP["ml_clients"][0]["name"]
+        for i in range(self.user_num):
+            data_to_player[self.get_ai_name(i)] = data_to_1p
         # TODO change function name
-        return to_players_data
+        return data_to_player
 
     @abc.abstractmethod
     def reset(self):
@@ -114,10 +119,10 @@ class PaiaGame(abc.ABC):
         """
         cmd_1p = []
 
-        ai_1p = self.ai_clients()[0]["name"]
-        return {ai_1p: cmd_1p}
+        return {self.get_ai_name(0): cmd_1p}
 
-def get_paia_game_obj(game_cls, parsed_game_params: dict) -> PaiaGame:
-    game = game_cls(**parsed_game_params)
+
+def get_paia_game_obj(game_cls, parsed_game_params: dict, user_num) -> PaiaGame:
+    game = game_cls(user_num=user_num, **parsed_game_params)
     assert isinstance(game, PaiaGame), "Game " + str(game) + " should implement a abstract class : PaiaGame"
     return game

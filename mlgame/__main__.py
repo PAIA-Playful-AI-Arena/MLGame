@@ -2,7 +2,13 @@ import sys
 import time
 
 from mlgame.argument.cmd_argument import parse_cmd_and_get_arg_obj
+from mlgame.gamedev.paia_game import get_paia_game_obj
 from mlgame.utils.logger import get_singleton_logger
+
+
+def revise_ai_clients(ai_clients, user_num_config: dict):
+    return ai_clients
+
 
 if __name__ == '__main__':
     arg_str = " ".join(sys.argv[1:])
@@ -10,10 +16,18 @@ if __name__ == '__main__':
     # 1. parse command line
     arg_obj = parse_cmd_and_get_arg_obj(arg_str)
 
-    from mlgame.argument.game_argument import create_paia_game_obj
+    from mlgame.argument.game_argument import create_game_params_parser, GameConfig
 
-    game = create_paia_game_obj(arg_obj)
-    path_of_ai_clients = arg_obj.ai_clients
+    game_config = GameConfig(arg_obj.game_folder.__str__())
+    # 3. get parsed_game_params
+    # Program will catch parse error (error in game parameter in cli) here.
+    parsed_game_params = game_config.parse_game_params(arg_obj.game_params)
+    # if parse config error game will exit at system code 2
+    path_of_ai_clients = revise_ai_clients(arg_obj.ai_clients,  game_config.user_num_config)
+    user_num = len(path_of_ai_clients)
+    game = get_paia_game_obj(game_config.game_cls,parsed_game_params,user_num)
+
+    # path_of_ai_clients = arg_obj.ai_clients
     # TODO if dynamic clients like pingpong one ai play two
     ai_process = []
     ws_proc = None

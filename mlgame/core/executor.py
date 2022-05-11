@@ -127,7 +127,7 @@ class GameExecutor(ExecutorInterface):
             self._wait_all_ml_ready()
             self.game_comm.send_to_others(game.get_scene_init_data())
             while self.quit_or_esc() is False:
-                scene_info_dict = game.game_to_player_data()
+                scene_info_dict = game.get_data_from_game_to_player()
                 keyboard_info = game_view.get_keyboard_info()
 
                 cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
@@ -141,7 +141,7 @@ class GameExecutor(ExecutorInterface):
 
                 # Do reset stuff
                 if result == "RESET" or result == "QUIT":
-                    scene_info_dict = game.game_to_player_data()
+                    scene_info_dict = game.get_data_from_game_to_player()
                     # send to ml_clients and don't parse any command , while client reset ,
                     # self._wait_all_ml_ready() will works and not blocks the process
                     for ml_name in self._active_ml_names:

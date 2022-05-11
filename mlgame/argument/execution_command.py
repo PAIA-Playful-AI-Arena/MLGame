@@ -1,3 +1,6 @@
+"""
+to deprecated
+"""
 from argparse import ArgumentParser, REMAINDER
 from enum import Enum, auto
 from pathlib import Path
