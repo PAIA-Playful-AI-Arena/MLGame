@@ -1,54 +1,31 @@
+import pydantic
+import pytest
+
 from mlgame.argument.tool import revise_ai_clients, UserNumConfig
 
 
-def test_revise_ai_clients():
-    ai_client_files = ['./1p.py', './2p.py']
+def test_UserNum():
+    try:
+        user_num_config = UserNumConfig(min=2, max=1)
+        assert False
+    except Exception as e:
+        assert isinstance(e, pydantic.ValidationError)
 
-    """
-        輸入兩個AI 遊戲允許最多兩個AI
-    """
-    user_num_config = UserNumConfig(min=1, max=2)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == 2
 
-    """
-        輸入兩個AI 遊戲允許最多四個AI
-    """
-    user_num_config = UserNumConfig(min=1, max=4)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == 2
+@pytest.mark.parametrize(
+    "   ai_clients_files        ,min,max,expected_ai_count",
+    [
+        (['./1p.py', './2p.py'] ,1  ,2  ,2),
+        (['./1p.py', './2p.py'] ,1  ,4  ,2),
+        (['./1p.py']            ,1  ,2  ,1),
+        (['./1p.py']            ,2  ,2  ,2),
+        (['./1p.py']            ,4  ,5  ,4),
+        (['./1p.py','./2p.py']  ,4  ,5  ,4),
+        (['./1p.py','./2p.py']  ,4  ,5  ,4),
+        pytest.param(['./1p.py','./2p.py']  ,4  ,5  ,5, marks=pytest.mark.xfail)
+    ])
+def test_revise_ai_clients(ai_clients_files: list, min: int, max: int, expected_ai_count: int):
 
-    """
-        輸入兩個AI 遊戲允許最多一個AI，系統會去掉最後一個
-    """
-    user_num_config = UserNumConfig(min=1, max=1)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == user_num_config.max
-    assert ai_client_files[0] in ai_clients
-
-    """
-        輸入一個AI 遊戲允許最少需要兩個AI，系統會補上一個
-    """
-    ai_client_files = ['./1p.py']
-    user_num_config = UserNumConfig(min=2, max=2)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == user_num_config.min
-    assert ai_client_files[0] == ai_clients[0] == ai_clients[1]
-
-    """
-            輸入一個AI 遊戲允許最少需要四個AI，系統會補上三個
-    """
-    ai_client_files = ['./1p.py']
-    user_num_config = UserNumConfig(min=4, max=4)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == user_num_config.min
-    assert ai_client_files[0] == ai_clients[0] == ai_clients[1]
-
-    """
-            輸入兩個AI 遊戲允許最少需要四個AI，系統會用最後一個補上兩個
-    """
-    ai_client_files = ['./1p.py','./2p.py']
-    user_num_config = UserNumConfig(min=4, max=4)
-    ai_clients = revise_ai_clients(ai_client_files, user_num_config=user_num_config)
-    assert len(ai_clients) == user_num_config.min
-    assert ai_client_files[1] == ai_clients[-1]
+    user_num_config = UserNumConfig(min=min, max=max)
+    ai_clients = revise_ai_clients(ai_clients_files, user_num_config=user_num_config)
+    assert len(ai_clients) == expected_ai_count

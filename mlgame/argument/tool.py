@@ -18,6 +18,10 @@ class UserNumConfig(pydantic.BaseModel):
     min: int
     max: int
 
+    @validator('max')
+    def max_should_be_larger_than_min(cls, v, values):
+        assert v >= values['min']
+        return v
 
 def revise_ai_clients(ai_clients: list, user_num_config: UserNumConfig):
     ai_clients_result = ai_clients.copy()

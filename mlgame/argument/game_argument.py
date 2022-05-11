@@ -2,6 +2,8 @@ import importlib
 from argparse import ArgumentParser
 from os import path
 
+from pydantic import ValidationError
+
 from mlgame.argument.tool import get_data_from_json_file, UserNumConfig
 from mlgame.core.exceptions import GameConfigError
 
@@ -135,7 +137,9 @@ class GameConfig:
         except KeyError:
             raise GameConfigError(f"game_config.json in {game_folder} "
                                   f"should contains 'user_num', 'version', 'game_params' ")
-
+        except ValidationError:
+            raise GameConfigError(f"`user_num` in game_config.json should contains 'min' and 'max' "
+                                  f"and user_num['min'] < user_num['max']")
         # self._process_game_setup_dict()
 
     def parse_game_params(self, game_params) -> dict:
