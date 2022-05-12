@@ -4,11 +4,10 @@ import time
 from mlgame.argument.cmd_argument import parse_cmd_and_get_arg_obj
 from mlgame.argument.tool import revise_ai_clients
 from mlgame.gamedev.paia_game import get_paia_game_obj
-from mlgame.utils.logger import get_singleton_logger
+from mlgame.utils.logger import logger
 
 if __name__ == '__main__':
     arg_str = " ".join(sys.argv[1:])
-    logger = get_singleton_logger()
     # 1. parse command line
     arg_obj = parse_cmd_and_get_arg_obj(arg_str)
 
@@ -19,7 +18,7 @@ if __name__ == '__main__':
     parsed_game_params = game_config.parse_game_params(arg_obj.game_params)
     path_of_ai_clients = revise_ai_clients(arg_obj.ai_clients, game_config.user_num_config)
     user_num = len(path_of_ai_clients)
-    game = get_paia_game_obj(game_config.game_cls,parsed_game_params,user_num)
+    game = get_paia_game_obj(game_config.game_cls, parsed_game_params, user_num)
 
     ai_process = []
     ws_proc = None

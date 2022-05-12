@@ -1,6 +1,5 @@
 import abc
-from functools import lru_cache
-
+from mlgame.utils.enum import get_ai_name
 from mlgame.view.view_model import Scene
 
 
@@ -12,9 +11,11 @@ class GameResultState():
     """
     FINISH = "FINISH"
     FAIL = "FAIL"
+    # TODO refactor
 
 
 class GameStatus():
+    # TODO refactor
     """
         表示遊戲進行中的狀態
         GAME_ALIVE 表示遊戲進行中
@@ -30,17 +31,11 @@ class GameStatus():
 
 
 class PaiaGame(abc.ABC):
-
     def __init__(self, user_num: int, *args, **kwargs):
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.frame_count = 0
         self.game_result_state = GameResultState.FAIL
         self.user_num = user_num
-
-    @staticmethod
-    @lru_cache(16)
-    def get_ai_name(user_index: int = 0):
-        return f"{user_index + 1}P"
 
     @abc.abstractmethod
     def update(self, commands):
@@ -59,7 +54,7 @@ class PaiaGame(abc.ABC):
 
         }
         for i in range(self.user_num):
-            data_to_player[self.get_ai_name(i)] = data_to_1p
+            data_to_player[get_ai_name(i)] = data_to_1p
         return data_to_player
 
     @abc.abstractmethod
@@ -119,7 +114,7 @@ class PaiaGame(abc.ABC):
         """
         cmd_1p = []
 
-        return {self.get_ai_name(0): cmd_1p}
+        return {get_ai_name(0): cmd_1p}
 
 
 def get_paia_game_obj(game_cls, parsed_game_params: dict, user_num) -> PaiaGame:

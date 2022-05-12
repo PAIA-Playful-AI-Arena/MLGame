@@ -26,10 +26,15 @@ POLYGON = "polygon"
 
 
 @lru_cache
-def transfer_hex_to_rgb(hex):
-    # TODO add alpha
-    h = hex.lstrip('#')
+def transfer_hex_to_rgb(hex_str):
+    h = hex_str.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+@lru_cache
+def transfer_hex_to_rgba(hex_str):
+    h = hex_str.lstrip('#')
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4, 6))
 
 
 @lru_cache
@@ -192,7 +197,8 @@ class PygameView(PygameViewInterface):
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(game_object["content"], game_object["font-style"],
-                           game_object["x"] + bias_x, game_object["y"] + bias_y, transfer_hex_to_rgb(game_object[COLOR]),
+                           game_object["x"] + bias_x, game_object["y"] + bias_y,
+                           transfer_hex_to_rgb(game_object[COLOR]),
                            scale)
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"] + bias_x, game_object["y1"] + bias_y, game_object["x2"] + bias_x,
@@ -213,7 +219,7 @@ class PygameView(PygameViewInterface):
         rect.y = y * scale + scale_bias_of_coordinate(self.height, scale)
         self.screen.blit(rotated_img, rect)
 
-    def draw_rect(self, x, y, width, height, color, scale=1):
+    def draw_rect(self, x: int, y: int, width: int, height: int, color, scale=1):
         pygame.draw.rect(self.screen, color,
                          pygame.Rect(x * scale + scale_bias_of_coordinate(self.width, scale),
                                      y * scale + scale_bias_of_coordinate(self.height, scale),

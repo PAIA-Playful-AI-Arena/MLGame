@@ -1,4 +1,10 @@
-from enum import Enum ,auto
+from enum import Enum, auto
+from functools import lru_cache
+
+
+@lru_cache(16)
+def get_ai_name(user_index: int = 0):
+    return f"{user_index + 1}P"
 
 
 class StringEnum(str, Enum):

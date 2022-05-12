@@ -1,9 +1,9 @@
 import time
 from multiprocessing import Process, Pipe
 
-from mlgame.argument.model import AI_NAMES
 from mlgame.core.executor import AIClientExecutor, WebSocketExecutor
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
+from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
 
 
@@ -26,7 +26,7 @@ def create_process_of_ai_clients_and_start(
     """
     ai_process = []
     for index, ai_client in enumerate(path_of_ai_clients):
-        ai_name = AI_NAMES[index]
+        ai_name = get_ai_name(index)
         recv_pipe_for_game, send_pipe_for_ml = Pipe(False)
         recv_pipe_for_ml, send_pipe_for_game = Pipe(False)
         game_comm.add_comm_to_ml(

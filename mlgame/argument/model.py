@@ -2,9 +2,6 @@ from typing import List, Optional
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath
 
-CONFIG_FILE_NAME = "config.py"
-AI_NAMES = [f"{i}P" for i in range(1, 7)]
-
 
 class MLGameArgument(pydantic.BaseModel):
     """
