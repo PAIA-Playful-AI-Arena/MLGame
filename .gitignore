@@ -1,9 +1,4 @@
 games/*
-!games/arkanoid
-!games/pingpong
-!games/Maze_Car
-!games/RacingCar
-!games/easy_game
 kylin_dev/
 *.env
 *.swp
