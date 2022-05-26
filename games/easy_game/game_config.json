@@ -1,7 +1,12 @@
 {
   "game_name": "easy_game",
-  "version": "2.0.0-beta",
-  "url": "None",
+  "version": "1.2.1",
+  "url": "https://github.com/PAIA-Playful-AI-Arena/easy_game",
+  "description": "這是一個吃東西小遊戲，除了讓你熟習所有基本操作，也是 PAIA 的遊戲教學範例",
+  "logo": [
+    "./asset/logo.svg",
+    "https://raw.githubusercontent.com/PAIA-Playful-AI-Arena/Paia-Desktop/master/media/easygame.svg"
+  ],
   "game_params": [
     {
       "name": "time_to_play",
