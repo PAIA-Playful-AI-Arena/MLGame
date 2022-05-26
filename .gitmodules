@@ -1,15 +1,12 @@
 [submodule "games/Maze_Car"]
 	path = games/Maze_Car
-	url = git@github.com:yen900611/Maze_Car.git
+	url = ./games/pingpong/
 [submodule "games/RacingCar"]
 	path = games/RacingCar
 	url = git@github.com:yen900611/RacingCar.git
 [submodule "games/arkanoid"]
 	path = games/arkanoid
-	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid
+	url = ./games/easy_game
 [submodule "games/pingpong"]
 	path = games/pingpong
 	url = https://github.com/PAIA-Playful-AI-Arena/pingpong
-[submodule "easy_game"]
-	path = easy_game
-	url = ./games/easy_game
