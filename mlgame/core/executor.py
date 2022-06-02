@@ -12,8 +12,8 @@ import websockets
 from mlgame.core import errno
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError
-from mlgame.gamedev.paia_game import PaiaGame
-from mlgame.gamedev.generic import quit_or_esc
+from mlgame.game.paia_game import PaiaGame
+from mlgame.game.generic import quit_or_esc
 
 from mlgame.utils.logger import logger
 from mlgame.view.view import PygameViewInterface

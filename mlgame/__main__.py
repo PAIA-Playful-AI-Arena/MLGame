@@ -3,7 +3,7 @@ import time
 
 from mlgame.argument.cmd_argument import parse_cmd_and_get_arg_obj
 from mlgame.argument.tool import revise_ai_clients
-from mlgame.gamedev.paia_game import get_paia_game_obj
+from mlgame.game.paia_game import get_paia_game_obj
 from mlgame.utils.logger import logger
 
 if __name__ == '__main__':

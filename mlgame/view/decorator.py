@@ -1,8 +1,7 @@
 import re
 from functools import wraps
 
-from mlgame.gamedev.paia_game import GameResultState
-from mlgame.view.view_model import get_scene_init_sample_data, get_dummy_progress_data
+from mlgame.game.paia_game import GameResultState
 
 K_ATTACHMENT = "attachment"
 K_STATE = "state"

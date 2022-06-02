@@ -12,6 +12,19 @@ For the concept and the API of the MLGame, visit the [wiki page](https://github.
 * pygame==2.0.1
 * Other machine learning libraries you needed
 
+## TODO 
+- [ ] document
+- [ ] arkanoid pingpong easy_game
+- [ ] update maze_car game cmd
+- [ ] test case
+- [ ] update error handler 
+
+## Change
+1. 啟動命令
+2. 專案架構
+3. 新增ws 
+4. 
+
 ## Usage
 
 ```
