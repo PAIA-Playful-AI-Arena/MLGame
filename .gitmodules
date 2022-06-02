@@ -1,12 +1,15 @@
-[submodule "games/Maze_Car"]
-	path = games/Maze_Car
-	url = git@github.com:yen900611/Maze_Car.git
-[submodule "games/RacingCar"]
-	path = games/RacingCar
-	url = git@github.com:yen900611/RacingCar.git
+[submodule "games/easy_game"]
+	path = games/easy_game
+	url = https://github.com/PAIA-Playful-AI-Arena/easy_game.git
 [submodule "games/arkanoid"]
 	path = games/arkanoid
-	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid
+	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid.git
+[submodule "games/RacingCar"]
+	path = games/RacingCar
+	url = https://github.com/yen900611/racing_car.git
 [submodule "games/pingpong"]
 	path = games/pingpong
-	url = https://github.com/PAIA-Playful-AI-Arena/pingpong
+	url = https://github.com/PAIA-Playful-AI-Arena/pingpong.git
+[submodule "games/Maze_Car"]
+	path = games/Maze_Car
+	url = https://github.com/yen900611/maze_car.git
