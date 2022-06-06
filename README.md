@@ -6,78 +6,73 @@ MLGame separates the machine learning part from the game core, which makes users
 
 For the concept and the API of the MLGame, visit the [wiki page](https://github.com/LanKuDot/MLGame/wiki) of this repo (written in Traditional Chinese).
 
-## Requirements
+# Requirements
 
 * Python==3.9
 * pygame==2.0.1
 * Other machine learning libraries you needed
 
-## TODO 
+# TODO 
 - [ ] document
-- [ ] arkanoid pingpong easy_game
-- [ ] update maze_car game cmd
+- [x] arkanoid pingpong easy_game
+- [x] update maze_car game cmd
 - [ ] test case
 - [ ] update error handler 
 
-## Change
+# Change
 1. 啟動命令
 2. 專案架構
 3. 新增ws 
 4. 
 
-## Usage
+# Usage
 
+```shell
+python -m mlgame [options] <game_folder> [game_params]
 ```
-$ python MLGame.py [options] <game> [game_params]
-```
+A platform for applying machine learning algorithm to play pixel games. In default, the game runs in the machine learning mode.
 
-* `game`: The name of the game to be started. Use `-l` flag to list available games.
-* `game_params`: The additional parameters for the game. Use `python MLGame.py <game> -h` to list game parameters of a game.
-  * Note that all arguments after `<game>` will be collected to this paremeter
-* functional options:
-  * `--version`: Show the version number
-  * `-h`: Show the help message
-  * `-l`: List available games
-* game execution options:
-  * `-f FPS`: Specify the updating frequency of the game
-  * `-m`: Play the game in the manual mode (as a normal game)
-  * `-1`: Quit the game when the game is over or is passed. Otherwise, the game will restart automatically.
-  * `-r`: Pickle the game progress (a list of "SceneInfo") to log files.
-  * `-i SCRIPT [-i SCRIPT ...]`: Specify the script used in the machine learning mode. For multiple scripts, use this flag multiple times.
-    The script path starts from `games/<game_name>/ml/` direcotry. `-i ml_play.py` means the file is at `games/<game_name>/ml/ml_play.py`, and `-i foo/ml_play.py` means the file is at `games/<game_name>/ml/foo/ml_play.py`. If the file is in the subdirectory of the `ml` directory, make sure that the subdirectory has a `__init__.py` file.
+## Positional arguments:
+  - `game_folder`
+    - `required` 
+    - the name of the game to be started
+  - `game_params`
+    - `optional` 
+    - the additional settings for the game. Note that all arguments after <game> will be collected to
+                            `game_params`.
 
-**Game execution options must be specified before &lt;game&gt; arguments.** Use `python MLGame.py -h` for more information.
+## functional options:
+  - `--version`             show program's version number and exit
+  - `-h`, `--help`
+    - Show this help message and exit. If this flag is specified after the <game>, show the help message of the game instead.
+  - `-f` `FPS`, `--fps` `FPS`
+    - The updating frequency of the game process
+    - `default` : `30`
+  - `-1`, `--one-shot`
+    - Quit the game when the game is passed or is over. Otherwise, the game will restart automatically. 
+    - `default` : `False`
+  - `--nd`, `--no-display`    didn't display the game on screen. 
+    - `default` : `False`
+  - `--ws_url` `WS_URL`       ws_url route
+  - `-i` `SCRIPT`, `--input-ai` `SCRIPT`
+    - Specify user script(s) for the machine learning mode.
+    - For multiple user scripts, use this flag multiple times.
+    - The script path could be relative path or absolute path
 
-For example:
+## Command Line example:
 
-* List available games:
-  ```
-  $ python MLGame.py -l
-  ```
-
-* List game parameters of the game arkanoid:
-  ```
-  $ python MLGame.py arkanoid -h
-  ```
-
-* Play the game arkanoid level 3 in manual mode on easy difficulty with 45 fps
-  ```
-  $ python MLGame.py -m -f 45 arkanoid --difficulty NORMAL --level 3
-  ```
-
-* Play the game arkanoid level 2 on normal difficulty, record the game progress, and specify the script `ml_play_template.py`
-
-  ```
-  $ python MLGame.py -i ml_play_template.py -f 120 arkanoid --difficulty NORMAL --level 2
+- List game parameters of the game arkanoid:
+  ```shell
+  python -m mlgame -h
   ```
 
-## Play the Game
-
-In default, the game is executed in the machine learning mode. You could play the game in the manual mode by specifying `-m` flag.
-
-In the machine learning mode, you have to provide the script to play the game, which is put in the `games/<game_name>/ml` directory. For example, if there is a file `ml_play.py` in the `games/arkanoid/ml` directory, by specifying the `-i ml_play.py` in the command to use that file to play the game `arkanoid`.
-
-The games in this repository provide `ml_play_template.py` in their `ml` directory, which contains simple code for playing the game. You could duplicate the script and modify it, or use this file for the first time execution.
+- Play the game arkanoid level 3 on normal difficulty with 120 fps
+  ```shell
+  python -m mlgame \
+  -f 120 -i ./AI_Code/arkanoid/rule/ml_play.py \
+  ./games/arkanoid \
+  --difficulty NORMAL --level 3
+  ```
 
 ### Read Instruction
 

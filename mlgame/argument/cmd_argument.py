@@ -13,7 +13,7 @@ def create_cli_args_parser():
     """
     Generate an ArgumentParser for parse the arguments in the command line
     """
-    usage_str = ("python %(prog)s [options] <game_folder> [game_params]")
+    usage_str = ("python -m mlgame [options] <game_folder> [game_params]")
     description_str = ("A platform for applying machine learning algorithm "
                        "to play pixel games. "
                        "In default, the game runs in the machine learning mode. ")
@@ -43,7 +43,7 @@ def create_cli_args_parser():
                        dest="one_shot_mode",
                        help="quit the game when the game is passed or is over. "
                             "Otherwise, the game will restart automatically. [default: %(default)s]")
-    group.add_argument("-nd", "--no-display", action="store_true",
+    group.add_argument("--nd", "--no-display", action="store_true",
                        dest="no_display",default=False,
                        help="didn't display the game on screen. [default: %(default)s]")
     group.add_argument("--ws_url",
