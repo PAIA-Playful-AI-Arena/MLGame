@@ -1,3 +1,10 @@
+import datetime
+import json
+from enum import Enum, auto
+
+import pydantic as pydantic
+
+
 class ProcessError(Exception):
     """
     The base class for the exception occurred in the process
@@ -66,3 +73,29 @@ class GameConfigError(Exception):
 
     def __str__(self):
         return self.message
+
+
+class ErrorEnum(str, Enum):
+    AI_INIT_ERROR = auto()
+    AI_EXEC_ERROR = auto()
+    GAME_EXEC_ERROR = auto()
+    COMMAND_ERROR = auto()
+
+
+class GameError(pydantic.BaseModel):
+    error_type: ErrorEnum
+    message: str = ""
+    frame: int
+    time_stamp: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
+
+    def data(self):
+        data = {
+            "type": "game_error",
+            "data": {
+                "error_type": self.error_type.name,
+                "frame": self.frame,
+                "message": self.message,
+                "time_stamp": self.time_stamp.isoformat()
+            }
+        }
+        return json.dumps(data)
