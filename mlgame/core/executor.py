@@ -214,7 +214,6 @@ class GameExecutor(ExecutorInterface):
             while recv != "READY":
                 try:
                     recv = self.game_comm.recv_from_ml(ml_name)
-
                     if isinstance(recv, GameError):
                         # handle error when ai_client couldn't be ready state.
                         # logger.info(recv.message)
@@ -275,9 +274,8 @@ class GameExecutor(ExecutorInterface):
             cmd_dict[ml_name] = None
 
         if len(self._active_ml_names) == 0:
-            # TODO revise error msg
             error = MLProcessError(self._proc_name,
-                                   "The process {} exit because all ml processes has exited.".format(self._proc_name))
+                                   f"The process {self._proc_name} exit because all ml processes has exited.")
             game_error = GameError(error_type=ErrorEnum.GAME_EXEC_ERROR, frame=self._frame_count,
                                    message="All ml clients has been terminated")
 
