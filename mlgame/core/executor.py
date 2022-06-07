@@ -210,17 +210,29 @@ class GameExecutor(ExecutorInterface):
         """
         # Wait the ready command one by one
         for ml_name in self._active_ml_names:
-            recv = self.game_comm.recv_from_ml(ml_name)
-            if isinstance(recv, GameError):
-                # handle error when ai_client couldn't be ready state.
-                # logger.info(recv.message)
-                self._dead_ml_names.append(ml_name)
-                self._active_ml_names.remove(ml_name)
-                self.game_comm.send_to_others(recv)
-                continue
+            recv = ""
             while recv != "READY":
-                # TODO
-                recv = self.game_comm.recv_from_ml(ml_name)
+                try:
+                    recv = self.game_comm.recv_from_ml(ml_name)
+
+                    if isinstance(recv, GameError):
+                        # handle error when ai_client couldn't be ready state.
+                        # logger.info(recv.message)
+                        self._dead_ml_names.append(ml_name)
+                        self._active_ml_names.remove(ml_name)
+                        self.game_comm.send_to_others(recv)
+                        break
+                except Exception as e:
+                    print("catch error 2")
+                    self._dead_ml_names.append(ml_name)
+                    self._active_ml_names.remove(ml_name)
+                    # self._send_game_error(f"AI of {ml_name} has error at initial stage.")
+                    ai_error = GameError(
+                        error_type=ErrorEnum.AI_INIT_ERROR, frame=0,
+                        message=f"AI of {ml_name} has error at initial stage. {e.__str__()}")
+
+                    self.game_comm.send_to_others(ai_error)
+                    break
 
     def _make_ml_execute(self, scene_info_dict, keyboard_info) -> dict:
         """
