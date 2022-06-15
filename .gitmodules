@@ -1,6 +1,3 @@
-[submodule "games/easy_game"]
-	path = games/easy_game
-	url = https://github.com/PAIA-Playful-AI-Arena/easy_game.git
 [submodule "games/arkanoid"]
 	path = games/arkanoid
 	url = https://github.com/PAIA-Playful-AI-Arena/arkanoid.git
