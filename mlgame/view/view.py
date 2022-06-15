@@ -1,7 +1,17 @@
+import abc
 import math
 import time
 from functools import lru_cache
 import pygame
+
+KEYS = [
+    pygame.K_a, pygame.K_b, pygame.K_c, pygame.K_d, pygame.K_e, pygame.K_f, pygame.K_g, pygame.K_h, pygame.K_i,
+    pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_m, pygame.K_n, pygame.K_o, pygame.K_p, pygame.K_q, pygame.K_r,
+    pygame.K_s, pygame.K_t, pygame.K_u, pygame.K_v, pygame.K_w, pygame.K_x, pygame.K_y, pygame.K_z,
+    pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+    pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0,
+    pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT,
+]
 
 LINE = "line"
 TEXT = "text"
@@ -16,9 +26,15 @@ POLYGON = "polygon"
 
 
 @lru_cache
-def trnsfer_hex_to_rgb(hex):
-    h = hex.lstrip('#')
+def transfer_hex_to_rgb(hex_str):
+    h = hex_str.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+@lru_cache
+def transfer_hex_to_rgba(hex_str):
+    h = hex_str.lstrip('#')
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4, 6))
 
 
 @lru_cache
@@ -41,14 +57,46 @@ def scale_img(img, origin_width, origin_height, scale_ratio):
     )
 
 
-class PygameView():
+class PygameViewInterface(abc.ABC):
     def __init__(self, game_info: dict):
+        self.scene_init_data = game_info
+
+    @abc.abstractmethod
+    def reset(self):
+        pass
+
+    @abc.abstractmethod
+    def draw(self, object_information):
+        pass
+
+    @abc.abstractmethod
+    def get_keyboard_info(self) -> list:
+        return []
+
+
+class DummyPygameView(PygameViewInterface):
+    def __init__(self, game_info: dict):
+        super().__init__(game_info)
+
+    def reset(self):
+        pass
+
+    def draw(self, object_information):
+        pass
+
+    def get_keyboard_info(self) -> list:
+        return []
+
+
+class PygameView(PygameViewInterface):
+    def __init__(self, game_info: dict):
+        super().__init__(game_info)
         pygame.display.init()
         pygame.font.init()
-        self.scene_init_data = game_info
+
         self.width = self.scene_init_data["scene"]["width"]
         self.height = self.scene_init_data["scene"]["height"]
-        self.background_color = trnsfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
+        self.background_color = transfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.address = "GameView"
         self.image_dict = self.loading_image()
@@ -120,14 +168,14 @@ class PygameView():
 
         elif game_object[TYPE] == RECTANGLE:
             self.draw_rect(game_object["x"], game_object["y"], game_object["width"], game_object["height"],
-                           trnsfer_hex_to_rgb(game_object[COLOR]), scale)
+                           transfer_hex_to_rgb(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == POLYGON:
-            self.draw_polygon(game_object["points"], trnsfer_hex_to_rgb(game_object[COLOR]), scale)
+            self.draw_polygon(game_object["points"], transfer_hex_to_rgb(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(game_object["content"], game_object["font-style"],
-                           game_object["x"], game_object["y"], trnsfer_hex_to_rgb(game_object[COLOR]), scale)
+                           game_object["x"], game_object["y"], transfer_hex_to_rgb(game_object[COLOR]), scale)
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"], game_object["y1"], game_object["x2"], game_object["y2"],
                            game_object["width"], game_object[COLOR], scale)
@@ -142,14 +190,15 @@ class PygameView():
         elif game_object[TYPE] == RECTANGLE:
             self.draw_rect(game_object["x"] + bias_x, game_object["y"] + bias_y, game_object["width"],
                            game_object["height"],
-                           trnsfer_hex_to_rgb(game_object[COLOR]), scale)
+                           transfer_hex_to_rgb(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == POLYGON:
-            self.draw_polygon(game_object["points"], trnsfer_hex_to_rgb(game_object[COLOR]), bias_x, bias_y, scale)
+            self.draw_polygon(game_object["points"], transfer_hex_to_rgb(game_object[COLOR]), bias_x, bias_y, scale)
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(game_object["content"], game_object["font-style"],
-                           game_object["x"] + bias_x, game_object["y"] + bias_y, trnsfer_hex_to_rgb(game_object[COLOR]),
+                           game_object["x"] + bias_x, game_object["y"] + bias_y,
+                           transfer_hex_to_rgb(game_object[COLOR]),
                            scale)
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"] + bias_x, game_object["y1"] + bias_y, game_object["x2"] + bias_x,
@@ -170,7 +219,7 @@ class PygameView():
         rect.y = y * scale + scale_bias_of_coordinate(self.height, scale)
         self.screen.blit(rotated_img, rect)
 
-    def draw_rect(self, x, y, width, height, color, scale=1):
+    def draw_rect(self, x: int, y: int, width: int, height: int, color, scale=1):
         pygame.draw.rect(self.screen, color,
                          pygame.Rect(x * scale + scale_bias_of_coordinate(self.width, scale),
                                      y * scale + scale_bias_of_coordinate(self.height, scale),
@@ -183,6 +232,14 @@ class PygameView():
         offset_height = scale_bias_of_coordinate(self.height, scale)
         pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
                          (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
+        # if scale != 1:
+        #
+        #     offset_width = scale_bias_of_coordinate(self.width, scale)
+        #     offset_height = scale_bias_of_coordinate(self.height, scale)
+        #     pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
+        #                      (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
+        # else:
+        #     pygame.draw.line(self.screen, color, (x1, y1), (x2 * scale, y2), int(width))
 
     def draw_polygon(self, points, color, bias_x=0, bias_y=0, scale=1):
         vertices = []
@@ -199,7 +256,7 @@ class PygameView():
             size = int(font_style_list[0].replace("px", "", 1))
             font_type = font_style_list[1].lower()
             if "BOLD" in font_style_list:
-                font = pygame.font.Font(pygame.font.match_font(font_type,bold=True), size * scale)
+                font = pygame.font.Font(pygame.font.match_font(font_type, bold=True), size * scale)
             else:
                 font = pygame.font.Font(pygame.font.match_font(font_type), size * scale)
             self.font[font_style] = font
@@ -238,3 +295,12 @@ class PygameView():
         if key_state[pygame.K_h] and (time.time() - self._toggle_last_time) > 0.3:
             self._toggle_on = not self._toggle_on
             self._toggle_last_time = time.time()
+
+    def get_keyboard_info(self) -> list:
+        keyboard_info = []
+        pressed_keys = pygame.key.get_pressed()
+        if True in pressed_keys:
+            for k in KEYS:
+                if pressed_keys[k]:
+                    keyboard_info.append(k)
+        return keyboard_info

@@ -88,6 +88,7 @@ def create_image_view_data(image_id, x, y, width, height, angle=0):
 
 
 def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, color: str, angle: int = 0):
+    # TODO angle
     """
     這是一個用來繪製矩形的資料格式，
     "type"表示不同的類型
@@ -197,6 +198,7 @@ def get_dummy_progress_data():
 
     scene_progress = {
         # background view data will be draw first
+        "frame":1,
         "background": [
             background,
 
