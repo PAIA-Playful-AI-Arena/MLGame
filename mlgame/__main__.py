@@ -7,9 +7,9 @@ from mlgame.game.paia_game import get_paia_game_obj
 from mlgame.utils.logger import logger
 
 if __name__ == '__main__':
-    arg_str = " ".join(sys.argv[1:])
+
     # 1. parse command line
-    arg_obj = parse_cmd_and_get_arg_obj(arg_str)
+    arg_obj = parse_cmd_and_get_arg_obj(sys.argv[1:])
 
     from mlgame.argument.game_argument import GameConfig
 

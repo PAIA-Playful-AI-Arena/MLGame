@@ -65,10 +65,10 @@ def create_cli_args_parser():
     return parser
 
 
-def parse_cmd_and_get_arg_obj(arg_str: str) -> MLGameArgument:
+def parse_cmd_and_get_arg_obj(arg_str: list) -> MLGameArgument:
     arg_parser = create_cli_args_parser()
     try:
-        parsed_args = arg_parser.parse_args(arg_str.split())
+        parsed_args = arg_parser.parse_args(arg_str)
     except pydantic.ValidationError as e:
         logger.exception(f"Error in parsing command : {e.__str__()}")
         arg_parser.print_help()
