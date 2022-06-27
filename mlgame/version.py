@@ -1,1 +1,1 @@
-version = "9.5.2.3-alpha"
+version = "9.5.2.4-alpha"
