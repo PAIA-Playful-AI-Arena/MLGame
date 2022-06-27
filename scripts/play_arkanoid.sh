@@ -1,5 +1,5 @@
 python -m mlgame \
--f 60 -1 -i ./ai_clients/arkanoid/rule/ml_play.py \
+-f 60 -1 -i "./ai_clients/arkanoid/space path/ml_play.py" \
 ./games/arkanoid \
 --difficulty NORMAL --level 1
 
