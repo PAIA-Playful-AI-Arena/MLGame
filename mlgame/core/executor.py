@@ -181,7 +181,7 @@ class GameExecutor(ExecutorInterface):
                         time.sleep(0.1)
 
                         self._send_system_message("關閉遊戲")
-                        os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
+                        # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
 
                         break
 
@@ -397,7 +397,11 @@ class WebSocketExecutor:
                     await websocket.send(data.data())
                     # exit container
                     if data.error_type in [ErrorEnum.COMMAND_ERROR, ErrorEnum.GAME_EXEC_ERROR]:
-                        os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
+                        await websocket.send(
+                            {"type": "system_message", "data": {"message": f"error in {data.error_type}"}}
+                        )
+                        break
+                        # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
                 else:
 
                     await websocket.send(json.dumps(data))
