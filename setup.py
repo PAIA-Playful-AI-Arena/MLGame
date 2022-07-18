@@ -32,10 +32,10 @@ setuptools.setup(
     keywords=["AI", "machine learning", 'game', 'framework'],
 
     install_requires=[
-        "pygame >= 2.0.1",
-        'pandas >= 1.4.1',
-        "pydantic >= 1.9.0",
-        "websockets >= 10.2"
+        "pygame==2.0.1",
+        'pandas==1.4.1',
+        "pydantic==1.9.0",
+        "websockets==10.2"
     ]
 
 )
