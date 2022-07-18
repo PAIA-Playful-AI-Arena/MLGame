@@ -32,6 +32,7 @@ setuptools.setup(
     keywords=["AI", "machine learning", 'game', 'framework'],
 
     install_requires=[
+        # TODO
         "pygame >= 2.0.1",
         'pandas >= 1.4.1',
         "pydantic >= 1.9.0",
