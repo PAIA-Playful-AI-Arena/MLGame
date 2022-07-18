@@ -233,6 +233,7 @@ class GameCommManager:
         """
         Send the object to all ml process
         """
+        # print(obj)
         self._comm_to_others.send_all(obj)
 
     def recv_from_others(self):
