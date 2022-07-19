@@ -53,7 +53,7 @@ def terminate(game_comm: GameCommManager, ai_process, ws_proc):
                 None, ai_proc.name)
             ai_proc.terminate()
     if ws_proc is not None:
-        time.sleep(0.1)
+        time.sleep(1)
         if ws_proc.is_alive():
             game_comm.send_to_others(None)
             ws_proc.terminate()
