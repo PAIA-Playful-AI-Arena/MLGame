@@ -318,9 +318,34 @@ class TransitionCommManager:
     The communication manager for the transition process
     """
 
-    def __init__(self,recv_end=None, send_end=None):
+    def __init__(self, recv_end=None, send_end=None):
         self._comm_to_game = CommunicationHandler()
-        self.set_comm_to_game(recv_end,send_end)
+        self.set_comm_to_game(recv_end, send_end)
+        self.count = 0
+
+    def start_recv_obj_thread(self):
+        """
+        Start a thread to keep receiving objects from the game
+        """
+        self._obj_queue = Queue(1500)
+
+        thread = Thread(target=self._keep_recv_obj_from_game)
+        thread.start()
+
+    def _keep_recv_obj_from_game(self):
+        """
+        Keep receiving object from the game and put it in the queue
+
+        """
+        while True:
+            if self._obj_queue.full():
+                # self._obj_queue.get()
+                print("Warning: The object queue for the process 'ws_comm' is full. ")
+
+            obj = self._comm_to_game.recv()
+            if obj is None:  # Received `None` from the game, quit the loop.
+                break
+            self._obj_queue.put(obj)
 
     def set_comm_to_game(self, recv_end, send_end):
         """
@@ -336,7 +361,7 @@ class TransitionCommManager:
         """
         Receive the object sent from the game process
         """
-        return self._comm_to_game.recv()
+        return self._obj_queue.get()
 
     def send_exception(self, exception):
         """
