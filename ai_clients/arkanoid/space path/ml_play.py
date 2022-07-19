@@ -46,9 +46,10 @@ class MLPlay:
                     self.previous_ball, current_ball)
                 # 判斷command
             command = self.getCommand(scene_info["platform"][0], result)
-
+            return "MOVE_RIGHT"
         self.previous_ball = scene_info["ball"]
         return command
+
 
     def getDirection(self, previous_ball, current_ball):
         """

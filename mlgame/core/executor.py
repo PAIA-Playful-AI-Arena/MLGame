@@ -42,6 +42,7 @@ class AIClientExecutor(ExecutorInterface):
             spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
             self.__module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(self.__module)
+            # TODO MLPlay add init ?
             ai_obj = self.__module.MLPlay(ai_name=self.ai_name)
 
             # cmd = ai_obj.update({})
@@ -178,9 +179,9 @@ class GameExecutor(ExecutorInterface):
                         self._send_system_message("遊戲結束")
                         self._send_game_result(game_result)
                         # should wait 0.1 s to send msg
-                        time.sleep(0.1)
-
                         self._send_system_message("關閉遊戲")
+                        time.sleep(1)
+
                         # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
 
                         break
@@ -307,9 +308,7 @@ class GameExecutor(ExecutorInterface):
         data_dict = {
             "type": "game_result",
             "data": game_result_dict
-
         }
-
         self.game_comm.send_to_others(data_dict)
 
     def _send_system_message(self, msg: str):
@@ -392,7 +391,6 @@ class GameManualExecutor(ExecutorInterface):
                     print(pd.DataFrame(attachments).to_string())
                     if self.one_shot_mode or result == "QUIT":
                         self.game_comm.send_to_others(game_result)
-
                         break
                     game.reset()
                     game_view.reset()
@@ -440,15 +438,16 @@ class WebSocketExecutor:
                     count += 1
                     # print(f'Send to ws : {count}:{data.keys()}')
                     #
-                ws_recv_data = await websocket.recv()
-                # make sure webserive got game result then mlgame is able to close websocket
+                # make sure webservice got game result then mlgame is able to close websocket
+                # ws_recv_data = await websocket.recv()
                 # print(ws_recv_data)
-                if ws_recv_data == "game_result":
-                    print(f"< {ws_recv_data}")
-                    await websocket.close()
-                    break
+                # if ws_recv_data == "game_result":
+                #     print(f"< {ws_recv_data}")
+                #     await websocket.close()
+                #     break
 
     def run(self):
+        self._comm_manager.start_recv_obj_thread()
         try:
             asyncio.get_event_loop().run_until_complete(self.ws_start())
         except Exception as e:
