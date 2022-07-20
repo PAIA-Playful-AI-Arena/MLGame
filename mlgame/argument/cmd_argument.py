@@ -30,7 +30,7 @@ def create_cli_args_parser():
                              "Note that all arguments after <game> will be collected to 'game_params'.")
 
     group = parser.add_argument_group(title="functional options")
-    group.add_argument("--version", action="version", version=version)
+    group.add_argument("-v", "--version", action="version", version=version)
     group.add_argument("-h", "--help", action="help",
                        help="show this help message and exit. "
                             "If this flag is specified after the <game>, "
@@ -44,7 +44,7 @@ def create_cli_args_parser():
                        help="quit the game when the game is passed or is over. "
                             "Otherwise, the game will restart automatically. [default: %(default)s]")
     group.add_argument("--nd", "--no-display", action="store_true",
-                       dest="no_display",default=False,
+                       dest="no_display", default=False,
                        help="didn't display the game on screen. [default: %(default)s]")
     group.add_argument("--ws_url",
                        type=str,
@@ -74,7 +74,5 @@ def parse_cmd_and_get_arg_obj(arg_str: list) -> MLGameArgument:
         arg_parser.print_help()
         sys.exit()
 
-
     arg_obj = MLGameArgument(**parsed_args.__dict__)
     return arg_obj
-
