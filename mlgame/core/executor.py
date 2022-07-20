@@ -9,7 +9,6 @@ import traceback
 import pandas as pd
 import websockets
 
-from mlgame.core import errno
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
 from mlgame.game.paia_game import PaiaGame
@@ -178,11 +177,9 @@ class GameExecutor(ExecutorInterface):
                     if self.one_shot_mode or result == "QUIT":
                         self._send_system_message("遊戲結束")
                         self._send_game_result(game_result)
-                        # should wait 0.1 s to send msg
                         self._send_system_message("關閉遊戲")
+                        self._send_end_message()
                         time.sleep(1)
-
-                        # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
 
                         break
 
@@ -282,8 +279,7 @@ class GameExecutor(ExecutorInterface):
 
             self._send_game_error(game_error)
             self._send_game_result(self.game.get_game_result())
-
-            # self._send_game_result(game.get_game_result())
+            self._send_end_message()
 
             raise error
         return cmd_dict
@@ -349,6 +345,9 @@ class GameExecutor(ExecutorInterface):
 
         self.game_comm.send_to_others(error)
 
+    def _send_end_message(self):
+        self.game_comm.send_to_others(None)
+
 
 class GameManualExecutor(ExecutorInterface):
     def __init__(self, game: PaiaGame,
@@ -396,7 +395,6 @@ class GameManualExecutor(ExecutorInterface):
                     game_view.reset()
                     self._frame_count = 0
 
-
         except Exception as e:
             # handle unknown exception
             # send to es
@@ -404,8 +402,9 @@ class GameManualExecutor(ExecutorInterface):
         logger.info("pingpong end.")
 
 
-class WebSocketExecutor:
+class WebSocketExecutor():
     def __init__(self, ws_uri, ws_comm: TransitionCommManager):
+        # super().__init__(name="ws")
         logger.info("             ws_init ")
         self._proc_name = f"websocket({ws_uri}"
         self._ws_uri = ws_uri
@@ -419,8 +418,8 @@ class WebSocketExecutor:
             while 1:
                 data = self._recv_data_func()
                 # print("ws received :", data)
-                if not data:
-                    return
+                if data is None:
+                    break
                 elif isinstance(data, GameError):
                     print("ws received :", data)
                     await websocket.send(data.data())
@@ -445,6 +444,7 @@ class WebSocketExecutor:
                 #     print(f"< {ws_recv_data}")
                 #     await websocket.close()
                 #     break
+            await websocket.close()
 
     def run(self):
         self._comm_manager.start_recv_obj_thread()
@@ -455,4 +455,6 @@ class WebSocketExecutor:
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
             # catch connection error
             logger.exception(e.__str__())
-        # self._comm_manager.
+        finally:
+            print("end ws ")
+

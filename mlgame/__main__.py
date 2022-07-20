@@ -1,3 +1,4 @@
+import datetime
 import sys
 import time
 
@@ -7,13 +8,14 @@ from mlgame.game.paia_game import get_paia_game_obj
 from mlgame.utils.logger import logger
 
 if __name__ == '__main__':
+    import os
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
     # 1. parse command line
     arg_obj = parse_cmd_and_get_arg_obj(sys.argv[1:])
 
-    from mlgame.argument.game_argument import GameConfig
-
     # 2. get parsed_game_params
+    from mlgame.argument.game_argument import GameConfig
     game_config = GameConfig(arg_obj.game_folder.__str__())
     parsed_game_params = game_config.parse_game_params(arg_obj.game_params)
     path_of_ai_clients = revise_ai_clients(arg_obj.ai_clients, game_config.user_num_config)
@@ -23,13 +25,12 @@ if __name__ == '__main__':
     ai_process = []
     ws_proc = None
 
+    print(f"===========Game is started at {datetime.datetime.now()}===========")
     from mlgame.core.communication import GameCommManager
     from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, terminate
     from mlgame.core.executor import GameExecutor, GameManualExecutor
     from mlgame.view.view import PygameView, DummyPygameView
-
     game_comm = GameCommManager()
-
     try:
         if arg_obj.ws_url:
             # prepare transmitter for game executor
@@ -65,5 +66,5 @@ if __name__ == '__main__':
         pass
     finally:
         terminate(game_comm, ai_process, ws_proc)
-
+    print(f"===========All process is terminated at {datetime.datetime.now()}===========")
     pass
