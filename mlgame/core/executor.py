@@ -196,7 +196,7 @@ class GameExecutor(ExecutorInterface):
             # send to es
             e = GameProcessError(self._proc_name, traceback.format_exc())
             logger.exception("Some errors happened in game process.")
-            self._send_game_error(e)
+            self._send_game_error_with_obj(e)
 
         # print(traceback.format_exc())
         # print(e.__str__())
@@ -217,7 +217,7 @@ class GameExecutor(ExecutorInterface):
                         # logger.info(recv.message)
                         self._dead_ml_names.append(ml_name)
                         self._active_ml_names.remove(ml_name)
-                        self._send_game_error(recv)
+                        self._send_game_error_with_obj(recv)
                         break
                 except Exception as e:
                     print("catch error 2")
@@ -228,7 +228,7 @@ class GameExecutor(ExecutorInterface):
                         error_type=ErrorEnum.AI_INIT_ERROR, frame=0,
                         message=f"AI of {ml_name} has error at initial stage. {e.__str__()}")
 
-                    self._send_game_error(ai_error)
+                    self._send_game_error_with_obj(ai_error)
                     break
 
     def _make_ml_execute(self, scene_info_dict, keyboard_info) -> dict:
@@ -255,11 +255,11 @@ class GameExecutor(ExecutorInterface):
             if isinstance(cmd_received, MLProcessError):
                 # print(cmd_received.message)
                 # handle error from ai clients
-                self._send_game_error(cmd_received)
+                self._send_game_error_with_obj(cmd_received)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
             elif isinstance(cmd_received, GameError):
-                self._send_game_error(cmd_received)
+                self._send_game_error_with_obj(cmd_received)
                 self._dead_ml_names.append(ml_name)
                 self._active_ml_names.remove(ml_name)
             elif isinstance(cmd_received, dict):
@@ -277,7 +277,7 @@ class GameExecutor(ExecutorInterface):
             game_error = GameError(error_type=ErrorEnum.GAME_EXEC_ERROR, frame=self._frame_count,
                                    message="All ml clients has been terminated")
 
-            self._send_game_error(game_error)
+            self._send_game_error_with_obj(game_error)
             self._send_game_result(self.game.get_game_result())
             self._send_end_message()
 
@@ -343,7 +343,7 @@ class GameExecutor(ExecutorInterface):
 
     def _send_game_error_with_obj(self, error: GameError):
 
-        self.game_comm.send_to_others(error)
+        self._send_game_error(error.message)
 
     def _send_end_message(self):
         self.game_comm.send_to_others(None)
@@ -430,8 +430,17 @@ class WebSocketExecutor():
                         )
                         break
                         # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
-                else:
+                elif isinstance(data, MLProcessError):
 
+                    print("ws received :", data)
+                    # await websocket.send(data.data())
+                    # exit container
+                    # if data.error_type in [ErrorEnum.COMMAND_ERROR, ErrorEnum.GAME_EXEC_ERROR]:
+                    await websocket.send(
+                        {"type": "system_message", "data": {"message": f"error in {data.message}"}}
+                    )
+                    break
+                else:
                     await websocket.send(json.dumps(data))
                     pass
                     count += 1
