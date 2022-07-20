@@ -3,7 +3,6 @@ python -m mlgame \
 -i "./ai_clients/arkanoid/space path/ml_play.py" \
 ./games/arkanoid \
 --difficulty NORMAL --level 1
-#--ws="wss://demo.piesocket.com/v3/arkanoid?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV" \
 
 #python -m mlgame \
 #--ws "wss://demo.piesocket.com/v3/paia?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self" \
