@@ -1,3 +1,4 @@
+import os
 import time
 from multiprocessing import Process, Pipe
 
@@ -5,6 +6,8 @@ from mlgame.core.executor import AIClientExecutor, WebSocketExecutor
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
+
+TIMEOUT = os.getenv("WS_TIMEOUT",30)
 
 
 def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Process:
@@ -55,11 +58,12 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process):
             ai_proc.terminate()
 
     if ws_proc is not None:
-        timeout = time.time() + 10
+        timeout = time.time() + TIMEOUT
         while True:
             time.sleep(0.1)
             if time.time() > timeout:
-                ws_proc.join(0.1)
+                ws_proc.terminate()
+                ws_proc.join()
                 break
             elif not ws_proc.is_alive():
                 break

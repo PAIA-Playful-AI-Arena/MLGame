@@ -1,6 +1,7 @@
 python -m mlgame \
--1 -f 60  \
+-1 -f 60 --nd  \
 -i "./ai_clients/arkanoid/space path/ml_play.py" \
+--ws "wss://demo.piesocket.com/v3/arkanoid?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV" \
 ./games/arkanoid \
 --difficulty NORMAL --level 1
 
