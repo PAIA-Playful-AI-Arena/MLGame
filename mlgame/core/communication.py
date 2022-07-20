@@ -343,9 +343,9 @@ class TransitionCommManager:
                 print("Warning: The object queue for the process 'ws_comm' is full. ")
 
             obj = self._comm_to_game.recv()
+            self._obj_queue.put(obj)
             if obj is None:  # Received `None` from the game, quit the loop.
                 break
-            self._obj_queue.put(obj)
 
     def set_comm_to_game(self, recv_end, send_end):
         """

@@ -7,13 +7,14 @@ from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
 
 
-def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url):
+def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Process:
     recv_pipe_for_game, send_pipe_for_ws = Pipe(False)
     recv_pipe_for_ws, send_pipe_for_game = Pipe(False)
     ws_comm = TransitionCommManager(recv_pipe_for_ws, send_pipe_for_ws)
     game_comm.add_comm_to_others("ws", recv_pipe_for_game, send_pipe_for_game)
     ws_executor = WebSocketExecutor(ws_uri=ws_url, ws_comm=ws_comm)
     process = Process(target=ws_executor.run, name="ws")
+    # process = ws_executor
     process.start()
     time.sleep(0.1)
     return process
@@ -43,7 +44,7 @@ def create_process_of_ai_clients_and_start(
     return ai_process
 
 
-def terminate(game_comm: GameCommManager, ai_process, ws_proc):
+def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process):
     logger.info("Game is going to terminate")
     # 5.terminate
     for ai_proc in ai_process:
@@ -52,9 +53,15 @@ def terminate(game_comm: GameCommManager, ai_process, ws_proc):
             game_comm.send_to_ml(
                 None, ai_proc.name)
             ai_proc.terminate()
+
     if ws_proc is not None:
-        time.sleep(1)
-        if ws_proc.is_alive():
-            game_comm.send_to_others(None)
-            ws_proc.terminate()
+        timeout = time.time() + 10
+        while True:
+            time.sleep(0.1)
+            if time.time() > timeout:
+                ws_proc.join(0.1)
+                break
+            elif not ws_proc.is_alive():
+                break
+        logger.info(f"use {time.time() - timeout + 10 } to close.")
     logger.info("Game is terminated")
