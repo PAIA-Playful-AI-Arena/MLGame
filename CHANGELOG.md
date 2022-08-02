@@ -2,6 +2,14 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [9.5.3] - 2022.08.02
+**更新**
+* 更新專案架構 
+* 建立pypi 
+* 更新指令格式
+* 更新MLPlay 初始化資訊
+
+
 ### [9.3.5] - 2022.04.18
 **新增**
 * 新增 game_progress 欄位: `toggle_with_bias` 

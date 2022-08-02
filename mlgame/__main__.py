@@ -52,7 +52,9 @@ if __name__ == '__main__':
                 game_view = PygameView(game.get_scene_init_data())
             ai_process = create_process_of_ai_clients_and_start(
                 game_comm=game_comm,
-                path_of_ai_clients=path_of_ai_clients)
+                path_of_ai_clients=path_of_ai_clients,
+                game_params=parsed_game_params
+            )
             # 5. run game in main process
             game_executor = GameExecutor(
                 game, game_comm, game_view,

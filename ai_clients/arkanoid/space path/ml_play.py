@@ -13,6 +13,7 @@ class MLPlay:
         self.previous_ball = (0, 0)
         self.serve_pos = random.randint(1, 175)
         print(ai_name)
+        print(kwargs)
 
     def update(self, scene_info,*args, **kwargs):
         """

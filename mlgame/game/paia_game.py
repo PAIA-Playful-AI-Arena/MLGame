@@ -36,6 +36,7 @@ class PaiaGame(abc.ABC):
         self.frame_count = 0
         self.game_result_state = GameResultState.FAIL
         self.user_num = user_num
+        self.game_mode = "NORMAL"
 
     @abc.abstractmethod
     def update(self, commands):
@@ -107,14 +108,6 @@ class PaiaGame(abc.ABC):
 
                 }
 
-    @abc.abstractmethod
-    def get_keyboard_command(self) -> dict:
-        """
-        Define how your game will run by your keyboard
-        """
-        cmd_1p = []
-
-        return {get_ai_name(0): cmd_1p}
 
 
 def get_paia_game_obj(game_cls, parsed_game_params: dict, user_num) -> PaiaGame:
