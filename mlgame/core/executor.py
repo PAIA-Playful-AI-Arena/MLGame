@@ -25,7 +25,7 @@ class ExecutorInterface(abc.ABC):
 
 
 class AIClientExecutor(ExecutorInterface):
-    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, ai_name="1P"):
+    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, ai_name="1P",game_params:dict={}):
         self._frame_count = 0
         self.ai_comm = ai_comm
         self.ai_path = ai_client_path
@@ -33,16 +33,16 @@ class AIClientExecutor(ExecutorInterface):
         # self._args_for_ml_play = args
         # self._kwargs_for_ml_play = kwargs
         self.ai_name = ai_name
+        self.game_params = game_params
 
     def run(self):
         self.ai_comm.start_recv_obj_thread()
         try:
             module_name = os.path.basename(self.ai_path)
             spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
-            self.__module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(self.__module)
-            # TODO MLPlay add init ?
-            ai_obj = self.__module.MLPlay(ai_name=self.ai_name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            ai_obj = module.MLPlay(ai_name=self.ai_name,game_params=self.game_params)
 
             # cmd = ai_obj.update({})
             logger.info("             AI Client runs")
@@ -103,7 +103,7 @@ class AIClientExecutor(ExecutorInterface):
             )
 
             self.ai_comm.send_to_game(ai_error)
-        if self.__module == "mlgame.crosslang.ml_play":
+        if module == "mlgame.crosslang.ml_play":
             # TODO crosslang
             ai_obj.stop_client()
         print("             AI Client ends")
@@ -350,6 +350,7 @@ class GameExecutor(ExecutorInterface):
 
 
 class GameManualExecutor(ExecutorInterface):
+    # TODO deprecated
     def __init__(self, game: PaiaGame,
                  game_view: PygameViewInterface,
                  game_comm: GameCommManager,

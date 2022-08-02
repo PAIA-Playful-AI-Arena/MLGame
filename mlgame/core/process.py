@@ -22,7 +22,7 @@ def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Proces
 
 
 def create_process_of_ai_clients_and_start(
-        game_comm: GameCommManager, path_of_ai_clients: list) -> list:
+        game_comm: GameCommManager, path_of_ai_clients: list,game_params:dict) -> list:
     """
     return a process list to main process and bind pipes to `game_comm`
     """
@@ -37,7 +37,7 @@ def create_process_of_ai_clients_and_start(
         ai_comm = MLCommManager(ai_name)
         ai_comm.set_comm_to_game(
             recv_pipe_for_ml, send_pipe_for_ml)
-        ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, ai_name=ai_name)
+        ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, ai_name=ai_name,game_params=game_params)
         process = Process(target=ai_executor.run,
                           name=ai_name)
         process.start()
