@@ -416,6 +416,7 @@ class WebSocketExecutor():
         async with websockets.connect(self._ws_uri) as websocket:
             logger.info("             ws_start")
             count = 0
+            is_ready_to_end = False
             while 1:
                 data = self._recv_data_func()
                 # print("ws received :", data)
@@ -441,6 +442,10 @@ class WebSocketExecutor():
                         {"type": "system_message", "data": {"message": f"error in {data.message}"}}
                     )
                     break
+                elif data['type']=="game_result":
+                    # raise a flag to recv data
+                    is_ready_to_end = True
+                    await websocket.send(json.dumps(data))
                 else:
                     await websocket.send(json.dumps(data))
                     pass
@@ -448,13 +453,17 @@ class WebSocketExecutor():
                     # print(f'Send to ws : {count}:{data.keys()}')
                     #
                 # make sure webservice got game result then mlgame is able to close websocket
-                # ws_recv_data = await websocket.recv()
-                # print(ws_recv_data)
-                # if ws_recv_data == "game_result":
-                #     print(f"< {ws_recv_data}")
-                #     await websocket.close()
-                #     break
-            await websocket.close()
+
+                if is_ready_to_end:
+                    # wait for game_result
+                    ws_recv_data = await websocket.recv()
+                    if ws_recv_data == "game_result":
+                        print(f"< {ws_recv_data}")
+                        await websocket.close()
+                    # break
+
+            # time.sleep(1)
+            # await websocket.close()
 
     def run(self):
         self._comm_manager.start_recv_obj_thread()
