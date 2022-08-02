@@ -1,3 +1,3 @@
 import os
 
-TIMEOUT = int(os.getenv("WS_TIMEOUT",10))
+TIMEOUT = int(os.getenv("WS_TIMEOUT",30))

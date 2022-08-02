@@ -8,6 +8,7 @@ _logger = None
 def get_singleton_logger():
     global _logger
     if _logger is None:
+        # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         _logger = logging.getLogger(__file__)
     return _logger
 
