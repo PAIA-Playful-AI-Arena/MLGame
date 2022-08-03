@@ -94,7 +94,7 @@ Table of Contents
 1. [ ] Non-python Client Support
 2. [ ] test case
 4. [ ] 遊戲開發文件
-5. [ ] 
+5. [ ] update angle
 
 ## Change Log
 
