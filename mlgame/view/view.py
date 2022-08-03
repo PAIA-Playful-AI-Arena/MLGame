@@ -43,11 +43,16 @@ def scale_bias_of_coordinate(obj_length, scale):
 
 
 @lru_cache
-def rotate_img(scaled_img, radian_angle):
+def rotate_img(scaled_img, radian_angle:float):
     return pygame.transform.rotate(
         scaled_img,
-        (radian_angle * 180 / math.pi) % 360
+        trans_rad_to_deg(radian_angle)
     )
+
+
+@lru_cache
+def trans_rad_to_deg(radian_angle:float)->float:
+    return (radian_angle * 180 / math.pi) % 360
 
 
 @lru_cache
