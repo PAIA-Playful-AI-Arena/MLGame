@@ -119,7 +119,6 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
     "size"表示其大小
     "image"表示其圖片
     "color"以字串表示
-    "radian_angle"表示其逆時針旋轉的弧度
     :return:
     """
     return {"type": "rect",
