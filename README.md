@@ -27,7 +27,7 @@ Table of Contents
     ```shell
     python -m mlgame [options] <game_folder> [game_params]
     ```
-  - 執行打磚塊遊戲
+  - 遊戲執行範例：啟動打磚塊遊戲
     ```shell
     python -m mlgame \
     -f 120 -i ./path/to/ai/ai_client_file_name.py \
@@ -81,7 +81,6 @@ Table of Contents
 [//]: # ()
 [//]: # (   )
 # 相關專案
-
 > 1. [PAIA-Desktop](https://github.com/PAIA-Playful-AI-Arena/Paia-Desktop)
 > 2. 範例遊戲 [easy_game](https://github.com/PAIA-Playful-AI-Arena/easy_game)
 > 3. 打磚塊 [arkanoid](https://github.com/PAIA-Playful-AI-Arena/arkanoid)
