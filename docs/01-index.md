@@ -33,13 +33,13 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
 
 # 技術文件
 ## 系統架構
-1. 框架流程圖
-2. PaiaGame
-
-## 繪圖機制
+1. [框架流程圖](./03-01-System.md)
+2. [AI 與 PaiaGame 技術細節](./03-02-AI_and_PaiaGame.md)
+3. 繪圖機制
 
 ## [指令說明](./Command Line.md)
 
+[//]: # (## 遊戲開發事項)
 
 # 相關專案
 > 1. [PAIA-Desktop](https://github.com/PAIA-Playful-AI-Arena/Paia-Desktop)
