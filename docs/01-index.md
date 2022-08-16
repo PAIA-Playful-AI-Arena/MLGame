@@ -18,7 +18,7 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
 
 # 安裝方法
 1. 預備環境
-   - 此框架僅能在 python 3.9 中運行。
+   - 此框架目前僅能在 python 3.9 中運行，請先安裝python3.9。
 2. 透過 pypi 安裝
   - https://pypi.org/project/mlgame/
     ```shell
@@ -26,7 +26,7 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
     ```
   - 指定特定版本
     ```shell
-      pip install mlgame==9.5.3.2
+      pip install mlgame==9.5.3.2a0
     ```
 [//]: # (3. 直接使用 docker )
 # [操作教學](./02-Tutorial.md)
@@ -35,7 +35,7 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
 ## 系統架構
 1. [框架流程圖](./03-01-System.md)
 2. [AI 與 PaiaGame 技術細節](./03-02-AI_and_PaiaGame.md)
-3. 繪圖機制
+3. [繪圖機制](./03-03-PyGameView.md)
 
 ## [指令說明](./Command Line.md)
 
