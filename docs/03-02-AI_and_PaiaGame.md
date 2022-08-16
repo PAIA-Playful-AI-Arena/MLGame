@@ -23,5 +23,5 @@ class MLPlay:
 # PaiaGame
 ## Class 結構
 ## 資料格式
-
+## Decorator
 [//]: # (function name and data structure)
