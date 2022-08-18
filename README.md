@@ -1,9 +1,9 @@
 # MLGame
 ![mlgame](https://img.shields.io/github/v/tag/PAIA-Playful-AI-Arena/mlgame)
-![mlgame](https://img.shields.io/pypi/v/mlgame)
+[![mlgame](https://img.shields.io/pypi/v/mlgame)](https://pypi.org/project/mlgame/)
   
-[![Python 3.9](https://img.shields.io/badge/python->3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
-[![pygame](https://img.shields.io/badge/pygame->2.0.1-blue.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![pygame](https://img.shields.io/badge/pygame-2.0.1-blue.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
 
 ---
 這是一個遊戲ＡＩ競賽的框架，依照此框架所開發的遊戲，可以透過ＡＩ來玩遊戲，並進行ＡＩ競賽。
