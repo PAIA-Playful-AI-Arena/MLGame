@@ -21,7 +21,9 @@ class MLPlay:
 - 重置遊戲 `reset(self)`
 
 # PaiaGame
-## Class 結構
-## 資料格式
-## Decorator
+coming soon
+
+[//]: # (## Class 結構)
+[//]: # (## 資料格式)
+[//]: # (## Decorator)
 [//]: # (function name and data structure)

@@ -73,7 +73,7 @@ Table of Contents
 - `optional` 
 - 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`
 
-[//]: # (# 其他)
+# [參考資料](./docs/readme.md)
 
 [//]: # ()
 [//]: # (1. [系統架構]&#40;./docs/System.md&#41;)
