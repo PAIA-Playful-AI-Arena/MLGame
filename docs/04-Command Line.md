@@ -1,23 +1,5 @@
-# MLGame
-![mlgame](https://img.shields.io/github/v/tag/PAIA-Playful-AI-Arena/mlgame)
-![mlgame](https://img.shields.io/pypi/v/mlgame)
-  
-[![Python 3.9](https://img.shields.io/badge/python->3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
-[![pygame](https://img.shields.io/badge/pygame->2.0.1-blue.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
+# 指令說明
 
----
-這是一個遊戲ＡＩ競賽的框架，依照此框架所開發的遊戲，可以透過ＡＩ來玩遊戲，並進行ＡＩ競賽。
-
-Table of Contents
-=================
-# ! 重要 !
-1. 此次更新為大幅度更新專案架構，原有的指令方式、遊戲皆無法執行，因此請注意遊戲與MLGame的搭配。
-
-# 使用方式
-
-[//]: # (TODO demo gif)
-
-## 終端機範例
 - 列出 help 文件
   ```shell
   python -m mlgame -h
@@ -66,35 +48,11 @@ Table of Contents
     -i ./path/to/ai/ai_01.py -i ./path/to/ai/ai_02.py 
     ```
   - AI數量需符合遊戲需求，每個遊戲都會有最小值與最大值，不足的會以最後一個AI自動補足，多的會自動刪去。
-    - 遊戲若需要2個AI，給到1個AI則會同時扮演1P 2P
-    - 遊戲若需要2個AI，給到3個AI則會自動排除最後一個
+    - 遊戲若需要2個AI，提供1個AI則會同時扮演1P 2P
+    - 遊戲若需要2個AI，提供3個AI則會自動排除最後一個
 
 ### `game_params`
 - `optional` 
-- 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`
-
-# [參考資料](./docs/readme.md)
-
-[//]: # ()
-[//]: # (1. [系統架構]&#40;./docs/System.md&#41;)
-
-[//]: # ()
-[//]: # (   )
-# 相關專案
-> 1. [PAIA-Desktop](https://github.com/PAIA-Playful-AI-Arena/Paia-Desktop)
-> 2. 範例遊戲 [easy_game](https://github.com/PAIA-Playful-AI-Arena/easy_game)
-> 3. 打磚塊 [arkanoid](https://github.com/PAIA-Playful-AI-Arena/arkanoid)
-> 4. 乒乓球 [pingpong](https://github.com/PAIA-Playful-AI-Arena/pingpong)
-> 5. 賽車 [Racing Car](https://github.com/yen900611/racing_car)
-> 6. 迷宮自走車 [Maze Car](https://github.com/yen900611/maze_car)
-
-# Future Work
-
-1. [ ] Non-python Client Support
-2. [ ] test case
-4. [ ] 遊戲開發文件
-5. [ ] update angle
-
-## Change Log
-
-View [CHANGELOG.md](./CHANGELOG.md)
+- 每個遊戲會在`game_config.json`檔案中，設定不同的遊戲參數
+- 若是沒有在指令中提供，將套用參數的預設值
+- 格式一律為 `--name_of_params value_of_params`
