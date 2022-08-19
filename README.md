@@ -1,9 +1,9 @@
 # MLGame
 ![mlgame](https://img.shields.io/github/v/tag/PAIA-Playful-AI-Arena/mlgame)
-[![mlgame](https://img.shields.io/pypi/v/mlgame)](https://pypi.org/project/mlgame/)
+![mlgame](https://img.shields.io/pypi/v/mlgame)
   
-[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
-[![pygame](https://img.shields.io/badge/pygame-2.0.1-blue.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
+[![Python 3.9](https://img.shields.io/badge/python->3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![pygame](https://img.shields.io/badge/pygame->2.0.1-blue.svg)](https://github.com/pygame/pygame/releases/tag/2.0.1)
 
 ---
 這是一個遊戲ＡＩ競賽的框架，依照此框架所開發的遊戲，可以透過ＡＩ來玩遊戲，並進行ＡＩ競賽。
@@ -27,7 +27,7 @@ Table of Contents
     ```shell
     python -m mlgame [options] <game_folder> [game_params]
     ```
-  - 遊戲執行範例：啟動打磚塊遊戲
+  - 執行打磚塊遊戲
     ```shell
     python -m mlgame \
     -f 120 -i ./path/to/ai/ai_client_file_name.py \
@@ -73,7 +73,7 @@ Table of Contents
 - `optional` 
 - 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`
 
-# [參考資料](./docs/readme.md)
+[//]: # (# 其他)
 
 [//]: # ()
 [//]: # (1. [系統架構]&#40;./docs/System.md&#41;)
@@ -81,6 +81,7 @@ Table of Contents
 [//]: # ()
 [//]: # (   )
 # 相關專案
+
 > 1. [PAIA-Desktop](https://github.com/PAIA-Playful-AI-Arena/Paia-Desktop)
 > 2. 範例遊戲 [easy_game](https://github.com/PAIA-Playful-AI-Arena/easy_game)
 > 3. 打磚塊 [arkanoid](https://github.com/PAIA-Playful-AI-Arena/arkanoid)
@@ -93,7 +94,7 @@ Table of Contents
 1. [ ] Non-python Client Support
 2. [ ] test case
 4. [ ] 遊戲開發文件
-5. [ ] update angle
+5. [ ] 
 
 ## Change Log
 

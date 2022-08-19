@@ -1,4 +1,3 @@
-import math
 import random
 
 
@@ -70,47 +69,26 @@ def create_scene_progress_data(frame: int = 0, background=None, object_list=None
     }
 
 
-def create_image_view_data(image_id: str, x: int, y: int, width: int, height: int, radian_angle=None,
-                           degree_angle=None):
+def create_image_view_data(image_id, x, y, width, height, angle=0):
     """
     這是一個用來繪製圖片的資料格式，
-    "image_id"表示其圖片的識別號
+    "type"表示不同的類型
     "x" "y" 表示物體左上角的座標
-    "width" "height"表示其 寬與高
-    "radian_angle"表示其逆時針旋轉的弧度
-    "degree_angle"表示其向逆時針旋轉的角度
-    radian_angle 與 degree_angle 只會套用一個，radian_angle 的優先權會大於 degree_angle
+    "width" "height"表示其大小
+    "image_id"表示其圖片的識別號，需在
+    "angle"表示其順時針旋轉的角度
     """
-    if radian_angle is not None:
-        return {"type": "image",
-                "x": x,
-                "y": y,
-                "width": width,
-                "height": height,
-                "image_id": image_id,
-                "angle": float(radian_angle),
-                }
-    elif degree_angle is not None:
-        return {"type": "image",
-                "x": x,
-                "y": y,
-                "width": width,
-                "height": height,
-                "image_id": image_id,
-                "angle": float(degree_angle * math.pi / 180),
-                }
-    else:
-        return {"type": "image",
-                "x": x,
-                "y": y,
-                "width": width,
-                "height": height,
-                "image_id": image_id,
-                "angle": 0,
-                }
+    return {"type": "image",
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
+            "image_id": image_id,
+            "angle": angle}
 
 
-def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, color: str):
+def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, color: str, angle: int = 0):
+    # TODO angle
     """
     這是一個用來繪製矩形的資料格式，
     "type"表示不同的類型
@@ -118,6 +96,7 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
     "x""y"表示其位置，位置表示物體左上角的座標
     "size"表示其大小
     "image"表示其圖片
+    "angle"表示其順時針旋轉的角度
     "color"以字串表示
     :return:
     """
@@ -125,7 +104,7 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
             "name": name,
             "x": x,
             "y": y,
-            "angle": 0,
+            "angle": angle,
             "width": width,
             "height": height,
             "color": color
@@ -219,7 +198,7 @@ def get_dummy_progress_data():
 
     scene_progress = {
         # background view data will be draw first
-        "frame": 1,
+        "frame":1,
         "background": [
             background,
 
