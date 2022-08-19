@@ -1,5 +1,8 @@
 python -m mlgame \
--i ./games/Maze_Car/ml/ml_play_manual.py \
+-i ./games/Maze_Car/ml/ml_play_template.py \
+-i ./games/Maze_Car/ml/ml_play_template.py \
+-i ./games/Maze_Car/ml/ml_play_template.py \
+-i ./games/Maze_Car/ml/ml_play_template.py \
 -i ./games/Maze_Car/ml/ml_play_template.py \
 -i ./games/Maze_Car/ml/ml_play_template.py \
 -f 60 -1 \
