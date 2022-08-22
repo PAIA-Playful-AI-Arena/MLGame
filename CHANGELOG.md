@@ -2,6 +2,12 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.0.0] - 2022.08.22
+**新增**
+* MLPlay 初始化資訊新增遊戲參數
+* 新增文件
+
+
 ### [9.5.3] - 2022.08.02
 **更新**
 * 更新專案架構 
