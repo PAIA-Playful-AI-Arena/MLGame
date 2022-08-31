@@ -411,7 +411,6 @@ class WebSocketExecutor():
         self._ws_uri = ws_uri
         self._comm_manager = ws_comm
         self._recv_data_func = self._comm_manager.recv_from_game
-
     async def ws_start(self):
         async with websockets.connect(self._ws_uri) as websocket:
             logger.info("             ws_start")
@@ -419,7 +418,7 @@ class WebSocketExecutor():
             is_ready_to_end = False
             while 1:
                 data = self._recv_data_func()
-                # print("ws received :", data)
+                print("ws received from game:", data)
                 if data is None:
                     break
                 elif isinstance(data, GameError):
@@ -457,6 +456,7 @@ class WebSocketExecutor():
                 if is_ready_to_end:
                     # wait for game_result
                     ws_recv_data = await websocket.recv()
+                    print("ws received from django:", ws_recv_data)
                     if ws_recv_data == "game_result":
                         print(f"< {ws_recv_data}")
                         await websocket.close()
