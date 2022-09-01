@@ -25,7 +25,7 @@ class ExecutorInterface(abc.ABC):
 
 
 class AIClientExecutor(ExecutorInterface):
-    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, ai_name="1P",game_params:dict={}):
+    def __init__(self, ai_client_path: str, ai_comm: MLCommManager, ai_name="1P", game_params: dict = {}):
         self._frame_count = 0
         self.ai_comm = ai_comm
         self.ai_path = ai_client_path
@@ -42,7 +42,7 @@ class AIClientExecutor(ExecutorInterface):
             spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            ai_obj = module.MLPlay(ai_name=self.ai_name,game_params=self.game_params)
+            ai_obj = module.MLPlay(ai_name=self.ai_name, game_params=self.game_params)
 
             # cmd = ai_obj.update({})
             logger.info("             AI Client runs")
@@ -411,6 +411,7 @@ class WebSocketExecutor():
         self._ws_uri = ws_uri
         self._comm_manager = ws_comm
         self._recv_data_func = self._comm_manager.recv_from_game
+
     async def ws_start(self):
         async with websockets.connect(self._ws_uri) as websocket:
             logger.info("             ws_start")
@@ -418,9 +419,9 @@ class WebSocketExecutor():
             is_ready_to_end = False
             while 1:
                 data = self._recv_data_func()
-                print("ws received from game:", data)
                 if data is None:
-                    break
+                    print("ws received from game:", data)
+                    pass
                 elif isinstance(data, GameError):
                     print("ws received :", data)
                     await websocket.send(data.data())
@@ -441,7 +442,7 @@ class WebSocketExecutor():
                         {"type": "system_message", "data": {"message": f"error in {data.message}"}}
                     )
                     break
-                elif data['type']=="game_result":
+                elif data['type'] == "game_result":
                     # raise a flag to recv data
                     is_ready_to_end = True
                     await websocket.send(json.dumps(data))
@@ -476,4 +477,3 @@ class WebSocketExecutor():
             logger.exception(e.__str__())
         finally:
             print("end ws ")
-
