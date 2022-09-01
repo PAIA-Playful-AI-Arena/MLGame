@@ -58,7 +58,7 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process):
 
     if ws_proc is not None:
         timeout = time.time() + TIMEOUT
-        print(f"timeout for ws is {TIMEOUT}")
+        print(f"wait to close ws for timeout : {TIMEOUT} s")
         while True:
             time.sleep(0.2)
             if time.time() > timeout:

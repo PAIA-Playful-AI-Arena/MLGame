@@ -48,10 +48,18 @@ class AIClientExecutor(ExecutorInterface):
             logger.info("             AI Client runs")
             self._ml_ready()
             while True:
-                scene_info, keyboard_info = self.ai_comm.recv_from_game()
-                if scene_info is None:
-                    # game over
-                    break
+                data = self.ai_comm.recv_from_game()
+                if len(data) == 2:
+                    scene_info, keyboard_info = data
+                    if scene_info is None:
+                        # game over
+                        break
+                else:
+                    print(f"ai receive from game:{data}")
+                    scene_info = {}
+                    keyboard_info = []
+                    pass
+
                 # assert keyboard_info == "1"
                 command = ai_obj.update(scene_info, keyboard_info)
                 if scene_info["status"] != "GAME_ALIVE" or command == "RESET":
