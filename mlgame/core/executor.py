@@ -55,10 +55,8 @@ class AIClientExecutor(ExecutorInterface):
                         # game over
                         break
                 else:
-                    print(f"ai receive from game:{data}")
-                    scene_info = {}
-                    keyboard_info = []
-                    pass
+                    # print(f"ai receive from game : {data}")
+                    break
 
                 # assert keyboard_info == "1"
                 command = ai_obj.update(scene_info, keyboard_info)
@@ -456,8 +454,8 @@ class WebSocketExecutor():
                     await websocket.send(json.dumps(data))
                 else:
                     await websocket.send(json.dumps(data))
+                    # count += 1
                     pass
-                    count += 1
                     # print(f'Send to ws : {count}:{data.keys()}')
                     #
                 # make sure webservice got game result then mlgame is able to close websocket
@@ -469,7 +467,7 @@ class WebSocketExecutor():
                     if ws_recv_data == "game_result":
                         print(f"< {ws_recv_data}")
                         await websocket.close()
-                    # break
+                        break
 
             # time.sleep(1)
             # await websocket.close()
