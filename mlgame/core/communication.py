@@ -298,7 +298,12 @@ class MLCommManager:
 
         @return The received object
         """
-        return self._obj_queue.get()
+        try:
+            return self._obj_queue.get(block=True, timeout=1)
+        except Exception:
+            # TODO remove
+            print("Queue of game->ai has been empty")
+            return None
 
     def send_to_game(self, obj):
         """
@@ -361,7 +366,12 @@ class TransitionCommManager:
         """
         Receive the object sent from the game process
         """
-        return self._obj_queue.get()
+        try:
+            return self._obj_queue.get(block=True,timeout=1)
+        except Exception:
+            # TODO remove
+            print("Queue of game->ws has been empty")
+            return None
 
     def send_exception(self, exception):
         """
