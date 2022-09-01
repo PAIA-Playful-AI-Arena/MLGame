@@ -49,7 +49,7 @@ class AIClientExecutor(ExecutorInterface):
             self._ml_ready()
             while True:
                 data = self.ai_comm.recv_from_game()
-                if len(data) == 2:
+                if data :
                     scene_info, keyboard_info = data
                     if scene_info is None:
                         # game over
