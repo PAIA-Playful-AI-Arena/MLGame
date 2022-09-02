@@ -49,7 +49,7 @@ class AIClientExecutor(ExecutorInterface):
             self._ml_ready()
             while True:
                 data = self.ai_comm.recv_from_game()
-                if data :
+                if data:
                     scene_info, keyboard_info = data
                     if scene_info is None:
                         # game over
@@ -419,7 +419,7 @@ class WebSocketExecutor():
         self._recv_data_func = self._comm_manager.recv_from_game
 
     async def ws_start(self):
-        async with websockets.connect(self._ws_uri) as websocket:
+        async with websockets.connect(self._ws_uri, ping_interval=None) as websocket:
             logger.info("             ws_start")
             count = 0
             is_ready_to_end = False
@@ -427,7 +427,7 @@ class WebSocketExecutor():
                 data = self._recv_data_func()
                 if data is None:
                     print("ws received from game:", data)
-                    pass
+                    break
                 elif isinstance(data, GameError):
                     print("ws received :", data)
                     await websocket.send(data.data())
@@ -460,15 +460,17 @@ class WebSocketExecutor():
                     #
                 # make sure webservice got game result then mlgame is able to close websocket
 
-                if is_ready_to_end:
-                    # wait for game_result
-                    ws_recv_data = await websocket.recv()
-                    print("ws received from django:", ws_recv_data)
-                    if ws_recv_data == "game_result":
-                        print(f"< {ws_recv_data}")
-                        await websocket.close()
-                        break
+            while is_ready_to_end:
+                # wait for game_result
+                ws_recv_data = await websocket.recv()
+                print("ws received from django:", ws_recv_data)
+                if ws_recv_data == "game_result":
+                    print(f"< {ws_recv_data}")
+                    await websocket.close()
+                    is_ready_to_end = False
 
+                    # else:
+                    #     await websocket.send(json.dumps({}))
             # time.sleep(1)
             # await websocket.close()
 
