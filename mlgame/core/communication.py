@@ -301,8 +301,6 @@ class MLCommManager:
         try:
             return self._obj_queue.get(block=True, timeout=0.5)
         except Exception:
-            # TODO remove
-            print("Queue of game->ai has been empty")
             return None
 
     def send_to_game(self, obj):
@@ -369,8 +367,6 @@ class TransitionCommManager:
         try:
             return self._obj_queue.get(block=True, timeout=0.5)
         except Exception:
-            # TODO remove
-            print("Queue of game->ws has been empty")
             return None
 
     def send_exception(self, exception):
