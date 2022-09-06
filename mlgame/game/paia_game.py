@@ -35,6 +35,7 @@ class PaiaGame(abc.ABC):
         self.scene = Scene(width=800, height=600, color="#4FC3F7", bias_x=0, bias_y=0)
         self.frame_count = 0
         self.game_result_state = GameResultState.FAIL
+        self.status = GameStatus.GAME_ALIVE
         self.user_num = user_num
         self.game_mode = "NORMAL"
 
@@ -51,6 +52,7 @@ class PaiaGame(abc.ABC):
         data_to_player = {}
         data_to_1p = {
             "frame": self.frame_count,
+            "status": self.status,
             "key": "value"
 
         }
@@ -88,6 +90,7 @@ class PaiaGame(abc.ABC):
             # game object view data will be draw on screen by order , and it could be shifted by WASD
             "object_list": [],
             "toggle": [],
+            "toggle_with_bias": [],
             "foreground": [],
             # other information to display on web
             "user_info": [],
@@ -107,7 +110,6 @@ class PaiaGame(abc.ABC):
                 },
 
                 }
-
 
 
 def get_paia_game_obj(game_cls, parsed_game_params: dict, user_num) -> PaiaGame:
