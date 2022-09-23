@@ -40,7 +40,7 @@ class PaiaGame(abc.ABC):
         self.game_mode = "NORMAL"
 
     @abc.abstractmethod
-    def update(self, commands):
+    def update(self, commands: dict):
         self.frame_count += 1
 
     @abc.abstractmethod
