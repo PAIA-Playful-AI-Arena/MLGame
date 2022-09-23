@@ -28,11 +28,13 @@ def create_asset_init_data(image_id: str, width: int, height: int, file_path: st
     }
 
 
-def create_scene_view_data(width: int, height: int, color: str = "#000000"):
+def create_scene_view_data(width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
     return {
         "width": width,
         "height": height,
-        "color": color
+        "color": color,
+        "bias_x": bias_x,
+        "bias_y": bias_y
     }
 
 
