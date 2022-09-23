@@ -2,6 +2,14 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.0.2] - 2022.09.13
+**修復**
+* 修復拖曳視窗，會產生warning的問題
+
+### [10.0.1] - 2022.09.05
+**修復**
+* 修復WS 的連線問題
+
 ### [10.0.0] - 2022.08.22
 **新增**
 * MLPlay 初始化資訊新增遊戲參數
