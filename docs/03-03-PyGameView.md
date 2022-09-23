@@ -10,34 +10,35 @@
 - 繼承 `PaiaGame` 後覆寫 `get_scene_init_data` 內的資料
 
 ### Scene
-1. 使用 `mlgame.view.view_model` 內的 `create_scene_view_data` 函式
-```python
-def create_scene_view_data(width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
-    return {
-        "width": width,
-        "height": height,
-        "color": color,
-        "bias_x": bias_x,
-        "bias_y": bias_y
-    }
-```
-2. 建立 `mlgame.view.view_model` 內的 `Scene` 類別，再透過 `self.scene.__dict__` 將類別屬性化為字典
-```python
-class Scene:
-    def __init__(self, width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
-        """
-        This is a value object
-        :param width:
-        :param height:
-        :param color:
-        """
-        self.width = width
-        self.height = height
-        self.color = color
-        self.bias_x = bias_x
-        self.bias_y = bias_y
-```
+1. 使用 `mlgame.view.view_model` 內的 `create_scene_view_data` 函式，建立場景初始化資料
+    ```python
+    def create_scene_view_data(width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
+        return {
+            "width": width,
+            "height": height,
+            "color": color,
+            "bias_x": bias_x,
+            "bias_y": bias_y
+        }
+    ```
+2. 建立 `mlgame.view.view_model` 內的 `Scene` 類別，再透過 `self.scene.__dict__` 將類別屬性化為字典，建立場景初始化資料
+    ```python
+    class Scene:
+        def __init__(self, width: int, height: int, color: str = "#000000", bias_x=0, bias_y=0):
+            """
+            This is a value object
+            :param width:
+            :param height:
+            :param color:
+            """
+            self.width = width
+            self.height = height
+            self.color = color
+            self.bias_x = bias_x
+            self.bias_y = bias_y
+    ```
 ### Image
+使用 `mlgame.view.view_model` 內的 `create_asset_init_data` 函式，建立圖片初始化資料
 ```python
 def create_asset_init_data(image_id: str, width: int, height: int, file_path: str, github_raw_url: str):
     # assert file_path is valid
@@ -57,7 +58,7 @@ def create_asset_init_data(image_id: str, width: int, height: int, file_path: st
 
 ### Line
 - 資料範例
-  - 此資料用來渲染從(x1,y1)到(x2,y2)的直線，此資料可用函式`create_line_view_data()`產生
+  - 此資料用來渲染從`(x1,y1)`到`(x2,y2)`的直線，此資料可用函式`create_line_view_data()`產生
       ```json
       {
         "type": "line",
@@ -72,13 +73,62 @@ def create_asset_init_data(image_id: str, width: int, height: int, file_path: st
       ```
 
 ### Rect
-
+- 資料範例
+  - 此資料用來渲染從`(x,y)`到寬`width`長`height`的實心矩形，此資料可用函式`create_rect_view_data()`產生
+      ```json
+      {
+        "type": "rect",
+        "name": "wall",
+        "x": 0,
+        "y": 0,
+        "angle": 0,
+        "width": 50,
+        "height": 50,
+        "color": "#ffffff"
+      }
+      ```
+    
 ### Polygon
-
+- 資料範例
+  - 此資料用來渲染從`points[0]` 到`points[1]` 到`points[2]` 的實心多邊形，此資料可用函式`create_polygon_view_data()`產生
+      ```json
+      {
+        "type": "polygon",
+        "name": "window",
+        "color": "#ff0000",
+        "points": [{"x": 500, "y": 300}, {"x": 600, "y": 300}, {"x": 600, "y": 400}]
+      }
+      ```
+    
 ### Image
-
+- 資料範例
+  - 此資料用來在座標 `(x, y)` 渲染 `image_id` 為 `1P`，設大小為 `（width, height）` 的圖片，此資料可用函式`create_image_view_data()`產生
+      ```json
+      {
+        "type": "image",
+        "x": 200,
+        "y": 200,
+        "width": 50,
+        "height": 50,
+        "image_id": "1P",
+        "angle": 0
+      }
+      ```
+    
 ### Text
-
+- 資料範例
+  - 此資料用來在座標 `(x, y)` 渲染 `image_id` 為 `1P`，設大小為 `（width, height）` 的圖片，此資料可用函式`create_text_view_data()`產生
+      ```json
+      {
+        "type": "text",
+        "content": "score",
+        "color": "#FFA500",
+        "x": 500,
+        "y": 0,
+        "font-style": "30px Arial BOLD"
+      }
+      ```
+    
 ## 特殊功能
 
 ### 平移、縮放、隱藏

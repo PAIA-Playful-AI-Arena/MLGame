@@ -80,13 +80,15 @@ def create_image_view_data(image_id, x, y, width, height, angle=0):
     "image_id"表示其圖片的識別號，需在
     "angle"表示其順時針旋轉的角度
     """
-    return {"type": "image",
-            "x": x,
-            "y": y,
-            "width": width,
-            "height": height,
-            "image_id": image_id,
-            "angle": angle}
+    return {
+        "type": "image",
+        "x": x,
+        "y": y,
+        "width": width,
+        "height": height,
+        "image_id": image_id,
+        "angle": angle
+    }
 
 
 def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, color: str, angle: int = 0):
@@ -102,15 +104,16 @@ def create_rect_view_data(name: str, x: int, y: int, width: int, height: int, co
     "color"以字串表示
     :return:
     """
-    return {"type": "rect",
-            "name": name,
-            "x": x,
-            "y": y,
-            "angle": angle,
-            "width": width,
-            "height": height,
-            "color": color
-            }
+    return {
+        "type": "rect",
+        "name": name,
+        "x": x,
+        "y": y,
+        "angle": angle,
+        "width": width,
+        "height": height,
+        "color": color
+    }
 
 
 def create_line_view_data(name: str, x1: int, y1: int, x2: int, y2: int, color: str, width: int = 2):
@@ -122,15 +125,16 @@ def create_line_view_data(name: str, x1: int, y1: int, x2: int, y2: int, color: 
     "width" 表示寬度
     :return:
     """
-    return {"type": "line",
-            "name": name,
-            "x1": x1,
-            "y1": y1,
-            "x2": x2,
-            "y2": y2,
-            "width": width,
-            "color": color
-            }
+    return {
+        "type": "line",
+        "name": name,
+        "x1": x1,
+        "y1": y1,
+        "x2": x2,
+        "y2": y2,
+        "width": width,
+        "color": color
+    }
 
 
 def create_polygon_view_data(name: str, points: list, color: str):
@@ -143,11 +147,12 @@ def create_polygon_view_data(name: str, points: list, color: str):
     vertices = []
     for p in points:
         vertices.append({"x": p[0], "y": p[1]})
-    return {"type": "polygon",
-            "name": name,
-            "color": color,
-            "points": vertices
-            }
+    return {
+        "type": "polygon",
+        "name": name,
+        "color": color,
+        "points": vertices
+    }
 
 
 def create_text_view_data(content: str, x: int, y: int, color: str, font_style="24px Arial"):
@@ -184,10 +189,11 @@ def get_scene_init_sample_data() -> dict:
         }
     ]
 
-    return {"scene": scene.__dict__,
-            "assets": assets,
-            # "audios": {}
-            }
+    return {
+        "scene": scene.__dict__,
+        "assets": assets,
+        # "audios": {}
+    }
 
 
 def get_dummy_progress_data():
