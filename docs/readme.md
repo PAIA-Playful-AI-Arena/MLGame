@@ -29,7 +29,7 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
   ```
 - 指定特定版本
   ```shell
-    pip install mlgame==9.5.3.2a0
+    pip install mlgame==10.0.1
   ```
 
 [//]: # (TODO 使用 docker )
@@ -41,7 +41,7 @@ MLGame，Machine Learning Game，這是一個結合機器學習與遊戲的框�
 1. [框架流程圖](./03-01-System.md)
 2. [AI 與 PaiaGame 技術細節](./03-02-AI_and_PaiaGame.md)
 3. [繪圖機制](./03-03-PyGameView.md)
-4. [指令說明](./04-Command Line.md)
+4. [指令說明](./04-Command_Line.md)
 5. 遊戲開發教學 coming soon
 
 [//]: # (6. 打包方式 )
