@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.0.3] - 2022.10.13
+**修復**
+* 修復在伺服器上運作，WS會提前中斷的問題。
+
 ### [10.0.2] - 2022.09.13
 **修復**
 * 修復拖曳視窗，會產生warning的問題
