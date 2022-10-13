@@ -1,6 +1,8 @@
 from threading import Thread
 from queue import Queue
 
+from mlgame.core.env import WS_WAIT_GAME_TIMEOUT
+
 
 class CommunicationSet:
     """
@@ -365,8 +367,9 @@ class TransitionCommManager:
         Receive the object sent from the game process
         """
         try:
-            return self._obj_queue.get(block=True, timeout=0.5)
-        except Exception:
+            return self._obj_queue.get(block=True, timeout=WS_WAIT_GAME_TIMEOUT)
+        except Exception as e:
+            print(e.__str__())
             return None
 
     def send_exception(self, exception):
