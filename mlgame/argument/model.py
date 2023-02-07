@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath
 
@@ -15,6 +16,7 @@ class MLGameArgument(pydantic.BaseModel):
     ws_url: pydantic.AnyUrl = None
     game_folder: DirectoryPath
     game_params: List[str]
+    output_folder: pydantic.DirectoryPath = None
 
     # def __init__(self,**kwargs):
     #     self.

@@ -165,6 +165,7 @@ class GameExecutor(ExecutorInterface):
                 self._frame_count += 1
                 view_data = game.get_scene_progress_data()
                 game_view.draw(view_data)
+                # TODO
                 self._send_game_progress(view_data)
 
                 # Do reset stuff

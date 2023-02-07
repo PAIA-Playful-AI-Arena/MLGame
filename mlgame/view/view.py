@@ -159,6 +159,7 @@ class PygameView(PygameViewInterface):
         for game_object in object_information["foreground"]:
             # object should not be shifted
             self.draw_game_obj_according_type(game_object)
+        # TODO save to jpg
         pygame.display.flip()
 
     def draw_game_obj_according_type(self, game_object, scale=1):
