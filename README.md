@@ -68,7 +68,10 @@ Table of Contents
   - AI數量需符合遊戲需求，每個遊戲都會有最小值與最大值，不足的會以最後一個AI自動補足，多的會自動刪去。
     - 遊戲若需要2個AI，給到1個AI則會同時扮演1P 2P
     - 遊戲若需要2個AI，給到3個AI則會自動排除最後一個
-
+- `-o` `output_folder`, `--output-folder` `output_folder`
+  - 將遊戲過程儲存到特定資料夾中，會自動建立一個時間戳記資料夾來儲存每一幀的圖片。
+  - 此資料夾需要可讀寫，並且為有效路徑。
+  - 若是沒有加上 `-1` ，會不斷的紀錄遊戲結果。
 ### `game_params`
 - `optional` 
 - 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`

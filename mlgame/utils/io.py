@@ -4,7 +4,7 @@ import os
 
 def save_json(dest_folder, game_result:dict):
     try:
-        with open(os.path.join(dest_folder,"result.json"), "w") as f:
+        with open(os.path.join(dest_folder,"result.json"), "a") as f:
             json.dump(game_result, f)
         pass
     except Exception as e:

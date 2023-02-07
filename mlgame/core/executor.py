@@ -167,7 +167,7 @@ class GameExecutor(ExecutorInterface):
                 self._frame_count += 1
                 view_data = game.get_scene_progress_data()
                 game_view.draw(view_data)
-                # TODO save image
+                # save image
                 if self._output_folder:
                     game_view.save_image(f"{self._output_folder}/{self._frame_count:05d}.jpg")
                 self._send_game_progress(view_data)
@@ -182,8 +182,6 @@ class GameExecutor(ExecutorInterface):
                     # TODO check what happen when bigfile is saved
                     time.sleep(0.1)
                     game_result = game.get_game_result()
-                    if self._output_folder:
-                        save_json(self._output_folder, game_result)
 
                     attachments = game_result['attachment']
                     print(pd.DataFrame(attachments).to_string())
@@ -191,6 +189,8 @@ class GameExecutor(ExecutorInterface):
                     if self.one_shot_mode or result == "QUIT":
                         self._send_system_message("遊戲結束")
                         self._send_game_result(game_result)
+                        if self._output_folder:
+                            save_json(self._output_folder, game_result)
                         self._send_system_message("關閉遊戲")
                         self._send_end_message()
                         time.sleep(1)
