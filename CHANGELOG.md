@@ -1,6 +1,9 @@
 # Change Log
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+### [10.1.1] - 2023.02.07
+**新增**
+* 增加`-o`參數，讓使用者開啟匯出圖片功能，並存至指定資料夾。
 
 ### [10.0.3] - 2022.10.13
 **修復**
