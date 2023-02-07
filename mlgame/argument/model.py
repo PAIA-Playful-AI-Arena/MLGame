@@ -1,6 +1,11 @@
+import datetime
+import os
 from typing import List, Optional
+
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath
+
+from mlgame.utils.io import check_folder_existed_and_readable_or_create
 
 
 class MLGameArgument(pydantic.BaseModel):
@@ -15,15 +20,24 @@ class MLGameArgument(pydantic.BaseModel):
     ws_url: pydantic.AnyUrl = None
     game_folder: DirectoryPath
     game_params: List[str]
+    output_folder: pydantic.DirectoryPath = None
 
-    # def __init__(self,**kwargs):
-    #     self.
-    #     self.is_manual = self.ai_clients is None
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
         if 'ai_clients' in values:
             return values['ai_clients'] is None
         return True
+
+    @validator('output_folder')
+    def update_output_folder(cls, v, values):
+        if v is None:
+            return None
+        path = os.path.join(
+            str(v),
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        )
+        if check_folder_existed_and_readable_or_create(path):
+            return path
 
 
 class UserNumConfig(pydantic.BaseModel):

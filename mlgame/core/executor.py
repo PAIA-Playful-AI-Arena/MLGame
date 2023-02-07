@@ -13,6 +13,7 @@ from mlgame.core.communication import GameCommManager, MLCommManager, Transition
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
 from mlgame.game.paia_game import PaiaGame
 from mlgame.game.generic import quit_or_esc
+from mlgame.utils.io import save_json
 
 from mlgame.utils.logger import logger
 from mlgame.view.view import PygameViewInterface
@@ -126,7 +127,7 @@ class GameExecutor(ExecutorInterface):
                  game: PaiaGame,
                  game_comm: GameCommManager,
                  game_view: PygameViewInterface,
-                 fps=30, one_shot_mode=False, no_display=False):
+                 fps=30, one_shot_mode=False, no_display=False,output_folder=None):
         self.no_display = no_display
         self.game_view = game_view
         self.frame_count = 0
@@ -139,6 +140,7 @@ class GameExecutor(ExecutorInterface):
         self._ml_execution_time = 1 / fps
         self._fps = fps
         self._ml_delayed_frames = {}
+        self._output_folder=output_folder
         for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
@@ -165,6 +167,9 @@ class GameExecutor(ExecutorInterface):
                 self._frame_count += 1
                 view_data = game.get_scene_progress_data()
                 game_view.draw(view_data)
+                # save image
+                if self._output_folder:
+                    game_view.save_image(f"{self._output_folder}/{self._frame_count:05d}.jpg")
                 self._send_game_progress(view_data)
 
                 # Do reset stuff
@@ -177,12 +182,15 @@ class GameExecutor(ExecutorInterface):
                     # TODO check what happen when bigfile is saved
                     time.sleep(0.1)
                     game_result = game.get_game_result()
+
                     attachments = game_result['attachment']
                     print(pd.DataFrame(attachments).to_string())
 
                     if self.one_shot_mode or result == "QUIT":
                         self._send_system_message("遊戲結束")
                         self._send_game_result(game_result)
+                        if self._output_folder:
+                            save_json(self._output_folder, game_result)
                         self._send_system_message("關閉遊戲")
                         self._send_end_message()
                         time.sleep(1)

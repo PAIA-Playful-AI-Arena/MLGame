@@ -58,7 +58,9 @@ if __name__ == '__main__':
             # 5. run game in main process
             game_executor = GameExecutor(
                 game, game_comm, game_view,
-                fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode, no_display=arg_obj.no_display)
+                fps=arg_obj.fps, one_shot_mode=arg_obj.one_shot_mode, no_display=arg_obj.no_display,
+                output_folder=arg_obj.output_folder
+            )
         time.sleep(0.1)
         game_executor.run()
 
