@@ -126,7 +126,7 @@ class GameExecutor(ExecutorInterface):
                  game: PaiaGame,
                  game_comm: GameCommManager,
                  game_view: PygameViewInterface,
-                 fps=30, one_shot_mode=False, no_display=False):
+                 fps=30, one_shot_mode=False, no_display=False,output_folder=None):
         self.no_display = no_display
         self.game_view = game_view
         self.frame_count = 0
@@ -139,6 +139,7 @@ class GameExecutor(ExecutorInterface):
         self._ml_execution_time = 1 / fps
         self._fps = fps
         self._ml_delayed_frames = {}
+        self._output_folder=output_folder
         for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
@@ -165,7 +166,9 @@ class GameExecutor(ExecutorInterface):
                 self._frame_count += 1
                 view_data = game.get_scene_progress_data()
                 game_view.draw(view_data)
-                # TODO
+                # TODO save image
+                if self._output_folder:
+                    game_view.save_image(f"{self._output_folder}/{self._frame_count:05d}.jpg")
                 self._send_game_progress(view_data)
 
                 # Do reset stuff

@@ -67,7 +67,8 @@ def create_cli_args_parser():
                        type=os.path.abspath,
                        dest="output_folder",
                        default=None, metavar="SCRIPT",
-                       help="save each frame into destination folder."
+                       help="Save each frame of game progress into destination folder."
+                            "This folder should be existed and it will create a timestamp folder."
                        )
     return parser
 

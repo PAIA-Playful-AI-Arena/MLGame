@@ -1,3 +1,5 @@
+import datetime
+import os
 from typing import List, Optional
 
 import pydantic
@@ -26,6 +28,23 @@ class MLGameArgument(pydantic.BaseModel):
         if 'ai_clients' in values:
             return values['ai_clients'] is None
         return True
+
+    @validator('output_folder')
+    def update_output_folder(cls, v, values):
+        if v is None:
+            return None
+        path = os.path.join(
+            str(v),
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        )
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if os.path.isdir(path) and os.access(path, os.R_OK):
+            print(f'{path} is a readable directory')
+        else:
+            print(f'{path} is not a readable directory or does not exist')
+        return path
 
 
 class UserNumConfig(pydantic.BaseModel):
