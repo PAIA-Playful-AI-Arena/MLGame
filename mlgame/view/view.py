@@ -1,7 +1,9 @@
 import abc
 import math
+import os.path
 import time
 from functools import lru_cache
+
 import pygame
 
 KEYS = [
@@ -73,6 +75,9 @@ class PygameViewInterface(abc.ABC):
     def get_keyboard_info(self) -> list:
         return []
 
+    def save_image(self, img_path:os.path.abspath):
+        pass
+
 
 class DummyPygameView(PygameViewInterface):
     def __init__(self, game_info: dict):
@@ -83,7 +88,8 @@ class DummyPygameView(PygameViewInterface):
 
     def draw(self, object_information):
         pass
-
+    def save_image(self, img_path:os.path.abspath):
+        pass
     def get_keyboard_info(self) -> list:
         return []
 
@@ -160,6 +166,10 @@ class PygameView(PygameViewInterface):
             # object should not be shifted
             self.draw_game_obj_according_type(game_object)
         pygame.display.flip()
+
+    def save_image(self, img_path: os.path.abspath):
+        pygame.image.save(self.screen, img_path)
+        pass
 
     def draw_game_obj_according_type(self, game_object, scale=1):
         if game_object[TYPE] == IMAGE:

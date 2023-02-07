@@ -1,4 +1,5 @@
 import os
+import pathlib
 import sys
 from argparse import ArgumentParser, REMAINDER
 
@@ -61,7 +62,14 @@ def create_cli_args_parser():
                             "For multiple user scripts, use this flag multiple times. "
                             "The script path could be relative path or absolute path "
                        )
-
+    group.add_argument("-o", "--output-folder",
+                       # type=validate_file,
+                       type=os.path.abspath,
+                       dest="output_folder",
+                       default=None, metavar="SCRIPT",
+                       help="Save each frame of game progress into destination folder."
+                            "This folder should be existed and it will create a timestamp folder."
+                       )
     return parser
 
 
