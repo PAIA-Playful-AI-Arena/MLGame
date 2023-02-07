@@ -5,6 +5,8 @@ from typing import List, Optional
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath
 
+from mlgame.utils.io import check_folder_existed_and_readable_or_create
+
 
 class MLGameArgument(pydantic.BaseModel):
     """
@@ -20,9 +22,6 @@ class MLGameArgument(pydantic.BaseModel):
     game_params: List[str]
     output_folder: pydantic.DirectoryPath = None
 
-    # def __init__(self,**kwargs):
-    #     self.
-    #     self.is_manual = self.ai_clients is None
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
         if 'ai_clients' in values:
@@ -37,14 +36,8 @@ class MLGameArgument(pydantic.BaseModel):
             str(v),
             datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         )
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if os.path.isdir(path) and os.access(path, os.R_OK):
-            print(f'{path} is a readable directory')
-        else:
-            print(f'{path} is not a readable directory or does not exist')
-        return path
+        if check_folder_existed_and_readable_or_create(path):
+            return path
 
 
 class UserNumConfig(pydantic.BaseModel):

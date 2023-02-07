@@ -13,6 +13,7 @@ from mlgame.core.communication import GameCommManager, MLCommManager, Transition
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
 from mlgame.game.paia_game import PaiaGame
 from mlgame.game.generic import quit_or_esc
+from mlgame.utils.io import save_json
 
 from mlgame.utils.logger import logger
 from mlgame.view.view import PygameViewInterface
@@ -181,6 +182,9 @@ class GameExecutor(ExecutorInterface):
                     # TODO check what happen when bigfile is saved
                     time.sleep(0.1)
                     game_result = game.get_game_result()
+                    if self._output_folder:
+                        save_json(self._output_folder, game_result)
+
                     attachments = game_result['attachment']
                     print(pd.DataFrame(attachments).to_string())
 
