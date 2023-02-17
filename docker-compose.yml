@@ -1,0 +1,10 @@
+version: '3'
+services:
+  mlgame:
+    build:
+        context: ./
+        dockerfile: Dockerfile.dev
+        args:
+          MLG_VER: "10.1.1"
+    volumes:
+      - ./outputs:/app/outputs

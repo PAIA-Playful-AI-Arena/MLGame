@@ -23,6 +23,8 @@
 #--init_vel 10
 python -m mlgame \
 -f 30 -i ./ai_clients/pingpong/lv_4/ml_play.py -i ./ai_clients/pingpong/lv_4/ml_play.py \
+--nd \
+-o "./outputs" \
 ./games/pingpong \
---difficulty EASY --game_over_score 3 \
+--difficulty EASY --game_over_score 3
 # --init_vel 10
