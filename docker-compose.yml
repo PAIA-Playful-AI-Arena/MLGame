@@ -8,3 +8,4 @@ services:
           MLG_VER: "10.1.1"
     volumes:
       - ./outputs:/app/outputs
+      - ./progress:/app/progress
