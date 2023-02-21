@@ -24,10 +24,11 @@ if __name__ == '__main__':
 
     ai_process = []
     ws_proc = None
+    progress_proc = None
 
     print(f"===========Game is started at {datetime.datetime.now()}===========")
     from mlgame.core.communication import GameCommManager
-    from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, terminate
+    from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, create_process_of_progress_log_and_start, terminate
     from mlgame.core.executor import GameExecutor, GameManualExecutor
     from mlgame.view.view import PygameView, DummyPygameView
     game_comm = GameCommManager()
@@ -35,6 +36,10 @@ if __name__ == '__main__':
         if arg_obj.ws_url:
             # prepare transmitter for game executor
             ws_proc = create_process_of_ws_and_start(game_comm, arg_obj.ws_url)
+        
+        if arg_obj.progress_folder:
+            # prepare transmitter for game executor
+            progress_proc = create_process_of_progress_log_and_start(game_comm, arg_obj.progress_folder, arg_obj.progress_frame_frequency)
 
         # 4. prepare ai_clients , create pipe, start ai_client process
         if arg_obj.is_manual:
@@ -55,6 +60,7 @@ if __name__ == '__main__':
                 path_of_ai_clients=path_of_ai_clients,
                 game_params=parsed_game_params
             )
+            
             # 5. run game in main process
             game_executor = GameExecutor(
                 game, game_comm, game_view,
@@ -69,6 +75,6 @@ if __name__ == '__main__':
         logger.exception(f"Exception in {__file__} : {e.__str__()}")
         pass
     finally:
-        terminate(game_comm, ai_process, ws_proc)
+        terminate(game_comm, ai_process, ws_proc, progress_proc)
     print(f"===========All process is terminated at {datetime.datetime.now()}===========")
     pass

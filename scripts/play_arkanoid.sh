@@ -3,6 +3,8 @@ python -m mlgame \
 --nd \
 -i "./ai_clients/arkanoid/space path/ml_play.py" \
 -o "./outputs" \
+-r "./progress" \
+-p 30 \
 ./games/arkanoid \
 --difficulty NORMAL --level 3
 

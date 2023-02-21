@@ -5,6 +5,7 @@ import json
 import os
 import time
 import traceback
+import math
 
 import pandas as pd
 import websockets
@@ -415,6 +416,46 @@ class GameManualExecutor(ExecutorInterface):
             # send to es
             logger.exception(f"Some errors happened in game process. {e.__str__()}")
         logger.info("pingpong end.")
+
+
+class ProgressLogExecutor(ExecutorInterface):
+    def __init__(self, progress_folder, progress_frame_frequency, pl_comm: TransitionCommManager):
+        # super().__init__(name="ws")
+        self._proc_name = f"progress_log({progress_folder}"
+        self._progress_folder = progress_folder
+        self._progress_frame_frequency = progress_frame_frequency
+        self._comm_manager = pl_comm
+        self._recv_data_func = self._comm_manager.recv_from_game
+        self._filename = "{}.json"
+        self._progress_data = []
+    def save_json_and_init(self, path):
+        print(path)
+        with open(path, 'w') as f:
+            json.dump(self._progress_data, f)
+        self._progress_data = []
+    
+    def run(self):
+        self._comm_manager.start_recv_obj_thread()
+
+        try:
+            while (game_data := self._recv_data_func())['type'] != 'game_result':
+                if game_data['type'] == 'game_progress':
+                    # print(game_data)
+                    if game_data['data']['frame'] % self._progress_frame_frequency == 0:
+                        self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
+                            (math.ceil(game_data['data']['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+                    self._progress_data.append(game_data['data'])
+            else:
+                if self._progress_data != []:
+                    self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
+                        (math.ceil(self._progress_data[-1]['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+        except Exception as e:
+            # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_exception(f"exception on {self._proc_name}")
+            # catch connection error
+            print("except", e)
+        finally:
+            print("end pl")
 
 
 class WebSocketExecutor():

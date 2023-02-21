@@ -2,10 +2,11 @@ import time
 from multiprocessing import Process, Pipe
 
 from mlgame.core.env import TIMEOUT
-from mlgame.core.executor import AIClientExecutor, WebSocketExecutor
+from mlgame.core.executor import AIClientExecutor, WebSocketExecutor, ProgressLogExecutor
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
+from mlgame.game.paia_game import PaiaGame
 
 
 def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Process:
@@ -44,8 +45,20 @@ def create_process_of_ai_clients_and_start(
         ai_process.append(process)
     return ai_process
 
+def create_process_of_progress_log_and_start(game_comm: GameCommManager, progress_folder, progress_frame_frequency) -> Process:
+    recv_pipe_for_game, send_pipe_for_pl = Pipe(False)
+    recv_pipe_for_pl, send_pipe_for_game = Pipe(False)
+    #TODO
+    pl_comm = TransitionCommManager(recv_pipe_for_pl, send_pipe_for_pl)
+    game_comm.add_comm_to_others("pl", recv_pipe_for_game, send_pipe_for_game)
+    pl_executor = ProgressLogExecutor(progress_folder=progress_folder, progress_frame_frequency=progress_frame_frequency, pl_comm=pl_comm)
+    process = Process(target=pl_executor.run, name="pl")
+    process.start()
+    # time.sleep(0.1)
+    return process
 
-def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process):
+
+def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process, progress_proc: Process):
     logger.info("Main process will terminate ai process")
     # 5.terminate
     for ai_proc in ai_process:
@@ -66,6 +79,19 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process):
                 ws_proc.join()
                 break
             elif not ws_proc.is_alive():
+                break
+        logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
+    
+    if progress_proc is not None:
+        timeout = time.time() + TIMEOUT
+        print(f"wait to close progress for timeout : {TIMEOUT} s")
+        while True:
+            time.sleep(0.2)
+            if time.time() > timeout:
+                progress_proc.terminate()
+                progress_proc.join()
+                break
+            elif not progress_proc.is_alive():
                 break
         logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
     logger.info("Game is terminated")
