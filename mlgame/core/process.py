@@ -6,7 +6,6 @@ from mlgame.core.executor import AIClientExecutor, WebSocketExecutor, ProgressLo
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
-from mlgame.game.paia_game import PaiaGame
 
 
 def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Process:
