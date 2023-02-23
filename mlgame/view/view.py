@@ -28,14 +28,17 @@ POLYGON = "polygon"
 
 
 @lru_cache
-def transfer_hex_to_rgb(hex_str):
+def transfer_hex_to_rgb(hex_str: str) -> tuple:
     h = hex_str.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
 @lru_cache
-def transfer_hex_to_rgba(hex_str):
-    h = hex_str.lstrip('#')
+def transfer_hex_to_rgba(hex_str: str) -> tuple:
+    temp_str = str(hex_str)
+    if len(hex_str) == 7:
+        temp_str += "FF"
+    h = temp_str.lstrip('#')
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4, 6))
 
 
@@ -75,7 +78,7 @@ class PygameViewInterface(abc.ABC):
     def get_keyboard_info(self) -> list:
         return []
 
-    def save_image(self, img_path:os.path.abspath):
+    def save_image(self, img_path: os.path.abspath):
         pass
 
 
@@ -88,8 +91,10 @@ class DummyPygameView(PygameViewInterface):
 
     def draw(self, object_information):
         pass
-    def save_image(self, img_path:os.path.abspath):
+
+    def save_image(self, img_path: os.path.abspath):
         pass
+
     def get_keyboard_info(self) -> list:
         return []
 
@@ -178,17 +183,17 @@ class PygameView(PygameViewInterface):
 
         elif game_object[TYPE] == RECTANGLE:
             self.draw_rect(game_object["x"], game_object["y"], game_object["width"], game_object["height"],
-                           transfer_hex_to_rgb(game_object[COLOR]), scale)
+                           transfer_hex_to_rgba(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == POLYGON:
-            self.draw_polygon(game_object["points"], transfer_hex_to_rgb(game_object[COLOR]), scale)
+            self.draw_polygon(game_object["points"], transfer_hex_to_rgba(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(game_object["content"], game_object["font-style"],
-                           game_object["x"], game_object["y"], transfer_hex_to_rgb(game_object[COLOR]), scale)
+                           game_object["x"], game_object["y"], transfer_hex_to_rgba(game_object[COLOR]), scale)
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"], game_object["y1"], game_object["x2"], game_object["y2"],
-                           game_object["width"], game_object[COLOR], scale)
+                           game_object["width"], transfer_hex_to_rgba(game_object[COLOR]), scale)
         else:
             pass
 
@@ -200,20 +205,20 @@ class PygameView(PygameViewInterface):
         elif game_object[TYPE] == RECTANGLE:
             self.draw_rect(game_object["x"] + bias_x, game_object["y"] + bias_y, game_object["width"],
                            game_object["height"],
-                           transfer_hex_to_rgb(game_object[COLOR]), scale)
+                           transfer_hex_to_rgba(game_object[COLOR]), scale)
 
         elif game_object[TYPE] == POLYGON:
-            self.draw_polygon(game_object["points"], transfer_hex_to_rgb(game_object[COLOR]), bias_x, bias_y, scale)
+            self.draw_polygon(game_object["points"], transfer_hex_to_rgba(game_object[COLOR]), bias_x, bias_y, scale)
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(game_object["content"], game_object["font-style"],
                            game_object["x"] + bias_x, game_object["y"] + bias_y,
-                           transfer_hex_to_rgb(game_object[COLOR]),
+                           transfer_hex_to_rgba(game_object[COLOR]),
                            scale)
         elif game_object[TYPE] == LINE:
             self.draw_line(game_object["x1"] + bias_x, game_object["y1"] + bias_y, game_object["x2"] + bias_x,
                            game_object["y2"] + bias_y,
-                           game_object["width"], game_object[COLOR], scale)
+                           game_object["width"], transfer_hex_to_rgba(game_object[COLOR]), scale)
 
         else:
             pass
@@ -235,6 +240,11 @@ class PygameView(PygameViewInterface):
                                      y * scale + scale_bias_of_coordinate(self.height, scale),
                                      width * scale,
                                      height * scale))
+        # transparent_surface = pygame.Surface((width * scale, height * scale), pygame.SRCALPHA)
+        # transparent_surface.fill(color)
+        #
+        # self.screen.blit(transparent_surface,  (x * scale + scale_bias_of_coordinate(self.width, scale),
+        #                          y * scale + scale_bias_of_coordinate(self.height, scale)))
 
     def draw_line(self, x1, y1, x2, y2, width, color, scale=1):
         # TODO revise
