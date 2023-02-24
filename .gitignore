@@ -1,6 +1,7 @@
 # project
 cmd/
 games/
+ai_clients/
 # biolerate
 *.env
 *.swp
@@ -14,6 +15,8 @@ venv/*
 .vs/*
 .vscode/*
 .idea/
+outputs/
+progress/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

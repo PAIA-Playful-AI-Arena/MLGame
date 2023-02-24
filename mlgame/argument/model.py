@@ -13,6 +13,7 @@ class MLGameArgument(pydantic.BaseModel):
     Data Entity to handle parsed cli arguments
     """
     fps: int = 30
+    progress_frame_frequency: int = 300
     one_shot_mode: bool = False
     ai_clients: Optional[List[FilePath]] = None
     is_manual: bool = False
@@ -21,6 +22,7 @@ class MLGameArgument(pydantic.BaseModel):
     game_folder: DirectoryPath
     game_params: List[str]
     output_folder: pydantic.DirectoryPath = None
+    progress_folder: pydantic.DirectoryPath = None
 
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
@@ -30,6 +32,17 @@ class MLGameArgument(pydantic.BaseModel):
 
     @validator('output_folder')
     def update_output_folder(cls, v, values):
+        if v is None:
+            return None
+        path = os.path.join(
+            str(v),
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        )
+        if check_folder_existed_and_readable_or_create(path):
+            return path
+    
+    @validator('progress_folder')
+    def update_progress_folder(cls, v, values):
         if v is None:
             return None
         path = os.path.join(

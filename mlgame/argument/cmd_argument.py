@@ -70,6 +70,17 @@ def create_cli_args_parser():
                        help="Save each frame of game progress into destination folder."
                             "This folder should be existed and it will create a timestamp folder."
                        )
+    group.add_argument("-r", "--progress-folder",
+                       # type=validate_file,
+                       type=os.path.abspath,
+                       dest="progress_folder",
+                       default=None, metavar="SCRIPT",
+                       help="Save game process as a file into destination folder."
+                            "This folder should be existed and it will create a timestamp folder."
+                       )
+
+    group.add_argument("-p", "--progress-frame-frequency", type=int, default=300,
+                    help="the frequency of the game progress save [default: %(default)s]")
     return parser
 
 

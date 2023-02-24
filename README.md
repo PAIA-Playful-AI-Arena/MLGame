@@ -73,17 +73,32 @@ Table of Contents
   - 此資料夾需要可讀寫，並且為有效路徑。
   - 若是沒有加上 `-1` ，會不斷的紀錄遊戲結果。
   - 此選項會影響到執行效能，開啟後覺得卡頓屬於正常現象。
+- `-r` `progress-folder`, `--progress-folder` `progress-folder`
+  - 將遊戲每個 frame 儲存到特定資料夾中，會自動建立一個時間戳記資料夾來儲存各 frame 的內容，以檔案分開。
+  - 可透過 `-p`, `--progress-frame-frequency` 指定一個檔案內的 frame 數量。
+  - 檔案內容為 json，檔案名稱代表此檔案由哪個 frame 開始紀錄。
+  - 此資料夾需要可讀寫，並且為有效路徑。
+- `-p` `progress-frame-frequency`, `--progress-frame-frequency` `progress-frame-frequency`
+  - 與 `-r`, `--progress-folder` 搭配。
+  - 可指定一個檔案內的 frame 數量。
+
 ### `game_params`
 - `optional` 
 - 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`
 
+# 畫面控制
+- 遊戲執行可以使用 `I` `J` `K` `L` 進行平移
+- 使用 `U` `O`放大縮小
+- 使用 `H` 開啟或關閉部分資訊
+- 使用 `P` 暫停遊戲畫面，暫停期間，遊戲邏輯不會運作，但仍可以調整畫面。
+
+
 [//]: # (# 其他)
 
-[//]: # ()
 [//]: # (1. [系統架構]&#40;./docs/System.md&#41;)
 
-[//]: # ()
-[//]: # (   )
+
+   
 # 相關專案
 
 > 1. [PAIA-Desktop](https://github.com/PAIA-Playful-AI-Arena/Paia-Desktop)
