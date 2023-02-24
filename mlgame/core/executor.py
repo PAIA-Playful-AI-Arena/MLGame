@@ -2,22 +2,22 @@ import abc
 import asyncio
 import importlib
 import json
+import math
 import os
 import time
 import traceback
-import math
 
 import pandas as pd
+import pygame
 import websockets
 
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
-from mlgame.game.paia_game import PaiaGame
 from mlgame.game.generic import quit_or_esc
+from mlgame.game.paia_game import PaiaGame
 from mlgame.utils.io import save_json
-
 from mlgame.utils.logger import logger
-from mlgame.view.view import PygameViewInterface
+from mlgame.view.view import PygameViewInterface, PygameView
 
 
 class ExecutorInterface(abc.ABC):
@@ -79,9 +79,10 @@ class AIClientExecutor(ExecutorInterface):
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
             logger.exception(f"Module '{failed_module_name}' is not found in {self._proc_name}")
-            exception = MLProcessError(self._proc_name,
-                                       "The process '{}' is exited by itself. {}"
-                                       .format(self._proc_name, traceback.format_exc()))
+            exception = MLProcessError(
+                self._proc_name,
+                "The process '{}' is exited by itself. {}"
+                .format(self._proc_name, traceback.format_exc()))
             # send msg to game process
             ai_error = GameError(
                 error_type=ErrorEnum.AI_EXEC_ERROR, frame=self._frame_count,
@@ -128,7 +129,10 @@ class GameExecutor(ExecutorInterface):
                  game: PaiaGame,
                  game_comm: GameCommManager,
                  game_view: PygameViewInterface,
-                 fps=30, one_shot_mode=False, no_display=False,output_folder=None):
+                 fps=30, one_shot_mode=False, no_display=False, output_folder=None):
+        self._view_data = None
+        self._last_pause_btn_clicked_time = 0
+        self._pause_state = False
         self.no_display = no_display
         self.game_view = game_view
         self.frame_count = 0
@@ -141,7 +145,7 @@ class GameExecutor(ExecutorInterface):
         self._ml_execution_time = 1 / fps
         self._fps = fps
         self._ml_delayed_frames = {}
-        self._output_folder=output_folder
+        self._output_folder = output_folder
         for name in self._active_ml_names:
             self._ml_delayed_frames[name] = 0
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
@@ -158,6 +162,11 @@ class GameExecutor(ExecutorInterface):
             self._wait_all_ml_ready()
             self._send_system_message("遊戲啟動")
             while not self._quit_or_esc():
+                if self._is_paused():
+                    # 這裡的寫法不太好，但是可以讓遊戲暫停時，可以調整畫面。因為game_view裡面有調整畫面的程式。
+                    game_view.draw(self._view_data)
+                    time.sleep(0.05)
+                    continue
                 scene_info_dict = game.get_data_from_game_to_player()
                 keyboard_info = game_view.get_keyboard_info()
                 cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
@@ -166,12 +175,12 @@ class GameExecutor(ExecutorInterface):
 
                 result = game.update(cmd_dict)
                 self._frame_count += 1
-                view_data = game.get_scene_progress_data()
-                game_view.draw(view_data)
+                self._view_data = game.get_scene_progress_data()
+                game_view.draw(self._view_data)
                 # save image
                 if self._output_folder:
                     game_view.save_image(f"{self._output_folder}/{self._frame_count:05d}.jpg")
-                self._send_game_progress(view_data)
+                self._send_game_progress(self._view_data)
 
                 # Do reset stuff
                 if result == "RESET" or result == "QUIT":
@@ -363,6 +372,14 @@ class GameExecutor(ExecutorInterface):
     def _send_end_message(self):
         self.game_comm.send_to_others(None)
 
+    def _is_paused(self) -> bool:
+        # 隱藏鍵
+        key_state = pygame.key.get_pressed()
+        if key_state[pygame.K_p] and (time.time() - self._last_pause_btn_clicked_time) > 0.3:
+            self._pause_state = not self._pause_state
+            self._last_pause_btn_clicked_time = time.time()
+        return self._pause_state
+
 
 class GameManualExecutor(ExecutorInterface):
     # TODO deprecated
@@ -428,12 +445,13 @@ class ProgressLogExecutor(ExecutorInterface):
         self._recv_data_func = self._comm_manager.recv_from_game
         self._filename = "{}.json"
         self._progress_data = []
+
     def save_json_and_init(self, path):
         print(path)
         with open(path, 'w') as f:
             json.dump(self._progress_data, f)
         self._progress_data = []
-    
+
     def run(self):
         self._comm_manager.start_recv_obj_thread()
 
@@ -443,12 +461,14 @@ class ProgressLogExecutor(ExecutorInterface):
                     # print(game_data)
                     if game_data['data']['frame'] % self._progress_frame_frequency == 0:
                         self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
-                            (math.ceil(game_data['data']['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+                            (math.ceil(game_data['data'][
+                                           'frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
                     self._progress_data.append(game_data['data'])
             else:
                 if self._progress_data != []:
                     self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
-                        (math.ceil(self._progress_data[-1]['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+                        (math.ceil(self._progress_data[-1][
+                                       'frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
@@ -458,7 +478,7 @@ class ProgressLogExecutor(ExecutorInterface):
             print("end pl")
 
 
-class WebSocketExecutor():
+class WebSocketExecutor(ExecutorInterface):
     def __init__(self, ws_uri, ws_comm: TransitionCommManager):
         # super().__init__(name="ws")
         logger.info("             ws_init ")
@@ -534,3 +554,32 @@ class WebSocketExecutor():
             logger.exception(e.__str__())
         finally:
             print("end ws ")
+
+
+class DisplayExecutor(ExecutorInterface):
+    def __init__(self, display_comm: TransitionCommManager, scene_init_data):
+        # super().__init__(name="ws")
+        logger.info("             display_process_init ")
+        self._proc_name = "display"
+        self._comm_manager = display_comm
+        self._recv_data_func = self._comm_manager.recv_from_game
+        self._scene_init_data = scene_init_data
+
+
+
+    def run(self):
+        self.game_view = PygameView(self._scene_init_data)
+        self._comm_manager.start_recv_obj_thread()
+        try:
+            while (game_data := self._recv_data_func())['type'] != 'game_result':
+                if game_data['type'] == 'game_progress':
+                    # print(game_data)
+                    self.game_view.draw(game_data["data"])
+                    pass
+        except Exception as e:
+            # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
+            self._comm_manager.send_exception(f"exception on {self._proc_name}")
+            # catch connection error
+            print("except", e)
+        finally:
+            print("end display process")
