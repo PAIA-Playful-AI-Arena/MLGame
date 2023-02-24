@@ -47,11 +47,9 @@ def create_process_of_ai_clients_and_start(
 
 
 def create_process_of_progress_log_and_start(
-        game_comm: GameCommManager, progress_folder,
-        progress_frame_frequency) -> Process:
+        game_comm: GameCommManager, progress_folder,progress_frame_frequency) -> Process:
     recv_pipe_for_game, send_pipe_for_pl = Pipe(False)
     recv_pipe_for_pl, send_pipe_for_game = Pipe(False)
-    # TODO
     pl_comm = TransitionCommManager(recv_pipe_for_pl, send_pipe_for_pl)
     game_comm.add_comm_to_others("pl", recv_pipe_for_game, send_pipe_for_game)
     pl_executor = ProgressLogExecutor(
@@ -105,7 +103,7 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process, pr
 def create_display_process(game_comm: GameCommManager, scene_init_data) -> Process:
     recv_pipe_for_game, send_pipe_for_display = Pipe(False)
     recv_pipe_for_display, send_pipe_for_game = Pipe(False)
-    # TODO
+    # TODO 理想情況是要在另外一個process 渲染畫面，但是Pygame 這樣設定容易有問題。
     display_comm = TransitionCommManager(recv_pipe_for_display, send_pipe_for_display)
     game_comm.add_comm_to_others("display", recv_pipe_for_game, send_pipe_for_game)
     display_executor = DisplayExecutor(
