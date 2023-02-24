@@ -9,6 +9,7 @@ from mlgame.utils.logger import logger
 
 if __name__ == '__main__':
     import os
+
     os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
     # 1. parse command line
@@ -16,6 +17,7 @@ if __name__ == '__main__':
 
     # 2. get parsed_game_params
     from mlgame.argument.game_argument import GameConfig
+
     game_config = GameConfig(arg_obj.game_folder.__str__())
     parsed_game_params = game_config.parse_game_params(arg_obj.game_params)
     path_of_ai_clients = revise_ai_clients(arg_obj.ai_clients, game_config.user_num_config)
@@ -27,19 +29,24 @@ if __name__ == '__main__':
     progress_proc = None
 
     print(f"===========Game is started at {datetime.datetime.now()}===========")
+
     from mlgame.core.communication import GameCommManager
-    from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, create_process_of_progress_log_and_start, terminate
+    from mlgame.core.process import create_process_of_ai_clients_and_start, create_process_of_ws_and_start, \
+    create_process_of_progress_log_and_start, terminate, create_display_process
     from mlgame.core.executor import GameExecutor, GameManualExecutor
     from mlgame.view.view import PygameView, DummyPygameView
+
     game_comm = GameCommManager()
     try:
         if arg_obj.ws_url:
             # prepare transmitter for game executor
             ws_proc = create_process_of_ws_and_start(game_comm, arg_obj.ws_url)
-        
+
         if arg_obj.progress_folder:
             # prepare transmitter for game executor
-            progress_proc = create_process_of_progress_log_and_start(game_comm, arg_obj.progress_folder, arg_obj.progress_frame_frequency)
+            progress_proc = create_process_of_progress_log_and_start(
+                game_comm, arg_obj.progress_folder, arg_obj.progress_frame_frequency
+            )
 
         # 4. prepare ai_clients , create pipe, start ai_client process
         if arg_obj.is_manual:
@@ -60,7 +67,6 @@ if __name__ == '__main__':
                 path_of_ai_clients=path_of_ai_clients,
                 game_params=parsed_game_params
             )
-            
             # 5. run game in main process
             game_executor = GameExecutor(
                 game, game_comm, game_view,

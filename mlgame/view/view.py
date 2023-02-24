@@ -78,6 +78,7 @@ class PygameViewInterface(abc.ABC):
     def get_keyboard_info(self) -> list:
         return []
 
+    @abc.abstractmethod
     def save_image(self, img_path: os.path.abspath):
         pass
 
@@ -149,6 +150,7 @@ class PygameView(PygameViewInterface):
         :return:
         '''
         self.screen.fill(self.background_color)
+        # TODO remove
         self.adjust_pygame_screen()
         if "view_center_coordinate" in object_information["game_sys_info"]:
             self.origin_bias_point = [object_information["game_sys_info"]["view_center_coordinate"][0],
