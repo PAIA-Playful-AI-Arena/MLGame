@@ -438,17 +438,16 @@ class ProgressLogExecutor(ExecutorInterface):
         self._comm_manager.start_recv_obj_thread()
 
         try:
+            progress_count = 0
             while (game_data := self._recv_data_func())['type'] != 'game_result':
                 if game_data['type'] == 'game_progress':
                     # print(game_data)
                     if game_data['data']['frame'] % self._progress_frame_frequency == 0:
-                        self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
-                            (math.ceil(game_data['data']['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+                        self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(progress_count:=progress_count+1)))
                     self._progress_data.append(game_data['data'])
             else:
                 if self._progress_data != []:
-                    self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
-                        (math.ceil(self._progress_data[-1]['frame'] / self._progress_frame_frequency) - 1) * self._progress_frame_frequency)))
+                    self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(progress_count:=progress_count+1)))
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
