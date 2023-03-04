@@ -460,7 +460,7 @@ class ProgressLogExecutor(ExecutorInterface):
             else:
                 if self._progress_data != []:
                     self.save_json_and_init(os.path.join(
-                        self._progress_folder, self._filename.format(progress_count := progress_count+1)))
+                        self._progress_folder, self._filename.format(str(progress_count := progress_count+1)+'-end')))
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(
