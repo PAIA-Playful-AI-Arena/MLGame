@@ -1,10 +1,6 @@
 python -m mlgame \
 -1 -f 60   \
---nd \
--i "./ai_clients/arkanoid/space path/ml_play.py" \
--o "./outputs" \
--r "./progress" \
--p 30 \
+-i "./games/arkanoid/ml/ml_play_template.py" \
 ./games/arkanoid \
 --difficulty NORMAL --level 3
 
