@@ -5,19 +5,17 @@ import json
 import os
 import time
 import traceback
-import math
 
 import pandas as pd
 import websockets
 
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
-from mlgame.game.paia_game import PaiaGame
 from mlgame.game.generic import quit_or_esc
+from mlgame.game.paia_game import PaiaGame
 from mlgame.utils.io import save_json
-
 from mlgame.utils.logger import logger
-from mlgame.view.view import PygameViewInterface
+from mlgame.view.view import PygameViewInterface, PygameView
 
 
 class ExecutorInterface(abc.ABC):
@@ -154,6 +152,7 @@ class GameExecutor(ExecutorInterface):
             self._ml_delayed_frames[name] = 0
         # self._recorder = get_recorder(self._execution_cmd, self._ml_names)
         self._frame_count = 0
+        self._total_frame = 0
         self.one_shot_mode = one_shot_mode
         self._proc_name = str(self.game)
 
@@ -180,6 +179,7 @@ class GameExecutor(ExecutorInterface):
 
                 result = game.update(cmd_dict)
                 self._frame_count += 1
+                self._total_frame += 1
                 self._view_data = game.get_scene_progress_data()
                 game_view.draw(self._view_data)
                 # save image
@@ -355,12 +355,14 @@ class GameExecutor(ExecutorInterface):
         """
         Send the game progress to the transition server
         """
+        game_progress_dict["frame"] = self._total_frame
         data_dict = {
             "type": "game_progress",
             "data": game_progress_dict
         }
 
         self.game_comm.send_to_others(data_dict)
+        # print(data_dict)
 
     def _send_game_error(self, system_message):
         # TO be deprecated("_send_game_error_with_obj")
@@ -424,7 +426,7 @@ class GameManualExecutor(ExecutorInterface):
                         break
                     game.reset()
                     game_view.reset()
-                    self._frame_count = 0
+                    # self._frame_count = 0
 
         except Exception as e:
             # handle unknown exception
@@ -461,12 +463,13 @@ class ProgressLogExecutor(ExecutorInterface):
                     # print(game_data)
                     if (game_data['data']['frame'] - 1) % self._progress_frame_frequency == 0 and game_data['data']['frame'] != 1:
                         self.save_json_and_init(os.path.join(
-                            self._progress_folder, self._filename.format(progress_count := progress_count+1)))
+                            self._progress_folder, self._filename.format(progress_count := progress_count + 1)))
                     self._progress_data.append(game_data['data'])
             else:
                 if self._progress_data != []:
                     self.save_json_and_init(os.path.join(
-                        self._progress_folder, self._filename.format(str(progress_count := progress_count+1)+'-end')))
+                        self._progress_folder,
+                        self._filename.format(str(progress_count := progress_count + 1) + '-end')))
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
             self._comm_manager.send_exception(
@@ -523,6 +526,7 @@ class WebSocketExecutor():
                     is_ready_to_end = True
                     await websocket.send(json.dumps(data))
                 else:
+                    print(data)
                     await websocket.send(json.dumps(data))
                     # count += 1
                     pass
@@ -557,6 +561,7 @@ class WebSocketExecutor():
         finally:
             print("end ws ")
 
+
 class DisplayExecutor(ExecutorInterface):
     def __init__(self, display_comm: TransitionCommManager, scene_init_data):
         # super().__init__(name="ws")
@@ -582,4 +587,3 @@ class DisplayExecutor(ExecutorInterface):
             print("except", e)
         finally:
             print("end display process")
-
