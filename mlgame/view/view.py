@@ -105,7 +105,7 @@ class PygameView(PygameViewInterface):
     def __init__(self, game_info: dict):
         super().__init__(game_info)
         self._pause_state = False
-        self._last_pause_btn_clicked_time = None
+        self._last_pause_btn_clicked_time = 0
         pygame.display.init()
         pygame.font.init()
 
@@ -374,3 +374,11 @@ class PygameView(PygameViewInterface):
                 if pressed_keys[k]:
                     keyboard_info.append(k)
         return keyboard_info
+
+    def is_paused(self) -> bool:
+        # 隱藏鍵
+        key_state = pygame.key.get_pressed()
+        if key_state[pygame.K_p] and (time.time() - self._last_pause_btn_clicked_time) > 0.3:
+            self._pause_state = not self._pause_state
+            self._last_pause_btn_clicked_time = time.time()
+        return self._pause_state

@@ -6,8 +6,8 @@ ARG MLG_VER
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN pip install mlgame==$MLG_VER 
-COPY requirements.txt /tmp/ 
-COPY requirements-ml.txt /tmp/ 
+COPY requirements.txt /tmp/
+COPY requirements-ml.txt /tmp/
 RUN pip install -r /tmp/requirements-ml.txt
 RUN pip install -r /tmp/requirements.txt
 
