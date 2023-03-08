@@ -2,7 +2,7 @@ version: '3'
 services:
   mlgame:
     build:
-        context: ..
+        context: ./
         dockerfile: Dockerfile.dev
         args:
           MLG_VER: "10.1.1"

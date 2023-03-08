@@ -1,11 +1,12 @@
 import time
 from multiprocessing import Process, Pipe
 
-from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.env import TIMEOUT
-from mlgame.core.executor import AIClientExecutor, WebSocketExecutor, ProgressLogExecutor, DisplayExecutor
+from mlgame.core.executor import AIClientExecutor, WebSocketExecutor, ProgressLogExecutor
+from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.utils.enum import get_ai_name
 from mlgame.utils.logger import logger
+from mlgame.game.paia_game import PaiaGame
 
 
 def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Process:
@@ -22,7 +23,7 @@ def create_process_of_ws_and_start(game_comm: GameCommManager, ws_url) -> Proces
 
 
 def create_process_of_ai_clients_and_start(
-        game_comm: GameCommManager, path_of_ai_clients: list, game_params: dict) -> list:
+        game_comm: GameCommManager, path_of_ai_clients: list,game_params:dict) -> list:
     """
     return a process list to main process and bind pipes to `game_comm`
     """
@@ -37,24 +38,19 @@ def create_process_of_ai_clients_and_start(
         ai_comm = MLCommManager(ai_name)
         ai_comm.set_comm_to_game(
             recv_pipe_for_ml, send_pipe_for_ml)
-        ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, ai_name=ai_name, game_params=game_params)
-        process = Process(
-            target=ai_executor.run,
-            name=ai_name)
+        ai_executor = AIClientExecutor(ai_client.__str__(), ai_comm, ai_name=ai_name,game_params=game_params)
+        process = Process(target=ai_executor.run,
+                          name=ai_name)
         process.start()
         ai_process.append(process)
     return ai_process
 
-
-def create_process_of_progress_log_and_start(
-        game_comm: GameCommManager, progress_folder,progress_frame_frequency) -> Process:
+def create_process_of_progress_log_and_start(game_comm: GameCommManager, progress_folder, progress_frame_frequency) -> Process:
     recv_pipe_for_game, send_pipe_for_pl = Pipe(False)
     recv_pipe_for_pl, send_pipe_for_game = Pipe(False)
     pl_comm = TransitionCommManager(recv_pipe_for_pl, send_pipe_for_pl)
     game_comm.add_comm_to_others("pl", recv_pipe_for_game, send_pipe_for_game)
-    pl_executor = ProgressLogExecutor(
-        progress_folder=progress_folder,
-        progress_frame_frequency=progress_frame_frequency, pl_comm=pl_comm)
+    pl_executor = ProgressLogExecutor(progress_folder=progress_folder, progress_frame_frequency=progress_frame_frequency, pl_comm=pl_comm)
     process = Process(target=pl_executor.run, name="pl")
     process.start()
     # time.sleep(0.1)
@@ -84,7 +80,7 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process, pr
             elif not ws_proc.is_alive():
                 break
         logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
-
+    
     if progress_proc is not None:
         timeout = time.time() + TIMEOUT
         print(f"wait to close progress for timeout : {TIMEOUT} s")
@@ -98,18 +94,3 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process, pr
                 break
         logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
     logger.info("Game is terminated")
-
-
-def create_display_process(game_comm: GameCommManager, scene_init_data) -> Process:
-    recv_pipe_for_game, send_pipe_for_display = Pipe(False)
-    recv_pipe_for_display, send_pipe_for_game = Pipe(False)
-    # TODO 理想情況是要在另外一個process 渲染畫面，但是Pygame 這樣設定容易有問題。
-    display_comm = TransitionCommManager(recv_pipe_for_display, send_pipe_for_display)
-    game_comm.add_comm_to_others("display", recv_pipe_for_game, send_pipe_for_game)
-    display_executor = DisplayExecutor(
-        display_comm=display_comm, scene_init_data=scene_init_data
-    )
-    process = Process(target=display_executor.run, name="display")
-    process.start()
-    # time.sleep(0.1)
-    return process

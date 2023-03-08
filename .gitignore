@@ -1,7 +1,6 @@
 # project
 cmd/
 games/
-ai_clients/
 # biolerate
 *.env
 *.swp
