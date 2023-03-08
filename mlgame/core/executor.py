@@ -39,10 +39,12 @@ class AIClientExecutor(ExecutorInterface):
         self.ai_comm.start_recv_obj_thread()
         try:
             module_name = os.path.basename(self.ai_path)
-            spec = importlib.util.spec_from_file_location(module_name, self.ai_path)
+            spec = importlib.util.spec_from_file_location(
+                module_name, self.ai_path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            ai_obj = module.MLPlay(ai_name=self.ai_name, game_params=self.game_params)
+            ai_obj = module.MLPlay(ai_name=self.ai_name,
+                                   game_params=self.game_params)
 
             # cmd = ai_obj.update({})
             logger.info("             AI Client runs")
@@ -76,15 +78,16 @@ class AIClientExecutor(ExecutorInterface):
         # Stop the client of the crosslang module
         except ModuleNotFoundError as e:
             failed_module_name = e.__str__().split("'")[1]
-            logger.exception(f"Module '{failed_module_name}' is not found in {self._proc_name}")
-            exception = MLProcessError(
-                self._proc_name,
-                "The process '{}' is exited by itself. {}"
-                .format(self._proc_name, traceback.format_exc()))
+            logger.exception(
+                f"Module '{failed_module_name}' is not found in {self._proc_name}")
+            exception = MLProcessError(self._proc_name,
+                                       "The process '{}' is exited by itself. {}"
+                                       .format(self._proc_name, traceback.format_exc()))
             # send msg to game process
             ai_error = GameError(
                 error_type=ErrorEnum.AI_EXEC_ERROR, frame=self._frame_count,
-                message="The process '{}' is exited by itself. {}".format(self.ai_name, traceback.format_exc())
+                message="The process '{}' is exited by itself. {}".format(
+                    self.ai_name, traceback.format_exc())
             )
 
             self.ai_comm.send_to_game(ai_error)
@@ -123,15 +126,11 @@ class AIClientExecutor(ExecutorInterface):
 
 
 class GameExecutor(ExecutorInterface):
-    def __init__(
-            self,
-            game: PaiaGame,
-            game_comm: GameCommManager,
-            game_view: PygameViewInterface,
-            fps=30, one_shot_mode=False, no_display=False, output_folder=None):
-        self._view_data = None
-        self._last_pause_btn_clicked_time = 0
-        self._pause_state = False
+    def __init__(self,
+                 game: PaiaGame,
+                 game_comm: GameCommManager,
+                 game_view: PygameViewInterface,
+                 fps=30, one_shot_mode=False, no_display=False, output_folder=None):
         self.no_display = no_display
         self.game_view = game_view
         self.frame_count = 0
@@ -168,7 +167,8 @@ class GameExecutor(ExecutorInterface):
                     continue
                 scene_info_dict = game.get_data_from_game_to_player()
                 keyboard_info = game_view.get_keyboard_info()
-                cmd_dict = self._make_ml_execute(scene_info_dict, keyboard_info)
+                cmd_dict = self._make_ml_execute(
+                    scene_info_dict, keyboard_info)
 
                 # self._recorder.record(scene_info_dict, cmd_dict)
 
@@ -178,8 +178,9 @@ class GameExecutor(ExecutorInterface):
                 game_view.draw(self._view_data)
                 # save image
                 if self._output_folder:
-                    game_view.save_image(f"{self._output_folder}/{self._frame_count:05d}.jpg")
-                self._send_game_progress(self._view_data)
+                    game_view.save_image(
+                        f"{self._output_folder}/{self._frame_count:05d}.jpg")
+                self._send_game_progress(view_data)
 
                 # Do reset stuff
                 if result == "RESET" or result == "QUIT":
@@ -187,7 +188,8 @@ class GameExecutor(ExecutorInterface):
                     # send to ml_clients and don't parse any command , while client reset ,
                     # self._wait_all_ml_ready() will works and not blocks the process
                     for ml_name in self._active_ml_names:
-                        self.game_comm.send_to_ml((scene_info_dict[ml_name], []), ml_name)
+                        self.game_comm.send_to_ml(
+                            (scene_info_dict[ml_name], []), ml_name)
                     # TODO check what happen when bigfile is saved
                     time.sleep(0.1)
                     game_result = game.get_game_result()
@@ -261,7 +263,8 @@ class GameExecutor(ExecutorInterface):
         """
         try:
             for ml_name in self._active_ml_names:
-                self.game_comm.send_to_ml((scene_info_dict[ml_name], keyboard_info), ml_name)
+                self.game_comm.send_to_ml(
+                    (scene_info_dict[ml_name], keyboard_info), ml_name)
         except KeyError as e:
             raise KeyError(
                 "The game doesn't provide scene information "
@@ -314,7 +317,8 @@ class GameExecutor(ExecutorInterface):
         delayed_frame = self._frame_count - cmd_frame
         if delayed_frame > self._ml_delayed_frames[ml_name]:
             self._ml_delayed_frames[ml_name] = delayed_frame
-            print(f"The client '{ml_name}' delayed {delayed_frame} frame at frame({self._frame_count})")
+            print(
+                f"The client '{ml_name}' delayed {delayed_frame} frame at frame({self._frame_count})")
 
     def _quit_or_esc(self) -> bool:
         if self.no_display:
@@ -422,7 +426,8 @@ class GameManualExecutor(ExecutorInterface):
         except Exception as e:
             # handle unknown exception
             # send to es
-            logger.exception(f"Some errors happened in game process. {e.__str__()}")
+            logger.exception(
+                f"Some errors happened in game process. {e.__str__()}")
         logger.info("pingpong end.")
 
 
@@ -447,22 +452,22 @@ class ProgressLogExecutor(ExecutorInterface):
         self._comm_manager.start_recv_obj_thread()
 
         try:
-            progress_count = 0
+            progress_count = -1
             while (game_data := self._recv_data_func())['type'] != 'game_result':
                 if game_data['type'] == 'game_progress':
                     # print(game_data)
-                    if game_data['data']['frame'] % self._progress_frame_frequency == 0:
-                        self.save_json_and_init(os.path.join(self._progress_folder, self._filename.format(
-                            progress_count := progress_count + 1)))
+                    if (game_data['data']['frame'] - 1) % self._progress_frame_frequency == 0 and game_data['data']['frame'] != 1:
+                        self.save_json_and_init(os.path.join(
+                            self._progress_folder, self._filename.format(progress_count := progress_count+1)))
                     self._progress_data.append(game_data['data'])
             else:
                 if self._progress_data != []:
-                    self.save_json_and_init(os.path.join(self._progress_folder,
-                                                         self._filename.format(progress_count := progress_count + 1)))
-
+                    self.save_json_and_init(os.path.join(
+                        self._progress_folder, self._filename.format(str(progress_count := progress_count+1)+'-end')))
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
-            self._comm_manager.send_exception(f"exception on {self._proc_name}")
+            self._comm_manager.send_exception(
+                f"exception on {self._proc_name}")
             # catch connection error
             print("except", e)
         finally:
@@ -494,7 +499,8 @@ class WebSocketExecutor(ExecutorInterface):
                     # exit container
                     if data.error_type in [ErrorEnum.COMMAND_ERROR, ErrorEnum.GAME_EXEC_ERROR]:
                         await websocket.send(
-                            {"type": "system_message", "data": {"message": f"error in {data.error_type}"}}
+                            {"type": "system_message", "data": {
+                                "message": f"error in {data.error_type}"}}
                         )
                         break
                         # os.system("pgrep -f 'tail -f /dev/null' | xargs kill")
@@ -505,7 +511,8 @@ class WebSocketExecutor(ExecutorInterface):
                     # exit container
                     # if data.error_type in [ErrorEnum.COMMAND_ERROR, ErrorEnum.GAME_EXEC_ERROR]:
                     await websocket.send(
-                        {"type": "system_message", "data": {"message": f"error in {data.message}"}}
+                        {"type": "system_message", "data": {
+                            "message": f"error in {data.message}"}}
                     )
                     break
                 elif data['type'] == "game_result":
@@ -540,7 +547,8 @@ class WebSocketExecutor(ExecutorInterface):
             asyncio.get_event_loop().run_until_complete(self.ws_start())
         except Exception as e:
             # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
-            self._comm_manager.send_exception(f"exception on {self._proc_name}")
+            self._comm_manager.send_exception(
+                f"exception on {self._proc_name}")
             # catch connection error
             logger.exception(e.__str__())
         finally:
