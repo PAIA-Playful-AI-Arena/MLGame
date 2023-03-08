@@ -1,6 +1,12 @@
-export FILE=profile-2.pstats
+export FILE=profile.pstats
 
 python -m cProfile -s cumtime -o $FILE \
--m mlgame  -1 \
--i ./games/arkanoid/ml/ml_play_template.py ./games/arkanoid --level=15
+-m mlgame \
+-i ./games/maze_car/ml/ml_play_template.py \
+-i ./games/maze_car/ml/ml_play_template.py \
+-i ./games/maze_car/ml/ml_play_template.py \
+-f 120 -1 \
+./games/maze_car/ \
+--game_type=MAZE --sound=off --time_to_play=450 --map=5
+
 python -m gprof2dot -f pstats $FILE | dot -T png -o ${FILE}.png

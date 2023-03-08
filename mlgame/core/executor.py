@@ -5,17 +5,19 @@ import json
 import os
 import time
 import traceback
+import math
 
 import pandas as pd
 import websockets
 
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
-from mlgame.game.generic import quit_or_esc
 from mlgame.game.paia_game import PaiaGame
+from mlgame.game.generic import quit_or_esc
 from mlgame.utils.io import save_json
+
 from mlgame.utils.logger import logger
-from mlgame.view.view import PygameViewInterface, PygameView
+from mlgame.view.view import PygameViewInterface
 
 
 class ExecutorInterface(abc.ABC):
@@ -160,11 +162,6 @@ class GameExecutor(ExecutorInterface):
             self._wait_all_ml_ready()
             self._send_system_message("遊戲啟動")
             while not self._quit_or_esc():
-                if game_view.is_paused():
-                    # 這裡的寫法不太好，但是可以讓遊戲暫停時，可以調整畫面。因為game_view裡面有調整畫面的程式。
-                    game_view.draw(self._view_data)
-                    time.sleep(0.05)
-                    continue
                 scene_info_dict = game.get_data_from_game_to_player()
                 keyboard_info = game_view.get_keyboard_info()
                 cmd_dict = self._make_ml_execute(
@@ -174,8 +171,8 @@ class GameExecutor(ExecutorInterface):
 
                 result = game.update(cmd_dict)
                 self._frame_count += 1
-                self._view_data = game.get_scene_progress_data()
-                game_view.draw(self._view_data)
+                view_data = game.get_scene_progress_data()
+                game_view.draw(view_data)
                 # save image
                 if self._output_folder:
                     game_view.save_image(
@@ -223,6 +220,8 @@ class GameExecutor(ExecutorInterface):
             logger.exception("Some errors happened in game process.")
             self._send_game_error_with_obj(e)
 
+        # print(traceback.format_exc())
+        # print(e.__str__())
         pass
 
     def _wait_all_ml_ready(self):
@@ -296,12 +295,10 @@ class GameExecutor(ExecutorInterface):
             cmd_dict[ml_name] = None
 
         if len(self._active_ml_names) == 0:
-            error = MLProcessError(
-                self._proc_name,
-                f"The process {self._proc_name} exit because all ml processes has exited.")
-            game_error = GameError(
-                error_type=ErrorEnum.GAME_EXEC_ERROR, frame=self._frame_count,
-                message="All ml clients has been terminated")
+            error = MLProcessError(self._proc_name,
+                                   f"The process {self._proc_name} exit because all ml processes has exited.")
+            game_error = GameError(error_type=ErrorEnum.GAME_EXEC_ERROR, frame=self._frame_count,
+                                   message="All ml clients has been terminated")
 
             self._send_game_error_with_obj(game_error)
             self._send_game_result(self.game.get_game_result())
@@ -471,10 +468,10 @@ class ProgressLogExecutor(ExecutorInterface):
             # catch connection error
             print("except", e)
         finally:
-            print("end ProgressLogExecutor")
+            print("end pl")
 
 
-class WebSocketExecutor(ExecutorInterface):
+class WebSocketExecutor():
     def __init__(self, ws_uri, ws_comm: TransitionCommManager):
         # super().__init__(name="ws")
         logger.info("             ws_init ")
@@ -553,30 +550,3 @@ class WebSocketExecutor(ExecutorInterface):
             logger.exception(e.__str__())
         finally:
             print("end ws ")
-
-
-class DisplayExecutor(ExecutorInterface):
-    def __init__(self, display_comm: TransitionCommManager, scene_init_data):
-        # super().__init__(name="ws")
-        logger.info("             display_process_init ")
-        self._proc_name = "display"
-        self._comm_manager = display_comm
-        self._recv_data_func = self._comm_manager.recv_from_game
-        self._scene_init_data = scene_init_data
-
-    def run(self):
-        self.game_view = PygameView(self._scene_init_data)
-        self._comm_manager.start_recv_obj_thread()
-        try:
-            while (game_data := self._recv_data_func())['type'] != 'game_result':
-                if game_data['type'] == 'game_progress':
-                    # print(game_data)
-                    self.game_view.draw(game_data["data"])
-                    pass
-        except Exception as e:
-            # exception = TransitionProcessError(self._proc_name, traceback.format_exc())
-            self._comm_manager.send_exception(f"exception on {self._proc_name}")
-            # catch connection error
-            print("except", e)
-        finally:
-            print("end display process")
