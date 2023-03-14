@@ -1,10 +1,10 @@
 import datetime
 import os
-from typing import List, Optional
+from typing import Union, List, Optional
 
 import pydantic
 from pydantic import FilePath, validator, DirectoryPath
-
+from pathlib import Path
 from mlgame.utils.io import check_folder_existed_and_readable_or_create
 
 
@@ -21,8 +21,8 @@ class MLGameArgument(pydantic.BaseModel):
     ws_url: pydantic.AnyUrl = None
     game_folder: DirectoryPath
     game_params: List[str]
-    output_folder: pydantic.DirectoryPath = None
-    progress_folder: pydantic.DirectoryPath = None
+    output_folder: Union[Path, None] = None
+    progress_folder: Union[Path, None] = None
 
     @validator('is_manual', always=True)
     def update_manual(cls, v, values) -> bool:
@@ -40,7 +40,7 @@ class MLGameArgument(pydantic.BaseModel):
         )
         if check_folder_existed_and_readable_or_create(path):
             return path
-    
+
     @validator('progress_folder')
     def update_progress_folder(cls, v, values):
         if v is None:
