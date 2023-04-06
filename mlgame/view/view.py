@@ -306,7 +306,7 @@ class PygameView(PygameViewInterface):
         # pygame.draw.aalines(self.screen, color=color, points=vertices,closed=True,
         #                     blend=13)
         pygame.draw.polygon(self.screen, color, vertices
-                            # ,width=scale*5
+                            ,width=scale*5
                             )
         # import pygame.gfxdraw
         # pygame.gfxdraw.aapolygon(
