@@ -64,7 +64,7 @@ def scale_img(img, origin_width, origin_height, scale_ratio):
 
 class PygameViewInterface(abc.ABC):
     def __init__(self, game_info: dict):
-        self.scene_init_data = game_info
+        pass
 
     @abc.abstractmethod
     def reset(self):
@@ -108,7 +108,7 @@ class PygameView(PygameViewInterface):
         self._last_pause_btn_clicked_time = 0
         pygame.display.init()
         pygame.font.init()
-
+        self.scene_init_data = game_info
         self.width = self.scene_init_data["scene"]["width"]
         self.height = self.scene_init_data["scene"]["height"]
         self.background_color = transfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
@@ -271,7 +271,7 @@ class PygameView(PygameViewInterface):
         offset_width = scale_bias_of_coordinate(self.width, scale)
         offset_height = scale_bias_of_coordinate(self.height, scale)
 
-        import pygame.gfxdraw
+        # import pygame.gfxdraw
         # pygame.gfxdraw.line(
         #     self.screen,
         #     int(x1 * scale + offset_width),int( y1 * scale + offset_height),
@@ -279,20 +279,20 @@ class PygameView(PygameViewInterface):
         #     color
         #     # int(width * scale)
         # )
-        pygame.draw.line(
-            self.screen, color,
-            (x1 * scale + offset_width, y1 * scale + offset_height),
-            (x2 * scale + offset_width, y2 * scale + offset_height),
-            1
-        )
-        # if scale != 1:
-        #
-        #     offset_width = scale_bias_of_coordinate(self.width, scale)
-        #     offset_height = scale_bias_of_coordinate(self.height, scale)
-        #     pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
-        #                      (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
-        # else:
-        #     pygame.draw.line(self.screen, color, (x1, y1), (x2 * scale, y2), int(width))
+        # pygame.draw.line(
+        #     self.screen, color,
+        #     (x1 * scale + offset_width, y1 * scale + offset_height),
+        #     (x2 * scale + offset_width, y2 * scale + offset_height),
+        #     1
+        # )
+        if scale != 1:
+
+            offset_width = scale_bias_of_coordinate(self.width, scale)
+            offset_height = scale_bias_of_coordinate(self.height, scale)
+            pygame.draw.line(self.screen, color, (x1 * scale + offset_width, y1 * scale + offset_height),
+                             (x2 * scale + offset_width, y2 * scale + offset_height), int(width * scale))
+        else:
+            pygame.draw.line(self.screen, color, (x1, y1), (x2 * scale, y2), int(width))
 
     def draw_polygon(self, points, color, bias_x=0, bias_y=0, scale=1):
         vertices = []
@@ -305,7 +305,9 @@ class PygameView(PygameViewInterface):
         # TODO use aalines
         # pygame.draw.aalines(self.screen, color=color, points=vertices,closed=True,
         #                     blend=13)
-        pygame.draw.polygon(self.screen, color, vertices,width=scale*5)
+        pygame.draw.polygon(self.screen, color, vertices
+                            ,width=scale*5
+                            )
         # import pygame.gfxdraw
         # pygame.gfxdraw.aapolygon(
         #     self.screen,
