@@ -154,6 +154,23 @@ def create_polygon_view_data(name: str, points: list, color: str):
         "points": vertices
     }
 
+def create_aapolygon_view_data(name: str, points: list, color: str):
+    """
+    這是一個用來繪製多邊形的資料格式，
+    points欄位至少三個 # [[100,101],[52.1,31.3],[53.1,12.3]]
+    :return:dict
+    """
+    assert len(points) >= 3
+    vertices = []
+    for p in points:
+        vertices.append({"x": p[0], "y": p[1]})
+    return {
+        "type": "aapolygon",
+        "name": name,
+        "color": color,
+        "points": vertices
+    }
+
 
 def create_text_view_data(content: str, x: int, y: int, color: str, font_style="24px Arial"):
     return {
