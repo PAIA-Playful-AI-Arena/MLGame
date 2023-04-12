@@ -25,6 +25,7 @@ COLOR = "color"
 IMAGE = "image"
 RECTANGLE = "rect"
 POLYGON = "polygon"
+AAPOLYGON = "aapolygon"
 
 
 @lru_cache
@@ -95,8 +96,10 @@ class DummyPygameView(PygameViewInterface):
 
     def draw(self, object_information):
         pass
-    def save_image(self, img_path:os.path.abspath):
+
+    def save_image(self, img_path: os.path.abspath):
         pass
+
     def get_keyboard_info(self) -> list:
         return []
 
@@ -114,7 +117,7 @@ class PygameView(PygameViewInterface):
         self.background_color = transfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
         self.screen = pygame.display.set_mode(
             (self.width, self.height),
-            flags=pygame.RESIZABLE|pygame.SCALED)
+            flags=pygame.RESIZABLE | pygame.SCALED)
         self.address = "GameView"
         self.image_dict = self.loading_image()
         self.font = {}
@@ -225,6 +228,8 @@ class PygameView(PygameViewInterface):
 
         elif game_object[TYPE] == POLYGON:
             self.draw_polygon(game_object["points"], transfer_hex_to_rgba(game_object[COLOR]), bias_x, bias_y, scale)
+        elif game_object[TYPE] == AAPOLYGON:
+            self.draw_aapolygon(game_object["points"], transfer_hex_to_rgba(game_object[COLOR]), bias_x, bias_y, scale)
 
         elif game_object[TYPE] == TEXT:
             self.draw_text(
@@ -297,7 +302,15 @@ class PygameView(PygameViewInterface):
     def draw_polygon(self, points, color, bias_x=0, bias_y=0, scale=1):
         vertices = []
         for p in points:
+            vertices.append((
+                (p["x"] + bias_x) * scale + scale_bias_of_coordinate(self.width, scale),
+                (p["y"] + bias_y) * scale + scale_bias_of_coordinate(self.height, scale)
+            ))
+        pygame.draw.polygon(self.screen, color, vertices)
 
+    def draw_aapolygon(self, points, color, bias_x=0, bias_y=0, scale=1):
+        vertices = []
+        for p in points:
             vertices.append((
                 (p["x"] + bias_x) * scale + scale_bias_of_coordinate(self.width, scale),
                 (p["y"] + bias_y) * scale + scale_bias_of_coordinate(self.height, scale)
@@ -305,9 +318,7 @@ class PygameView(PygameViewInterface):
         # TODO use aalines
         # pygame.draw.aalines(self.screen, color=color, points=vertices,closed=True,
         #                     blend=13)
-        pygame.draw.polygon(self.screen, color, vertices
-                            ,width=scale*5
-                            )
+        pygame.draw.polygon(self.screen, color, vertices, width=scale * 5)
         # import pygame.gfxdraw
         # pygame.gfxdraw.aapolygon(
         #     self.screen,
