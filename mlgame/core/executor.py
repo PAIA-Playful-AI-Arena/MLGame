@@ -375,7 +375,17 @@ class GameExecutor(ExecutorInterface):
 
     def _send_game_error_with_obj(self, error: GameError):
 
-        self._send_game_error(error.message)
+        data_dict = {
+            "type": "game_error",
+            "data": {
+                "message": error.message,
+                "error_type": error.error_type,
+                "frame": error.frame
+            }
+        }
+        self.game_comm.send_to_others(data_dict)
+
+        # self._send_game_error(data_dict)
 
     def _send_end_message(self):
         self.game_comm.send_to_others(None)
@@ -461,7 +471,8 @@ class ProgressLogExecutor(ExecutorInterface):
             while (game_data := self._recv_data_func())['type'] != 'game_result':
                 if game_data['type'] == 'game_progress':
                     # print(game_data)
-                    if (game_data['data']['frame'] - 1) % self._progress_frame_frequency == 0 and game_data['data']['frame'] != 1:
+                    if (game_data['data']['frame'] - 1) % self._progress_frame_frequency == 0 and game_data['data'][
+                        'frame'] != 1:
                         self.save_json_and_init(os.path.join(
                             self._progress_folder, self._filename.format(progress_count := progress_count + 1)))
                     self._progress_data.append(game_data['data'])
