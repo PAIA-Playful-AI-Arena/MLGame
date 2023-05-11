@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.2.9] - 2023.05.11
+**更新**
+* 修正 error_type 顯示資訊
+
 ### [10.2.1] - 2023.02.24
 **新增**
 * 增加`-r` `-p`參數，讓使用者匯出json格式的畫面資訊，可指定單一檔案幀數與存放位置。
