@@ -59,7 +59,8 @@ def create_game_params_parser(parser_config: dict):
 
     return parser
 
-
+def comma_separated_list(value):
+    return value.split(',')
 def parse_game_config_data(game_config_data: dict):
     """
     parse game parameter and generate data for argument parser
@@ -78,6 +79,8 @@ def parse_game_config_data(game_config_data: dict):
             obj["type"] = int
         elif param["type"] == "str":
             obj["type"] = str
+        elif param["type"] == "list":
+            obj["type"] = comma_separated_list
 
         if "default" in param:
             obj["nargs"] = "?"
