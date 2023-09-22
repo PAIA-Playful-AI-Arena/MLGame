@@ -85,6 +85,10 @@ Table of Contents
 ### `game_params`
 - `optional` 
 - 執行遊戲的參數依照每個遊戲有所不同，格式為`--name_of_params` `value_of_params`
+- type 
+  - int : `0` `1` `-1` `1.5` 
+  - str : `"0"` `"hello"` `"NORMAL"`
+  - list: `0,1` `-1,1000,111` `abc,cde,12` 
 
 # 畫面控制
 - 遊戲執行可以使用 `I` `J` `K` `L` 進行平移

@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.3.1] - 2023.09.22
+**新增**
+* 新增 list 型態的遊戲參數。
+
 ### [10.2.9] - 2023.05.11
 **更新**
 * 修正 error_type 顯示資訊
