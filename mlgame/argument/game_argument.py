@@ -1,4 +1,5 @@
 import importlib
+import os
 from argparse import ArgumentParser
 from os import path
 
@@ -81,6 +82,8 @@ def parse_game_config_data(game_config_data: dict):
             obj["type"] = str
         elif param["type"] == "list":
             obj["type"] = comma_separated_list
+        elif param["type"] == "path":
+            obj["type"] = os.path.abspath
 
         if "default" in param:
             obj["nargs"] = "?"
