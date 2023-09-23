@@ -89,6 +89,7 @@ Table of Contents
   - int : `0` `1` `-1` `1.5` 
   - str : `"0"` `"hello"` `"NORMAL"`
   - list: `0,1` `-1,1000,111` `abc,cde,12` 
+  - path: `./relative_path_to_file/file.txt`,`/absoulute_path_to_file/file.dat` 
 
 # 畫面控制
 - 遊戲執行可以使用 `I` `J` `K` `L` 進行平移
