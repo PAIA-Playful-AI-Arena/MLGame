@@ -471,9 +471,14 @@ class ProgressLogExecutor(ExecutorInterface):
         self._progress_data = []
 
     def save_json_and_init(self, path):
-        print(path)
+
         with open(path, 'w') as f:
             json.dump(self._progress_data, f)
+        # Get the file size in kilobytes (1 KB = 1024 bytes)
+        file_size_kb = os.path.getsize(path) / 1024
+        # Print the file path and file size in KB
+        print(f"File saved to: {path}, file size: {file_size_kb:.2f} KB")
+
         self._progress_data = []
 
     def run(self):
