@@ -6,6 +6,7 @@ from mlgame.game.paia_game import GameResultState
 K_ATTACHMENT = "attachment"
 K_STATE = "state"
 K_ASSET = "assets"
+K_BACKGROUND="background"
 
 OBJ_TYPE_TXT = "text"
 OBJ_TYPE_IMG = "image"
@@ -79,7 +80,7 @@ def assert_scene_init_data(data: dict = None):
     :return:None
     """
     assert type(data) == dict
-    assert_contains_keys(data, [K_SCENE, K_ASSET])
+    assert_contains_keys(data, [K_SCENE, K_ASSET,K_BACKGROUND])
 
     scene_obj = data[K_SCENE]
     assert type(scene_obj) == dict

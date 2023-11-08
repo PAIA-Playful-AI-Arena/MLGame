@@ -6,6 +6,8 @@ from functools import lru_cache
 
 import pygame
 
+from mlgame.view.decorator import K_BACKGROUND, K_SCENE
+
 KEYS = [
     pygame.K_a, pygame.K_b, pygame.K_c, pygame.K_d, pygame.K_e, pygame.K_f, pygame.K_g, pygame.K_h, pygame.K_i,
     pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_m, pygame.K_n, pygame.K_o, pygame.K_p, pygame.K_q, pygame.K_r,
@@ -112,18 +114,19 @@ class PygameView(PygameViewInterface):
         pygame.display.init()
         pygame.font.init()
         self.scene_init_data = game_info
-        self.width = self.scene_init_data["scene"]["width"]
-        self.height = self.scene_init_data["scene"]["height"]
-        self.background_color = transfer_hex_to_rgb(self.scene_init_data["scene"][COLOR])
+        self.width = self.scene_init_data[K_SCENE]["width"]
+        self.height = self.scene_init_data[K_SCENE]["height"]
+        self.background_color = transfer_hex_to_rgb(self.scene_init_data[K_SCENE][COLOR])
         self.screen = pygame.display.set_mode(
             (self.width, self.height),
             flags=pygame.RESIZABLE | pygame.SCALED)
         self.address = "GameView"
         self.image_dict = self.loading_image()
+        self._fixed_backgound_objs = self.scene_init_data[K_BACKGROUND]
         self.font = {}
         # self.map_width = game_info["map_width"]
         # self.map_height = game_info["map_height"]
-        self.origin_bias_point = [self.scene_init_data["scene"]["bias_x"], self.scene_init_data["scene"]["bias_y"]]
+        self.origin_bias_point = [self.scene_init_data[K_SCENE]["bias_x"], self.scene_init_data[K_SCENE]["bias_y"]]
         self.bias_point_var = [0, 0]
         self.bias_point = self.origin_bias_point.copy()
 
@@ -159,6 +162,8 @@ class PygameView(PygameViewInterface):
         '''
         self.screen.fill(self.background_color)
         self.adjust_pygame_screen()
+        # TODO draw fixed frame in scene_init data
+
         if "view_center_coordinate" in object_information["game_sys_info"]:
             self.origin_bias_point = [
                 object_information["game_sys_info"]["view_center_coordinate"][0],
@@ -166,6 +171,9 @@ class PygameView(PygameViewInterface):
             ]
             self.bias_point[0] = self.origin_bias_point[0] + self.bias_point_var[0]
             self.bias_point[1] = self.origin_bias_point[1] + self.bias_point_var[1]
+        for game_object in self._fixed_backgound_objs:
+            self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
+
         for game_object in object_information["background"]:
             self.draw_game_obj_according_type_with_bias(game_object, self.bias_point[0], self.bias_point[1], self.scale)
         for game_object in object_information["object_list"]:
