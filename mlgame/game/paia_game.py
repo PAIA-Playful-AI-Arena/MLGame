@@ -74,6 +74,7 @@ class PaiaGame(abc.ABC):
                            "assets": [
 
                            ],
+                           "background":[]
                            # "audios": {}
                            }
         return scene_init_data
