@@ -148,7 +148,9 @@ def create_polygon_view_data(name: str, points: list, color: str):
     for p in points:
         vertices.append({"x": p[0], "y": p[1]})
     return {
-        "type": "polygon",
+        # "type": "polygon",
+        "type": "aapolygon",
+
         "name": name,
         "color": color,
         "points": vertices

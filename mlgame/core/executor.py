@@ -261,6 +261,8 @@ class GameExecutor(ExecutorInterface):
                         message=f"AI of {ml_name} has error at initial stage. {e.__str__()}")
 
                     self._send_game_error_with_obj(ai_error)
+                    traceback.print_exc()
+
                     break
 
     def _make_ml_execute(self, scene_info_dict, keyboard_info) -> dict:
@@ -452,7 +454,9 @@ class GameManualExecutor(ExecutorInterface):
             # send to es
             logger.exception(
                 f"Some errors happened in game process. {e.__str__()}")
-        logger.info("pingpong end.")
+            traceback.print_exc()
+
+        logger.info("manual executor end.")
 
 
 class ProgressLogExecutor(ExecutorInterface):
@@ -496,6 +500,7 @@ class ProgressLogExecutor(ExecutorInterface):
                 f"exception on {self._proc_name}")
             # catch connection error
             print("except", e)
+            logger.exception(traceback.format_exc())
         finally:
             print("end pl")
 
@@ -546,7 +551,7 @@ class WebSocketExecutor():
                     is_ready_to_end = True
                     await websocket.send(json.dumps(data))
                 else:
-                    print(data)
+                    # print(data)
                     await websocket.send(json.dumps(data))
                     # count += 1
                     pass
@@ -577,7 +582,7 @@ class WebSocketExecutor():
             self._comm_manager.send_exception(
                 f"exception on {self._proc_name}")
             # catch connection error
-            logger.exception(e.__str__())
+            traceback.print_exc()
         finally:
             print("end ws ")
 
@@ -605,5 +610,7 @@ class DisplayExecutor(ExecutorInterface):
             self._comm_manager.send_exception(f"exception on {self._proc_name}")
             # catch connection error
             print("except", e)
+            logger.exception(traceback.format_exc())
+
         finally:
             print("end display process")

@@ -72,25 +72,29 @@ def terminate(game_comm: GameCommManager, ai_process: list, ws_proc: Process, pr
         timeout = time.time() + TIMEOUT
         print(f"wait to close ws for timeout : {TIMEOUT} s")
         while True:
-            time.sleep(0.2)
+            time.sleep(0.5)
             if time.time() > timeout:
-                ws_proc.terminate()
+                print("Force to terminate ws proc ")
+                ws_proc.kill()
                 ws_proc.join()
                 break
             elif not ws_proc.is_alive():
                 break
+            print("wait to close ws .")
         logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
     
     if progress_proc is not None:
         timeout = time.time() + TIMEOUT
         print(f"wait to close progress for timeout : {TIMEOUT} s")
         while True:
-            time.sleep(0.2)
+            time.sleep(0.5)
             if time.time() > timeout:
-                progress_proc.terminate()
+                print("Force to terminate progress_proc proc ")
+                progress_proc.kill()
                 progress_proc.join()
                 break
             elif not progress_proc.is_alive():
                 break
+            print("wait to close progress_proc .")
         logger.info(f"use {time.time() - timeout + TIMEOUT} to close.")
     logger.info("Game is terminated")

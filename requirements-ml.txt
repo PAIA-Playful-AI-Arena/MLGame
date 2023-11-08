@@ -1,1 +1,5 @@
-scikit-learn==0.24.1
+pandas==1.4.1
+matplotlib==3.3.4
+pynput==1.7.6
+pytmx==3.31
+scikit-learn
