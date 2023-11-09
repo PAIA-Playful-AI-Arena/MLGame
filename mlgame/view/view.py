@@ -122,7 +122,7 @@ class PygameView(PygameViewInterface):
             flags=pygame.RESIZABLE | pygame.SCALED)
         self.address = "GameView"
         self.image_dict = self.loading_image()
-        self._fixed_backgound_objs = self.scene_init_data[K_BACKGROUND]
+        self._fixed_backgound_objs = self.scene_init_data.get(K_BACKGROUND, [])
         self.font = {}
         # self.map_width = game_info["map_width"]
         # self.map_height = game_info["map_height"]
