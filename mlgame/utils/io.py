@@ -1,11 +1,13 @@
 import json
 import os
 
+from orjson import orjson
+
 
 def save_json(dest_folder, game_result:dict):
     try:
         with open(os.path.join(dest_folder,"result.json"), "w") as f:
-            json.dump(game_result, f)
+            f.write(orjson.dumps(game_result).decode())
         pass
     except Exception as e:
         print(f"Save result.json in {dest_folder} failed. Game result is : {game_result}")
