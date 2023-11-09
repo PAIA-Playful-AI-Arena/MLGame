@@ -8,6 +8,7 @@ import traceback
 
 import pandas as pd
 import websockets
+from orjson import orjson
 
 from mlgame.core.communication import GameCommManager, MLCommManager, TransitionCommManager
 from mlgame.core.exceptions import MLProcessError, GameProcessError, GameError, ErrorEnum
@@ -15,6 +16,7 @@ from mlgame.game.generic import quit_or_esc
 from mlgame.game.paia_game import PaiaGame
 from mlgame.utils.io import save_json
 from mlgame.utils.logger import logger
+from mlgame.utils.prof import timeit
 from mlgame.view.view import PygameViewInterface, PygameView
 
 
@@ -470,10 +472,12 @@ class ProgressLogExecutor(ExecutorInterface):
         self._filename = "{}.json"
         self._progress_data = []
 
+
     def save_json_and_init(self, path):
 
         with open(path, 'w') as f:
-            json.dump(self._progress_data, f)
+            # json.dump(self._progress_data, f)
+            f.write(orjson.dumps(self._progress_data).decode())
         # Get the file size in kilobytes (1 KB = 1024 bytes)
         file_size_kb = os.path.getsize(path) / 1024
         # Print the file path and file size in KB
