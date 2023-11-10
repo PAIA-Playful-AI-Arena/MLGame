@@ -2,6 +2,10 @@
 
 The format is modified from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+### [10.4.1] - 2023.11.10
+**新增**
+* 在初始資料，新增一個背景圖層。
+
 ### [10.3.1] - 2023.09.22
 **新增**
 * 新增 list 型態的遊戲參數。
